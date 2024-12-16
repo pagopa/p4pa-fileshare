@@ -1,6 +1,6 @@
 microservice-chart:
   image:
-    repository: p4papitncorecommonacr.azurecr.io/templatepaymentsjavarepository
+    repository: p4papitncorecommonacr.azurecr.io/p4pafileshare
     tag: latest
     pullPolicy: Always
 
