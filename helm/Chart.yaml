@@ -1,6 +1,6 @@
 apiVersion: v2
-name: template-payments-java-repository
-description: TEMPLATE PAYMENTS JAVA REPOSITORY
+name: p4pa-fileshare
+description: p4pa-fileshare
 type: application
 version: 1.0.0
 appVersion: 1.0.0
