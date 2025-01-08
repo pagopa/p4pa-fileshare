@@ -7,7 +7,7 @@ paths:
   /ingestionflowfiles/{organizationId}:
     post:
       tags:
-        - ingestion-flow-file-controller
+        - ingestion-flow-file
       summary: uploadIngestionFlowFile
       description: Service to store an ingestion flow file
       operationId: uploadIngestionFlowFile
@@ -30,26 +30,6 @@ paths:
               - TREASURY_CSV
               - TREASURY_XLS
               - TREASURY_POSTE
-        - name: status
-          in: query
-          required: true
-          schema:
-            type: string
-            enum:
-              - UPLOADED
-              - PROCESSING
-              - COMPLETED
-              - ERROR
-        - name: flowIdentifierCode
-          in: query
-          required: true
-          schema:
-            type: string
-        - name: flagActive
-          in: query
-          required: true
-          schema:
-            type: boolean
       requestBody:
         content:
           'multipart/form-data':
