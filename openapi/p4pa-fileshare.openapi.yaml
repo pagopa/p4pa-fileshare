@@ -4,28 +4,63 @@ info:
   description: Api and Models
   version: "1.0.0"
 paths:
-  /api/v1/greet:
-    get:
-      summary: "Hello World"
-      description: "Sample endpoint that return greetings"
+  /ingestionflowfiles/{organizationId}:
+    post:
+      tags:
+        - ingestion-flow-file-controller
+      summary: uploadIngestionFlowFile
+      description: Service to store an ingestion flow file
+      operationId: uploadIngestionFlowFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: ingestionFlowFileType
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - RECEIPT
+              - PAYMENTS_REPORTING
+              - OPI
+              - TREASURY_CSV
+              - TREASURY_XLS
+              - TREASURY_POSTE
+        - name: status
+          in: query
+          required: true
+          schema:
+            type: string
+            enum:
+              - UPLOADED
+              - PROCESSING
+              - COMPLETED
+              - ERROR
+        - name: flowIdentifierCode
+          in: query
+          required: true
+          schema:
+            type: string
+        - name: flagActive
+          in: query
+          required: true
+          schema:
+            type: boolean
+      requestBody:
+        content:
+          'multipart/form-data':
+            schema:
+              required:
+                - ingestionFlowFile
+              type: object
+              properties:
+                ingestionFlowFile:
+                  type: string
+                  format: binary
       responses:
         '200':
-          description: "Success"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message:
-                    type: string
-                    example: "Hello, World!"
-        '500':
-          description: "Internal Server Error"
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  error:
-                    type: string
-                    example: "Internal Server Error"
+          description: OK
