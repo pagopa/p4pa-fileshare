@@ -21,3 +21,5 @@ app:
     read.timeout.millis: "\${READ_TIMEOUT_MILLIS:120000}"
   auth:
     base-url: "\${AUTH_SERVER_BASE_URL:}"
+  organization:
+    base-url: "\${ORGANIZATION_BASE_URL:}"

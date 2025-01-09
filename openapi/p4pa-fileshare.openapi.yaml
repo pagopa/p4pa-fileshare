@@ -22,14 +22,7 @@ paths:
           in: query
           required: true
           schema:
-            type: string
-            enum:
-              - RECEIPT
-              - PAYMENTS_REPORTING
-              - OPI
-              - TREASURY_CSV
-              - TREASURY_XLS
-              - TREASURY_POSTE
+            $ref: "#/components/schemas/IngestionFlowFileType"
       requestBody:
         content:
           'multipart/form-data':
@@ -44,3 +37,14 @@ paths:
       responses:
         '200':
           description: OK
+components:
+  schemas:
+    IngestionFlowFileType:
+      type: string
+      enum:
+        - RECEIPT
+        - PAYMENTS_REPORTING
+        - OPI
+        - TREASURY_CSV
+        - TREASURY_XLS
+        - TREASURY_POSTE
