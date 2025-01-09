@@ -107,6 +107,8 @@ RUN gradle openApiGenerateFileshare dependencies --no-daemon
 
 RUN gradle openApiGenerateP4PAAUTH dependencies --no-daemon
 
+RUN gradle openApiGenerateP4PAORGANIZATION dependencies --no-daemon
+
 #
 # 🏗️ Build Stage
 #
