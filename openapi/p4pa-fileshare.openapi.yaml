@@ -44,3 +44,10 @@ paths:
       responses:
         '200':
           description: OK
+security:
+  - BearerAuth: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer

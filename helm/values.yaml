@@ -48,6 +48,19 @@ microservice-chart:
     runAsUser: 65534
     runAsGroup: 65534
 
+  persistentVolumeClaimsMounts:
+    create: true
+    mounts:
+      - name: share
+        pvcName: mypay-fileshare-pvc
+        mountPath: "/shared"
+
+  tmpVolumeMount:
+    create: true
+    mounts:
+      - name: tmp
+        mountPath: /tmp
+
   externalConfigMapFiles:
     create: true
     configMaps:
@@ -60,6 +73,8 @@ microservice-chart:
     APPLICATIONINSIGHTS_INSTRUMENTATION_MICROMETER_ENABLED: "false"
     APPLICATIONINSIGHTS_PREVIEW_PROFILER_ENABLED: "false"
     ENABLE_AUDIT_APPENDER: "TRUE"
+
+    SHARED_FOLDER_ROOT: "/shared"
 
 
   envSecret:
