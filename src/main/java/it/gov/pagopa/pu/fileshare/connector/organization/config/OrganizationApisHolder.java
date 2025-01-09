@@ -19,7 +19,7 @@ public class OrganizationApisHolder {
     private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
     public OrganizationApisHolder(
-            @Value("${app.organization.base-url}") String baseUrl,
+            @Value("${rest.organization.base-url}") String baseUrl,
 
             RestTemplateBuilder restTemplateBuilder) {
         RestTemplate restTemplate = restTemplateBuilder.build();

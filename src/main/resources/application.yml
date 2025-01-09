@@ -3,6 +3,10 @@ spring:
       name: ${artifactId}
       version: ${version}
     jmx.enabled: true
+    threads:
+      virtual:
+        enabled: "\${VIRTUAL_THREADS_ENABLED:true}"
+
 management:
     endpoint:
       health:
@@ -15,10 +19,18 @@ management:
         exposure.include: "*"
       web:
         exposure.include: info, health
-app:
-  rest-client:
-    connect.timeout.millis: "\${CONNECT_TIMEOUT_MILLIS:120000}"
-    read.timeout.millis: "\${READ_TIMEOUT_MILLIS:120000}"
+
+folders:
+  shared: "\${SHARED_FOLDER_ROOT:/shared}"
+  tmp: "\${TMP_FOLDER:/tmp}"
+  process-target-sub-folders:
+    archive: "\${PROCESS_TARGET_SUB_FOLDER_ARCHIVE:archive}"
+    errors: "\${PROCESS_TARGET_SUB_FOLDER_ERRORS:errors}"
+
+rest:
+  default-timeout:
+    connect-millis: "\${DEFAULT_REST_CONNECT_TIMEOUT_MILLIS:60000}"
+    read-millis: "\${DEFAULT_REST_READ_TIMEOUT_MILLIS:60000}"
   auth:
     base-url: "\${AUTH_SERVER_BASE_URL:}"
   organization:
