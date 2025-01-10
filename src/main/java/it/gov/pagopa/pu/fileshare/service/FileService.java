@@ -11,7 +11,8 @@ import org.springframework.web.multipart.MultipartFile;
 public class FileService {
   public void validateFile(MultipartFile ingestionFlowFile, String validFileExt) {
     if( ingestionFlowFile == null || !StringUtils.defaultString(ingestionFlowFile.getOriginalFilename()).endsWith(validFileExt)){
-      log.debug("Invalid ingestion flow file extension. [ingestionFlowFileFilename: {}]", ingestionFlowFile!=null?ingestionFlowFile.getOriginalFilename():"");
+      String sanitizedFilename = ingestionFlowFile != null && ingestionFlowFile.getOriginalFilename()!=null ? ingestionFlowFile.getOriginalFilename().replace("\n", "").replace("\r", "") : "";
+      log.debug("Invalid ingestion flow file extension. [ingestionFlowFileFilename: {}]", sanitizedFilename);
       throw new InvalidFileException("Invalid file extension");
     }
   }
