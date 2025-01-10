@@ -6,6 +6,10 @@ spring:
     threads:
       virtual:
         enabled: "\${VIRTUAL_THREADS_ENABLED:true}"
+    servlet:
+      multipart:
+        max-file-size: "\${MULTIPART_MAX_FILE_SIZE:50MB}"
+        max-request-size: "\${MULTIPART_MAX_REQUEST_SIZE:50MB}"
 
 management:
     endpoint:
@@ -35,3 +39,7 @@ rest:
     base-url: "\${AUTH_SERVER_BASE_URL:}"
   organization:
     base-url: "\${ORGANIZATION_BASE_URL:}"
+
+file:
+  ingestion-flow-file:
+    valid-extension: "\${INGESTION_FLOW_FILE_VALID_EXTENSION:.zip}"
