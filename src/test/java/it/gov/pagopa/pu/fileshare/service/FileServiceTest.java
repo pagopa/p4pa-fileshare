@@ -57,6 +57,23 @@ class FileServiceTest {
   }
 
   @Test
+  void givenInvalidFilenameWhenValidateFileThenInvalidFileException(){
+    MockMultipartFile file = new MockMultipartFile(
+      "ingestionFlowFile",
+      "../test.zip",
+      MediaType.TEXT_PLAIN_VALUE,
+      "this is a test file".getBytes()
+    );
+
+    try{
+      fileService.validateFile(file, VALID_FILE_EXTENSION);
+      Assertions.fail("Expected InvalidFileException");
+    }catch(InvalidFileException e){
+      //do nothing
+    }
+  }
+
+  @Test
   void givenInvalidFileWhenSaveToSharedFolderThenIllegalStateException() {
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
       AESUtils.class);

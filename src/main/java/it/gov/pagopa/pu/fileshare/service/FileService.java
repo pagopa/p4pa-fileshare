@@ -9,6 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.stream.Stream;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -28,9 +29,18 @@ public class FileService {
   }
 
   public void validateFile(MultipartFile ingestionFlowFile, String validFileExt) {
-    if( ingestionFlowFile == null || !StringUtils.defaultString(ingestionFlowFile.getOriginalFilename()).endsWith(validFileExt)){
+    if( ingestionFlowFile == null){
+      log.debug("Invalid ingestion flow file");
+      throw new InvalidFileException("Invalid file");
+    }
+    String filename = StringUtils.defaultString(ingestionFlowFile.getOriginalFilename());
+    if(!filename.endsWith(validFileExt)){
       log.debug("Invalid ingestion flow file extension");
       throw new InvalidFileException("Invalid file extension");
+    }
+    if(Stream.of("..", "\\", "/").anyMatch(filename::contains)){
+      log.debug("Invalid ingestion flow filename");
+      throw new InvalidFileException("Invalid filename");
     }
   }
 
