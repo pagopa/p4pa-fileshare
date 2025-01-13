@@ -70,5 +70,6 @@ components:
           type: string
           enum:
             - INVALID_FILE
+            - FILE_UPLOAD_ERROR
         message:
           type: string

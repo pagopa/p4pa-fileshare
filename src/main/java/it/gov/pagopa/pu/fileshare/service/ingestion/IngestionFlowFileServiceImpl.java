@@ -15,18 +15,23 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
   private final UserAuthorizationService userAuthorizationService;
   private final FileService fileService;
   private final String validIngestionFlowFileExt;
+  private final String ingestionFlowFilePath;
 
   public IngestionFlowFileServiceImpl(
     UserAuthorizationService userAuthorizationService, FileService fileService,
-    @Value("${uploads.ingestion-flow-file.valid-extension}") String validIngestionFlowFileExt) {
+    @Value("${uploads.ingestion-flow-file.valid-extension}") String validIngestionFlowFileExt,
+    @Value("${folders.ingestion-flow-file.path}") String ingestionFlowFilePath
+    ) {
     this.userAuthorizationService = userAuthorizationService;
     this.fileService = fileService;
     this.validIngestionFlowFileExt = validIngestionFlowFileExt;
+    this.ingestionFlowFilePath = ingestionFlowFilePath;
   }
 
   @Override
   public void uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, MultipartFile ingestionFlowFile, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(ingestionFlowFile, validIngestionFlowFileExt);
+    fileService.saveToSharedFolder(ingestionFlowFile,ingestionFlowFilePath);
   }
 }

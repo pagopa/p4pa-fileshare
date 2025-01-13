@@ -51,6 +51,8 @@ folders:
   process-target-sub-folders:
     archive: "\${PROCESS_TARGET_SUB_FOLDER_ARCHIVE:archive}"
     errors: "\${PROCESS_TARGET_SUB_FOLDER_ERRORS:errors}"
+  ingestion-flow-file:
+    path: "\${INGESTION_FLOW_FILE_PATH:/ingestion_flow_file}"
 
 rest:
   default-timeout:
@@ -64,3 +66,6 @@ rest:
 uploads:
   ingestion-flow-file:
     valid-extension: "\${INGESTION_FLOW_FILE_VALID_EXTENSION:.zip}"
+
+app:
+  fileEncryptPassword: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"

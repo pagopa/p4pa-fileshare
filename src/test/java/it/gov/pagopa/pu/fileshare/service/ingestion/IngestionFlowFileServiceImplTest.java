@@ -24,10 +24,11 @@ class IngestionFlowFileServiceImplTest {
   private final String accessToken = "TOKEN";
   private final long organizationId = 1L;
   private static final String VALID_FILE_EXTENSION = ".zip";
+  private static final String INGESTION_FLOW_FILE_PATH = "/test";
 
   @BeforeEach
   void setUp() {
-    ingestionFlowFileService = new IngestionFlowFileServiceImpl(userAuthorizationServiceMock, fileServiceMock,VALID_FILE_EXTENSION);
+    ingestionFlowFileService = new IngestionFlowFileServiceImpl(userAuthorizationServiceMock, fileServiceMock,VALID_FILE_EXTENSION,INGESTION_FLOW_FILE_PATH);
   }
 
   @Test
@@ -44,6 +45,7 @@ class IngestionFlowFileServiceImplTest {
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId,TestUtils.getSampleUser(),accessToken);
     Mockito.verify(fileServiceMock).validateFile(file,VALID_FILE_EXTENSION);
+    Mockito.verify(fileServiceMock).saveToSharedFolder(file,INGESTION_FLOW_FILE_PATH);
   }
 
 }
