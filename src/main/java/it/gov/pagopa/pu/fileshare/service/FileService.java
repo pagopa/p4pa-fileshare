@@ -34,13 +34,21 @@ public class FileService {
       throw new InvalidFileException("Invalid file");
     }
     String filename = StringUtils.defaultString(ingestionFlowFile.getOriginalFilename());
-    if(!filename.endsWith(validFileExt)){
-      log.debug("Invalid ingestion flow file extension");
-      throw new InvalidFileException("Invalid file extension");
-    }
+    validateFileExtension(validFileExt, filename);
+    validateFilename(filename);
+  }
+
+  private static void validateFilename(String filename) {
     if(Stream.of("..", "\\", "/").anyMatch(filename::contains)){
       log.debug("Invalid ingestion flow filename");
       throw new InvalidFileException("Invalid filename");
+    }
+  }
+
+  private static void validateFileExtension(String validFileExt, String filename) {
+    if(!filename.endsWith(validFileExt)){
+      log.debug("Invalid ingestion flow file extension");
+      throw new InvalidFileException("Invalid file extension");
     }
   }
 
@@ -51,6 +59,7 @@ public class FileService {
     }
 
     String filename = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(file.getOriginalFilename()));
+    validateFilename(filename);
     Path fileLocation = Paths.get(sharedFolderRootPath, relativePath, filename);
     //create missing parent folder, if any
     try {

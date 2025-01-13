@@ -74,7 +74,7 @@ class FileServiceTest {
   }
 
   @Test
-  void givenInvalidFileWhenSaveToSharedFolderThenIllegalStateException() {
+  void givenInvalidFileWhenSaveToSharedFolderThenFileUploadException() {
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
       AESUtils.class);
       MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
@@ -90,7 +90,30 @@ class FileServiceTest {
   }
 
   @Test
-  void givenErrorWhenSaveToSharedFolderThenIllegalStateException() {
+  void givenInvalidFilenameWhenSaveToSharedFolderThenInvalidFileException() {
+    MockMultipartFile file = new MockMultipartFile(
+      "ingestionFlowFile",
+      "../test.txt",
+      MediaType.TEXT_PLAIN_VALUE,
+      "this is a test file".getBytes()
+    );
+
+    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
+      AESUtils.class);
+      MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
+        Files.class)) {
+      try {
+        fileService.saveToSharedFolder(file, "");
+        Assertions.fail("Expected InvalidFileException");
+      } catch (InvalidFileException e) {
+        aesUtilsMockedStatic.verifyNoInteractions();
+        filesMockedStatic.verifyNoInteractions();
+      }
+    }
+  }
+
+  @Test
+  void givenErrorWhenSaveToSharedFolderThenFileUploadException() {
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test.txt",
