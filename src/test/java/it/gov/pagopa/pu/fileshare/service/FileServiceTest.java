@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.util.AESUtils;
 import java.io.InputStream;
 import java.nio.file.Files;
+import java.nio.file.Paths;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,7 +20,7 @@ import org.springframework.mock.web.MockMultipartFile;
 class FileServiceTest {
   private FileService fileService;
   private static final String VALID_FILE_EXTENSION = ".zip";
-  private static final String SHARED_FOLDER_ROOT_PATH = "testPath";
+  private static final String SHARED_FOLDER_ROOT_PATH = "/shared";
   private static final String FILE_ENCRYPT_PASSWORD = "testPassword";
 
   @BeforeEach
@@ -37,6 +38,16 @@ class FileServiceTest {
     );
 
     fileService.validateFile(file, VALID_FILE_EXTENSION);
+  }
+
+  @Test
+  void givenNoFileWhenValidateFileThenInvalidFileException(){
+    try{
+      fileService.validateFile(null, VALID_FILE_EXTENSION);
+      Assertions.fail("Expected InvalidFileException");
+    }catch(InvalidFileException e){
+      //do nothing
+    }
   }
 
   @Test
@@ -141,7 +152,7 @@ class FileServiceTest {
   }
 
   @Test
-  void givenValidFileWhenSaveToSharedFolderThenOK() {
+  void givenInvalidPathWhenSaveToSharedFolderThenInvalidFileException() {
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test.txt",
@@ -152,14 +163,41 @@ class FileServiceTest {
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
       AESUtils.class);
       MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
+        Files.class)) {
+
+      try {
+        fileService.saveToSharedFolder(file, "/../relative");
+        Assertions.fail("Expected InvalidFileException");
+      } catch (InvalidFileException e) {
+        aesUtilsMockedStatic.verifyNoInteractions();
+        filesMockedStatic.verifyNoInteractions();
+      }
+    }
+  }
+
+  @Test
+  void givenValidFileWhenSaveToSharedFolderThenOK() {
+    String filename = "test.txt";
+    MockMultipartFile file = new MockMultipartFile(
+      "ingestionFlowFile",
+      filename,
+      MediaType.TEXT_PLAIN_VALUE,
+      "this is a test file".getBytes()
+    );
+
+    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
+      AESUtils.class);
+      MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
         Files.class)
       ) {
-      fileService.saveToSharedFolder(file, "/test");
+      String relativePath = "/relative";
+      fileService.saveToSharedFolder(file, relativePath);
 
       aesUtilsMockedStatic.verify(() -> AESUtils.encrypt(Mockito.anyString(),(InputStream) Mockito.any()));
       aesUtilsMockedStatic.verifyNoMoreInteractions();
-      filesMockedStatic.verify(() -> Files.createDirectories(Mockito.any()));
-      filesMockedStatic.verify(() -> Files.copy((InputStream) Mockito.any(),Mockito.any(), Mockito.any()));
+      filesMockedStatic.verify(() -> Files.createDirectories(Mockito.eq(
+        Paths.get(SHARED_FOLDER_ROOT_PATH,relativePath))));
+      filesMockedStatic.verify(() -> Files.copy((InputStream) Mockito.any(),Mockito.eq(Paths.get(SHARED_FOLDER_ROOT_PATH,relativePath,filename)), Mockito.any()));
       filesMockedStatic.verifyNoMoreInteractions();
     }
   }

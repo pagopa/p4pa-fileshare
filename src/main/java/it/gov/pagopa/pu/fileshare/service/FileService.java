@@ -52,6 +52,16 @@ public class FileService {
     }
   }
 
+  private Path getFilePath(String relativePath, String filename) {
+    String basePath = sharedFolderRootPath+relativePath;
+    Path fileLocation = Paths.get(basePath,filename).normalize();
+    if(!fileLocation.startsWith(basePath)){
+      log.debug("Invalid file path");
+      throw new InvalidFileException("Invalid file path");
+    }
+    return fileLocation;
+  }
+
   public void saveToSharedFolder(MultipartFile file, String relativePath){
     if(file==null){
       log.debug("File is mandatory");
@@ -60,7 +70,7 @@ public class FileService {
 
     String filename = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(file.getOriginalFilename()));
     validateFilename(filename);
-    Path fileLocation = Paths.get(sharedFolderRootPath, relativePath, filename);
+    Path fileLocation = getFilePath(relativePath, filename);
     //create missing parent folder, if any
     try {
       if (!fileLocation.toAbsolutePath().getParent().toFile().exists())
