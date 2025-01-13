@@ -40,6 +40,6 @@ rest:
   organization:
     base-url: "\${ORGANIZATION_BASE_URL:}"
 
-file:
+uploads:
   ingestion-flow-file:
     valid-extension: "\${INGESTION_FLOW_FILE_VALID_EXTENSION:.zip}"

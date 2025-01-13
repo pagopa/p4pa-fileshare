@@ -18,7 +18,7 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
 
   public IngestionFlowFileServiceImpl(
     UserAuthorizationService userAuthorizationService, FileService fileService,
-    @Value("${file.ingestion-flow-file.valid-extension}") String validIngestionFlowFileExt) {
+    @Value("${uploads.ingestion-flow-file.valid-extension}") String validIngestionFlowFileExt) {
     this.userAuthorizationService = userAuthorizationService;
     this.fileService = fileService;
     this.validIngestionFlowFileExt = validIngestionFlowFileExt;

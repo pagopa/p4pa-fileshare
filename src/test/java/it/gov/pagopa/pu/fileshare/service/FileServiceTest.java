@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.fileshare.service;
 
-import it.gov.pagopa.pu.fileshare.exception.InvalidFileException;
+import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
