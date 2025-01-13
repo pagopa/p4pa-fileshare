@@ -54,7 +54,7 @@ class FileshareExceptionHandlerTest {
                         .param(DATA, DATA)
                         .contentType(MediaType.APPLICATION_JSON)
                         .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+                .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.INVALID_FILE.toString()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
     }

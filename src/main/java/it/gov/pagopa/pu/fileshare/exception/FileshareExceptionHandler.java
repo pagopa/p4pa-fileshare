@@ -23,7 +23,7 @@ public class FileshareExceptionHandler {
 
   @ExceptionHandler({InvalidFileException.class})
   public ResponseEntity<FileshareErrorDTO> handleInvalidFileError(RuntimeException ex, HttpServletRequest request){
-    return handleFileshareErrorException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.INVALID_FILE);
+    return handleFileshareErrorException(ex, request, HttpStatus.BAD_REQUEST, CodeEnum.INVALID_FILE);
   }
 
   static ResponseEntity<FileshareErrorDTO> handleFileshareErrorException(RuntimeException ex, HttpServletRequest request, HttpStatus httpStatus, FileshareErrorDTO.CodeEnum errorEnum) {
