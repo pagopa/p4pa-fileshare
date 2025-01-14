@@ -138,4 +138,28 @@ class FileStorerServiceTest {
       filesMockedStatic.verifyNoMoreInteractions();
     }
   }
+
+  @Test
+  void givenInvalidPathWhenSaveToSharedFolderThenInvalidFileException() {
+    MockMultipartFile file = new MockMultipartFile(
+      "ingestionFlowFile",
+      "test.txt",
+      MediaType.TEXT_PLAIN_VALUE,
+      "this is a test file".getBytes()
+    );
+
+    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
+      AESUtils.class);
+      MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
+        Files.class)) {
+      try {
+        fileStorerService.saveToSharedFolder(file, "/relative/../../test");
+        Assertions.fail("Expected InvalidFileException");
+      } catch (InvalidFileException e) {
+        Mockito.verifyNoInteractions(foldersPathsConfig);
+        aesUtilsMockedStatic.verifyNoInteractions();
+        filesMockedStatic.verifyNoInteractions();
+      }
+    }
+  }
 }
