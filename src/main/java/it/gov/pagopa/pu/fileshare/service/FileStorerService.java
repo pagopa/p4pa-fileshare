@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.fileshare.service;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
+import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.util.AESUtils;
 import java.io.IOException;
 import java.io.InputStream;
@@ -36,8 +37,8 @@ public class FileStorerService {
     String filename = org.springframework.util.StringUtils.cleanPath(
       StringUtils.defaultString(file.getOriginalFilename()));
     FileService.validateFilename(filename);
-    Path fileLocation = Paths.get(relativePath,filename).normalize();
-    Path absolutePath = getAbsolutePath(foldersPathsConfig.getShared(), fileLocation.toString());
+    Path fileLocation = concatenatePaths(relativePath,filename);
+    Path absolutePath = concatenatePaths(foldersPathsConfig.getShared(), fileLocation.toString());
     //create missing parent folder, if any
     try {
       if (!Files.exists(absolutePath.getParent())){
@@ -56,8 +57,13 @@ public class FileStorerService {
     return fileLocation.toString();
   }
 
-  private Path getAbsolutePath(String sharedFolder, String fileLocation) {
-    return Paths.get(sharedFolder,fileLocation).normalize();
+  private Path concatenatePaths(String firstPath, String secondPath) {
+    Path concatenatedPath = Paths.get(firstPath, secondPath).normalize();
+    if(!concatenatedPath.startsWith(firstPath)){
+      log.debug("Invalid file path");
+      throw new InvalidFileException("Invalid file path");
+    }
+    return concatenatedPath;
   }
 
   private void encryptAndSaveFile(MultipartFile file, Path fileLocation)

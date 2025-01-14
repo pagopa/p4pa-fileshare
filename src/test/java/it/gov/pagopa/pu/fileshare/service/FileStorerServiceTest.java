@@ -90,7 +90,7 @@ class FileStorerServiceTest {
         .thenThrow(new RuntimeException());
 
       try {
-        fileStorerService.saveToSharedFolder(file, "");
+        fileStorerService.saveToSharedFolder(file, "/relative");
         Assertions.fail("Expected FileUploadException");
       } catch (FileUploadException e) {
         Mockito.verify(foldersPathsConfig).getShared();
