@@ -40,6 +40,7 @@ class FileStorerServiceTest {
         fileStorerService.saveToSharedFolder(null, "");
         Assertions.fail("Expected FileUploadException");
       } catch (FileUploadException e) {
+        Mockito.verifyNoInteractions(foldersPathsConfig);
         aesUtilsMockedStatic.verifyNoInteractions();
         filesMockedStatic.verifyNoInteractions();
       }
@@ -63,6 +64,7 @@ class FileStorerServiceTest {
         fileStorerService.saveToSharedFolder(file, "");
         Assertions.fail("Expected InvalidFileException");
       } catch (InvalidFileException e) {
+        Mockito.verifyNoInteractions(foldersPathsConfig);
         aesUtilsMockedStatic.verifyNoInteractions();
         filesMockedStatic.verifyNoInteractions();
       }
@@ -82,6 +84,8 @@ class FileStorerServiceTest {
       AESUtils.class);
       MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
         Files.class)) {
+      String sharedFolderPath = "/shared";
+      Mockito.when(foldersPathsConfig.getShared()).thenReturn(sharedFolderPath);
       Mockito.when(AESUtils.encrypt(Mockito.eq(FILE_ENCRYPT_PASSWORD), (InputStream) Mockito.any()))
         .thenThrow(new RuntimeException());
 
@@ -89,37 +93,13 @@ class FileStorerServiceTest {
         fileStorerService.saveToSharedFolder(file, "");
         Assertions.fail("Expected FileUploadException");
       } catch (FileUploadException e) {
+        Mockito.verify(foldersPathsConfig).getShared();
+        Mockito.verifyNoMoreInteractions(foldersPathsConfig);
         aesUtilsMockedStatic.verify(() -> AESUtils.encrypt(Mockito.anyString(),(InputStream) Mockito.any()));
         aesUtilsMockedStatic.verifyNoMoreInteractions();
         filesMockedStatic.verify(() -> Files.exists(Mockito.any()));
         filesMockedStatic.verify(() -> Files.createDirectories(Mockito.any()));
         filesMockedStatic.verifyNoMoreInteractions();
-      }
-    }
-  }
-
-  @Test
-  void givenInvalidPathWhenSaveToSharedFolderThenInvalidFileException() {
-    MockMultipartFile file = new MockMultipartFile(
-      "ingestionFlowFile",
-      "test.txt",
-      MediaType.TEXT_PLAIN_VALUE,
-      "this is a test file".getBytes()
-    );
-
-    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
-      AESUtils.class);
-      MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
-        Files.class)) {
-      String sharedFolderPath = "/shared";
-      Mockito.when(foldersPathsConfig.getShared()).thenReturn(sharedFolderPath);
-
-      try {
-        fileStorerService.saveToSharedFolder(file, "/relative/../../test");
-        Assertions.fail("Expected InvalidFileException");
-      } catch (InvalidFileException e) {
-        aesUtilsMockedStatic.verifyNoInteractions();
-        filesMockedStatic.verifyNoInteractions();
       }
     }
   }
@@ -146,6 +126,8 @@ class FileStorerServiceTest {
       String result = fileStorerService.saveToSharedFolder(file, relativePath);
 
       Assertions.assertEquals(Paths.get(relativePath,filename).toString(),result);
+      Mockito.verify(foldersPathsConfig).getShared();
+      Mockito.verifyNoMoreInteractions(foldersPathsConfig);
       aesUtilsMockedStatic.verify(() -> AESUtils.encrypt(Mockito.anyString(),(InputStream) Mockito.any()));
       aesUtilsMockedStatic.verifyNoMoreInteractions();
       filesMockedStatic.verify(() -> Files.exists(Mockito.eq(

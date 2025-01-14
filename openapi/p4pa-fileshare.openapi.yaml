@@ -56,7 +56,7 @@ components:
       enum:
         - RECEIPT
         - PAYMENTS_REPORTING
-        - OPI
+        - TREASURY_OPI
         - TREASURY_CSV
         - TREASURY_XLS
         - TREASURY_POSTE
