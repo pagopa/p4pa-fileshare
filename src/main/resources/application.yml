@@ -51,8 +51,13 @@ folders:
   process-target-sub-folders:
     archive: "\${PROCESS_TARGET_SUB_FOLDER_ARCHIVE:archive}"
     errors: "\${PROCESS_TARGET_SUB_FOLDER_ERRORS:errors}"
-  ingestion-flow-file:
-    path: "\${INGESTION_FLOW_FILE_PATH:/ingestion_flow_file}"
+  ingestion-flow-file-type-paths:
+    RECEIPT: "\${INGESTION_FLOW_FILE_RECEIPT_PATH:/receipt}"
+    PAYMENTS_REPORTING: "\${INGESTION_FLOW_FILE_PAYMENTS_REPORTING_PATH:/payments_reporting}"
+    OPI: "\${INGESTION_FLOW_FILE_OPI_PATH:/opi}"
+    TREASURY_CSV: "\${INGESTION_FLOW_FILE_TREASURY_CSV_PATH:/treasury_csv}"
+    TREASURY_XLS: "\${INGESTION_FLOW_FILE_TREASURY_XLS_PATH:/treasury_xls}"
+    TREASURY_POSTE: "\${INGESTION_FLOW_FILE_TREASURY_POSTE_PATH:/treasury_poste}"
 
 rest:
   default-timeout:

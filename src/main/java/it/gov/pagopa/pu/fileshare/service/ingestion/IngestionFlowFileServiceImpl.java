@@ -1,7 +1,9 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
+import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.service.FileService;
+import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import lombok.extern.slf4j.Slf4j;
@@ -14,24 +16,28 @@ import org.springframework.web.multipart.MultipartFile;
 public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
   private final UserAuthorizationService userAuthorizationService;
   private final FileService fileService;
+  private final FileStorerService fileStorerService;
+  private final FoldersPathsConfig foldersPathsConfig;
   private final String validIngestionFlowFileExt;
-  private final String ingestionFlowFilePath;
 
   public IngestionFlowFileServiceImpl(
     UserAuthorizationService userAuthorizationService, FileService fileService,
-    @Value("${uploads.ingestion-flow-file.valid-extension}") String validIngestionFlowFileExt,
-    @Value("${folders.ingestion-flow-file.path}") String ingestionFlowFilePath
+    FileStorerService fileStorerService,
+    FoldersPathsConfig foldersPathsConfig,
+    @Value("${uploads.ingestion-flow-file.valid-extension}") String validIngestionFlowFileExt
     ) {
     this.userAuthorizationService = userAuthorizationService;
     this.fileService = fileService;
+    this.fileStorerService = fileStorerService;
+    this.foldersPathsConfig = foldersPathsConfig;
     this.validIngestionFlowFileExt = validIngestionFlowFileExt;
-    this.ingestionFlowFilePath = ingestionFlowFilePath;
   }
 
   @Override
   public void uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, MultipartFile ingestionFlowFile, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(ingestionFlowFile, validIngestionFlowFileExt);
-    fileService.saveToSharedFolder(ingestionFlowFile,ingestionFlowFilePath);
+    String savedFilePath = fileStorerService.saveToSharedFolder(ingestionFlowFile,
+      foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType));
   }
 }
