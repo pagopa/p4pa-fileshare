@@ -52,12 +52,12 @@ folders:
     archive: "\${PROCESS_TARGET_SUB_FOLDER_ARCHIVE:archive}"
     errors: "\${PROCESS_TARGET_SUB_FOLDER_ERRORS:errors}"
   ingestion-flow-file-type-paths:
-    RECEIPT: "data/receipt}"
-    PAYMENTS_REPORTING: "data/payments_reporting}"
-    TREASURY_OPI: "data/treasury/opi}"
-    TREASURY_CSV: "data/treasury/csv}"
-    TREASURY_XLS: "data/treasury/xls}"
-    TREASURY_POSTE: "data/treasury/poste}"
+    RECEIPT: "data/receipt"
+    PAYMENTS_REPORTING: "data/payments_reporting"
+    TREASURY_OPI: "data/treasury/opi"
+    TREASURY_CSV: "data/treasury/csv"
+    TREASURY_XLS: "data/treasury/xls"
+    TREASURY_POSTE: "data/treasury/poste"
 
 rest:
   default-timeout:
