@@ -35,8 +35,8 @@ public class FileStorerService {
 
     String filename = org.springframework.util.StringUtils.cleanPath(
       StringUtils.defaultString(file.getOriginalFilename()));
-    Path fileLocation = Paths.get(relativePath,filename).normalize();
     FileService.validateFilename(filename);
+    Path fileLocation = Paths.get(relativePath,filename).normalize();
     Path absolutePath = getAbsolutePath(foldersPathsConfig.getShared(), fileLocation.toString());
     //create missing parent folder, if any
     try {
