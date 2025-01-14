@@ -37,8 +37,8 @@ public class FileStorerService {
     String filename = org.springframework.util.StringUtils.cleanPath(
       StringUtils.defaultString(file.getOriginalFilename()));
     FileService.validateFilename(filename);
-    Path fileLocation = concatenatePaths(relativePath,filename);
-    Path absolutePath = concatenatePaths(foldersPathsConfig.getShared(), fileLocation.toString());
+    Path relativeFileLocation = concatenatePaths(relativePath,filename);
+    Path absolutePath = concatenatePaths(foldersPathsConfig.getShared(), relativeFileLocation.toString());
     //create missing parent folder, if any
     try {
       if (!Files.exists(absolutePath.getParent())){
@@ -46,17 +46,18 @@ public class FileStorerService {
       }
       encryptAndSaveFile(file, absolutePath);
     }catch (Exception e) {
-      String errorMessage = "Error uploading file to shared folder %s".formatted(
-        relativePath);
-      log.debug(
-        errorMessage, e);
       throw new FileUploadException(
-        errorMessage);
+        "Error uploading file to shared folder %s".formatted(relativePath)
+        ,e);
     }
     log.debug("File upload to shared folder {} completed",relativePath);
-    return fileLocation.toString();
+    return relativeFileLocation.toString();
   }
 
+  /**
+   * This method expects two paths whose concatenation does not resolve into an outer folder.
+   * The normalized path still starts with the first path.
+   * */
   private Path concatenatePaths(String firstPath, String secondPath) {
     Path concatenatedPath = Paths.get(firstPath, secondPath).normalize();
     if(!concatenatedPath.startsWith(firstPath)){
