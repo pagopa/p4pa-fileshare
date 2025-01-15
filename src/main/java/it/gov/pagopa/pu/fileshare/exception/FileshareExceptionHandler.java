@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.fileshare.exception;
 
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -24,6 +25,11 @@ public class FileshareExceptionHandler {
   @ExceptionHandler({InvalidFileException.class})
   public ResponseEntity<FileshareErrorDTO> handleInvalidFileError(RuntimeException ex, HttpServletRequest request){
     return handleFileshareErrorException(ex, request, HttpStatus.BAD_REQUEST, CodeEnum.INVALID_FILE);
+  }
+
+  @ExceptionHandler({FileUploadException.class})
+  public ResponseEntity<FileshareErrorDTO> handleFileStorageError(RuntimeException ex, HttpServletRequest request){
+    return handleFileshareErrorException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.FILE_UPLOAD_ERROR);
   }
 
   static ResponseEntity<FileshareErrorDTO> handleFileshareErrorException(RuntimeException ex, HttpServletRequest request, HttpStatus httpStatus, FileshareErrorDTO.CodeEnum errorEnum) {

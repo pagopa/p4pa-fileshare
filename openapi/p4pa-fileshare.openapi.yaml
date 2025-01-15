@@ -56,7 +56,7 @@ components:
       enum:
         - RECEIPT
         - PAYMENTS_REPORTING
-        - OPI
+        - TREASURY_OPI
         - TREASURY_CSV
         - TREASURY_XLS
         - TREASURY_POSTE
@@ -70,5 +70,6 @@ components:
           type: string
           enum:
             - INVALID_FILE
+            - FILE_UPLOAD_ERROR
         message:
           type: string

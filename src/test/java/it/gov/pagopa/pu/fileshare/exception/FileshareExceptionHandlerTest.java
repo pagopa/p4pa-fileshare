@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.fileshare.exception;
 import static org.mockito.Mockito.doThrow;
 
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,19 @@ class FileshareExceptionHandlerTest {
                         .accept(MediaType.APPLICATION_JSON))
                 .andExpect(MockMvcResultMatchers.status().isBadRequest())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.INVALID_FILE.toString()))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+    }
+
+    @Test
+    void handleFileUploadException() throws Exception {
+        doThrow(new FileUploadException("Error")).when(testControllerSpy).testEndpoint(DATA);
+
+        mockMvc.perform(MockMvcRequestBuilders.get("/test")
+                        .param(DATA, DATA)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .accept(MediaType.APPLICATION_JSON))
+                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.FILE_UPLOAD_ERROR.toString()))
                 .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
     }
 }
