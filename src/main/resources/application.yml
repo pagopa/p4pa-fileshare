@@ -67,6 +67,8 @@ rest:
     base-url: "\${AUTH_SERVER_BASE_URL:}"
   organization:
     base-url: "\${ORGANIZATION_BASE_URL:}"
+  process-executions:
+    base-url: "\${PROCESS_EXECUTIONS_BASE_URL:}"
 
 uploads:
   ingestion-flow-file:

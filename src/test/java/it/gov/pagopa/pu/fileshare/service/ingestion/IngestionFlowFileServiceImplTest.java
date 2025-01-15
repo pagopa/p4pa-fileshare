@@ -1,11 +1,14 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileClient;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
+import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileDTO;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,36 +29,47 @@ class IngestionFlowFileServiceImplTest {
   private FileStorerService fileStorerServiceMock;
   @Mock
   private FoldersPathsConfig foldersPathsConfigMock;
+  @Mock
+  private IngestionFlowFileClient ingestionFlowFileClientMock;
+  @Mock
+  private IngestionFlowFileDTOMapper ingestionFlowFileDTOMapperMock;
   private IngestionFlowFileServiceImpl ingestionFlowFileService;
-  private final String accessToken = "TOKEN";
-  private final long organizationId = 1L;
   private static final String VALID_FILE_EXTENSION = ".zip";
-  private static final String INGESTION_FLOW_FILE_PATH = "/test";
 
   @BeforeEach
   void setUp() {
     ingestionFlowFileService = new IngestionFlowFileServiceImpl(userAuthorizationServiceMock,fileServiceMock,fileStorerServiceMock,
-      foldersPathsConfigMock,VALID_FILE_EXTENSION);
+      foldersPathsConfigMock,ingestionFlowFileClientMock,ingestionFlowFileDTOMapperMock,VALID_FILE_EXTENSION);
   }
 
   @Test
   void givenAuthorizedUserWhenUploadIngestionFlowFileThenOk(){
+    String accessToken = "TOKEN";
+    long organizationId = 1L;
+    String receiptFilePath = "/receipt";
+    String filePath = "/filepath";
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test"+VALID_FILE_EXTENSION,
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
+    IngestionFlowFileDTO ingestionFlowFileDTO = new IngestionFlowFileDTO();
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
-      .thenReturn(INGESTION_FLOW_FILE_PATH);
+      .thenReturn(receiptFilePath);
+    Mockito.when(fileStorerServiceMock.saveToSharedFolder(file,receiptFilePath))
+      .thenReturn(filePath);
+    Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,organizationId,filePath))
+        .thenReturn(ingestionFlowFileDTO);
 
     ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT,
       file, TestUtils.getSampleUser(),accessToken);
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId,TestUtils.getSampleUser(),accessToken);
     Mockito.verify(fileServiceMock).validateFile(file,VALID_FILE_EXTENSION);
-    Mockito.verify(foldersPathsConfigMock).getIngestionFlowFilePath(Mockito.any());
-    Mockito.verify(fileStorerServiceMock).saveToSharedFolder(file,INGESTION_FLOW_FILE_PATH);
+    Mockito.verify(ingestionFlowFileClientMock).createIngestionFlowFile(ingestionFlowFileDTO,accessToken);
+    Mockito.verifyNoMoreInteractions(userAuthorizationServiceMock,fileServiceMock,
+      foldersPathsConfigMock,fileStorerServiceMock,ingestionFlowFileDTOMapperMock,ingestionFlowFileClientMock);
   }
 
 }
