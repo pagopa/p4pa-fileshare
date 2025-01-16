@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.fileshare.service.ingestion;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileClient;
+import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
@@ -42,14 +43,15 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
   }
 
   @Override
-  public void uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, MultipartFile ingestionFlowFile, UserInfo user, String accessToken) {
+  public void uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
+    FileOrigin fileOrigin, MultipartFile ingestionFlowFile, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(ingestionFlowFile, validIngestionFlowFileExt);
     String filePath = fileStorerService.saveToSharedFolder(ingestionFlowFile,
       foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType));
     ingestionFlowFileClient.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFile,
-        ingestionFlowFileType, organizationId, filePath)
+        ingestionFlowFileType, fileOrigin, organizationId, filePath)
       , accessToken);
   }
 }

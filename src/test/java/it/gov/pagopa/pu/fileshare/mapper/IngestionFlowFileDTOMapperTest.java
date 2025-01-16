@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.fileshare.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.junit.jupiter.api.Assertions;
@@ -27,7 +28,7 @@ class IngestionFlowFileDTOMapperTest {
     );
 
     IngestionFlowFileRequestDTO result = mapper.mapToIngestionFlowFileDTO(file,
-      IngestionFlowFileType.RECEIPT,organizationId,filePath);
+      IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId,filePath);
 
     Assertions.assertNotNull(result);
     assertEquals(organizationId, result.getOrganizationId());
@@ -35,5 +36,6 @@ class IngestionFlowFileDTOMapperTest {
     assertEquals(file.getOriginalFilename(), result.getFileName());
     assertEquals(file.getSize(), result.getFileSize());
     assertEquals(IngestionFlowFileRequestDTO.FlowFileTypeEnum.RECEIPT, result.getFlowFileType());
+    assertEquals(FileOrigin.PAGOPA.toString(), result.getFileOrigin());
   }
 }

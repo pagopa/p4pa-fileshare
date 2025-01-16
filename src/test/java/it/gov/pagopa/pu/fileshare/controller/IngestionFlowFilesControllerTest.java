@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
+import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileService;
@@ -47,12 +48,14 @@ class IngestionFlowFilesControllerTest {
 
     mockMvc.perform(multipart("/ingestionflowfiles/"+organizationId)
         .file(file)
-        .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString()).content("body")
+        .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
+        .param("fileOrigin", FileOrigin.PAGOPA.toString())
+        .content("body")
         .contentType(MediaType.MULTIPART_FORM_DATA)
       ).andExpect(status().isOk());
 
     Mockito.verify(serviceMock).uploadIngestionFlowFile(Mockito.eq(organizationId),
-      Mockito.eq(IngestionFlowFileType.RECEIPT),Mockito.eq(file),
+      Mockito.eq(IngestionFlowFileType.RECEIPT),Mockito.eq(FileOrigin.PAGOPA),Mockito.eq(file),
       Mockito.any(), Mockito.anyString());
   }
 
@@ -74,7 +77,7 @@ class IngestionFlowFilesControllerTest {
     ).andExpect(status().is4xxClientError());
 
     Mockito.verify(serviceMock, Mockito.times(0)).uploadIngestionFlowFile(Mockito.any(),
-      Mockito.any(),Mockito.any(),Mockito.any(), Mockito.anyString());
+      Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any(), Mockito.anyString());
   }
 
   @Test
@@ -88,7 +91,7 @@ class IngestionFlowFilesControllerTest {
       ).andExpect(status().is4xxClientError());
 
     Mockito.verify(serviceMock, Mockito.times(0)).uploadIngestionFlowFile(Mockito.any(),
-      Mockito.any(),Mockito.any(),Mockito.any(), Mockito.anyString());
+      Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any(), Mockito.anyString());
   }
 
   @Test
@@ -108,6 +111,6 @@ class IngestionFlowFilesControllerTest {
     ).andExpect(status().is4xxClientError());
 
     Mockito.verify(serviceMock, Mockito.times(0)).uploadIngestionFlowFile(Mockito.any(),
-      Mockito.any(),Mockito.any(),Mockito.any(), Mockito.anyString());
+      Mockito.any(),Mockito.any(),Mockito.any(),Mockito.any(), Mockito.anyString());
   }
 }

@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.fileshare.service.ingestion;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileClient;
+import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
@@ -60,10 +61,10 @@ class IngestionFlowFileServiceImplTest {
     Mockito.when(fileStorerServiceMock.saveToSharedFolder(file,receiptFilePath))
       .thenReturn(filePath);
     Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
-        IngestionFlowFileType.RECEIPT,organizationId,filePath))
+        IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId,filePath))
         .thenReturn(ingestionFlowFileRequestDTO);
 
-    ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT,
+    ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
       file, TestUtils.getSampleUser(),accessToken);
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId,TestUtils.getSampleUser(),accessToken);
