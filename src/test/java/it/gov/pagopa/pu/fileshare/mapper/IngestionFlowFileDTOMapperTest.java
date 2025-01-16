@@ -2,8 +2,8 @@ package it.gov.pagopa.pu.fileshare.mapper;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileDTO;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileDTO.StatusEnum;
+import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -26,13 +26,14 @@ class IngestionFlowFileDTOMapperTest {
       "this is a test file".getBytes()
     );
 
-    IngestionFlowFileDTO result = mapper.mapToIngestionFlowFileDTO(file,organizationId,filePath);
+    IngestionFlowFileRequestDTO result = mapper.mapToIngestionFlowFileDTO(file,
+      IngestionFlowFileType.RECEIPT,organizationId,filePath);
 
     Assertions.assertNotNull(result);
     assertEquals(organizationId, result.getOrganizationId());
-    assertEquals(StatusEnum.UPLOADED, result.getStatus());
-    assertEquals(filePath, result.getFilePath());
+    assertEquals(filePath, result.getFilePathName());
     assertEquals(file.getOriginalFilename(), result.getFileName());
     assertEquals(file.getSize(), result.getFileSize());
+    assertEquals(IngestionFlowFileRequestDTO.FlowFileTypeEnum.RECEIPT, result.getFlowFileType());
   }
 }

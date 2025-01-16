@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions.config;
 
 import it.gov.pagopa.pu.fileshare.connector.BaseApiHolderTest;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.ApiClient;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileDTO;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -41,9 +41,12 @@ class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
   @Test
   void whenGetIngestionFlowFileControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
-        .createIngestionFlowFile(new IngestionFlowFileDTO()),
-      IngestionFlowFileDTO.class,
+      accessToken ->{
+        processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
+        .createIngestionFlowFile(new IngestionFlowFileRequestDTO());
+        return null;
+      },
+      String.class,
       processExecutionsApisHolder::unload);
   }
 }

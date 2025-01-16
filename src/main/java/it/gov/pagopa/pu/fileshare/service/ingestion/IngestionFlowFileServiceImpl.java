@@ -49,7 +49,7 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
       foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType));
     ingestionFlowFileClient.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFile,
-        organizationId, filePath)
+        ingestionFlowFileType, organizationId, filePath)
       , accessToken);
   }
 }

@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.config.ProcessExecutionsApisHolder;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileControllerApi;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileDTO;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -40,18 +40,15 @@ class IngestionFlowFileClientTest {
   void whenCreateIngestionFlowFileThenOK() {
     // Given
     String accessToken = "ACCESSTOKEN";
-    IngestionFlowFileDTO expectedResult = new IngestionFlowFileDTO();
+    IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
     Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
       .thenReturn(ingestionFlowFileControllerApiMock);
-    Mockito.when(ingestionFlowFileControllerApiMock.createIngestionFlowFile(expectedResult))
-      .thenReturn(expectedResult);
-
     // When
-    IngestionFlowFileDTO result = ingestionFlowFileClient.createIngestionFlowFile(expectedResult, accessToken);
+    ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken);
 
     // Then
-    Assertions.assertSame(expectedResult, result);
+    Mockito.verify(ingestionFlowFileControllerApiMock).createIngestionFlowFile(ingestionFlowFileRequestDTO);
   }
 
   @Test
@@ -59,15 +56,14 @@ class IngestionFlowFileClientTest {
     // Given
     String accessToken = "ACCESSTOKEN";
     HttpClientErrorException expectedException = new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-    IngestionFlowFileDTO ingestionFlowFileDTO = new IngestionFlowFileDTO();
+    IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
     Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
       .thenReturn(ingestionFlowFileControllerApiMock);
-    Mockito.when(ingestionFlowFileControllerApiMock.createIngestionFlowFile(ingestionFlowFileDTO))
-      .thenThrow(expectedException);
+    Mockito.doThrow(expectedException).when(ingestionFlowFileControllerApiMock).createIngestionFlowFile(ingestionFlowFileRequestDTO);
 
     // When
-    HttpClientErrorException result = Assertions.assertThrows(expectedException.getClass(), () -> ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileDTO, accessToken));
+    HttpClientErrorException result = Assertions.assertThrows(expectedException.getClass(), () -> ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken));
 
     // Then
     Assertions.assertSame(expectedException, result);
@@ -78,15 +74,14 @@ class IngestionFlowFileClientTest {
     // Given
     String accessToken = "ACCESSTOKEN";
     RuntimeException expectedException = new RuntimeException();
-    IngestionFlowFileDTO ingestionFlowFileDTO = new IngestionFlowFileDTO();
+    IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
     Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
       .thenReturn(ingestionFlowFileControllerApiMock);
-    Mockito.when(ingestionFlowFileControllerApiMock.createIngestionFlowFile(ingestionFlowFileDTO))
-      .thenThrow(expectedException);
+    Mockito.doThrow(expectedException).when(ingestionFlowFileControllerApiMock).createIngestionFlowFile(ingestionFlowFileRequestDTO);
 
     // When
-    RuntimeException result = Assertions.assertThrows(expectedException.getClass(), () -> ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileDTO, accessToken));
+    RuntimeException result = Assertions.assertThrows(expectedException.getClass(), () -> ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken));
 
     // Then
     Assertions.assertSame(expectedException, result);
