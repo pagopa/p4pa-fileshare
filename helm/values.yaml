@@ -78,6 +78,7 @@ microservice-chart:
 
     ORGANIZATION_BASE_URL: "http://p4pa-organization-microservice-chart:8080"
     AUTH_SERVER_BASE_URL: "http://p4pa-auth-microservice-chart:8080/payhub"
+    PROCESS_EXECUTIONS_BASE_URL: "http://p4pa-process-executions-microservice-chart:8080"
 
   envSecret:
     APPLICATIONINSIGHTS_CONNECTION_STRING: appinsights-connection-string

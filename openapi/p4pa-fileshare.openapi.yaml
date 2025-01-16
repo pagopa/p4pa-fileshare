@@ -23,6 +23,11 @@ paths:
           required: true
           schema:
             $ref: "#/components/schemas/IngestionFlowFileType"
+        - name: fileOrigin
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/FileOrigin"
       requestBody:
         content:
           'multipart/form-data':
@@ -73,3 +78,9 @@ components:
             - FILE_UPLOAD_ERROR
         message:
           type: string
+    FileOrigin:
+      type: string
+      enum:
+        - PORTAL
+        - SIL
+        - PAGOPA

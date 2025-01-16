@@ -96,7 +96,8 @@ tasks.register("dependenciesBuild") {
   dependsOn(
     "openApiGenerateFILESHARE",
     "openApiGenerateP4PAAUTH",
-    "openApiGenerateORGANIZATION"
+    "openApiGenerateORGANIZATION",
+    "openApiGeneratePROCESSEXECUTION"
   )
 }
 
@@ -150,7 +151,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   configOptions.set(mapOf(
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
-    "dateLibrary" to "java17",
+    "dateLibrary" to "java8",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
     "serializationLibrary" to "jackson",
@@ -171,11 +172,35 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   configOptions.set(mapOf(
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
-    "dateLibrary" to "java17",
+    "dateLibrary" to "java8",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
     "serializationLibrary" to "jackson",
     "generateSupportingFiles" to "true"
+  ))
+  library.set("resttemplate")
+}
+
+tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGeneratePROCESSEXECUTION") {
+  group = "openapi"
+  description = "description"
+
+  generatorName.set("java")
+  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-process-executions/refs/heads/$targetEnv/openapi/p4pa-process-executions.openapi.yaml")
+  outputDir.set("$projectDir/build/generated")
+  apiPackage.set("it.gov.pagopa.pu.p4paprocessexecutions.controller.generated")
+  modelPackage.set("it.gov.pagopa.pu.p4paprocessexecutions.dto.generated")
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "additionalModelTypeAnnotations" to "@lombok.Builder"
   ))
   library.set("resttemplate")
 }
