@@ -37,7 +37,7 @@ class FileStorerServiceTest {
       MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
         Files.class)) {
       try {
-        fileStorerService.saveToSharedFolder(null, "");
+        fileStorerService.saveToSharedFolder(0L, null, "");
         Assertions.fail("Expected FileUploadException");
       } catch (FileUploadException e) {
         Mockito.verifyNoInteractions(foldersPathsConfig);
@@ -61,7 +61,7 @@ class FileStorerServiceTest {
       MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
         Files.class)) {
       try {
-        fileStorerService.saveToSharedFolder(file, "");
+        fileStorerService.saveToSharedFolder(0L, file, "");
         Assertions.fail("Expected InvalidFileException");
       } catch (InvalidFileException e) {
         Mockito.verifyNoInteractions(foldersPathsConfig);
@@ -90,7 +90,7 @@ class FileStorerServiceTest {
         .thenThrow(new RuntimeException());
 
       try {
-        fileStorerService.saveToSharedFolder(file, "/relative");
+        fileStorerService.saveToSharedFolder(0L, file, "/relative");
         Assertions.fail("Expected FileUploadException");
       } catch (FileUploadException e) {
         Mockito.verify(foldersPathsConfig).getShared();
@@ -120,10 +120,12 @@ class FileStorerServiceTest {
         Files.class)
     ) {
       String sharedFolderPath = "/shared";
+      long organizationId = 0L;
+      String organizationFolder = organizationId + "";
       Mockito.when(foldersPathsConfig.getShared()).thenReturn(sharedFolderPath);
       String relativePath = "/relative";
 
-      String result = fileStorerService.saveToSharedFolder(file, relativePath);
+      String result = fileStorerService.saveToSharedFolder(organizationId, file, relativePath);
 
       Assertions.assertEquals(Paths.get(relativePath,filename).toString(),result);
       Mockito.verify(foldersPathsConfig).getShared();
@@ -131,10 +133,10 @@ class FileStorerServiceTest {
       aesUtilsMockedStatic.verify(() -> AESUtils.encrypt(Mockito.anyString(),(InputStream) Mockito.any()));
       aesUtilsMockedStatic.verifyNoMoreInteractions();
       filesMockedStatic.verify(() -> Files.exists(Mockito.eq(
-        Paths.get(sharedFolderPath,relativePath))));
+        Paths.get(sharedFolderPath, organizationFolder, relativePath))));
       filesMockedStatic.verify(() -> Files.createDirectories(Mockito.eq(
-        Paths.get(sharedFolderPath,relativePath))));
-      filesMockedStatic.verify(() -> Files.copy((InputStream) Mockito.any(),Mockito.eq(Paths.get(sharedFolderPath,relativePath,filename)), Mockito.any()));
+        Paths.get(sharedFolderPath, organizationFolder, relativePath))));
+      filesMockedStatic.verify(() -> Files.copy((InputStream) Mockito.any(),Mockito.eq(Paths.get(sharedFolderPath, organizationFolder,relativePath,filename)), Mockito.any()));
       filesMockedStatic.verifyNoMoreInteractions();
     }
   }
@@ -153,7 +155,7 @@ class FileStorerServiceTest {
       MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
         Files.class)) {
       try {
-        fileStorerService.saveToSharedFolder(file, "/relative/../../test");
+        fileStorerService.saveToSharedFolder(0L, file, "/relative/../../test");
         Assertions.fail("Expected InvalidFileException");
       } catch (InvalidFileException e) {
         Mockito.verifyNoInteractions(foldersPathsConfig);

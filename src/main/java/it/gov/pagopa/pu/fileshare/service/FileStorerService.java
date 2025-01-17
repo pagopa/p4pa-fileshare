@@ -28,7 +28,7 @@ public class FileStorerService {
     this.fileEncryptPassword = fileEncryptPassword;
   }
 
-  public String saveToSharedFolder(MultipartFile file, String relativePath){
+  public String saveToSharedFolder(Long organizationId, MultipartFile file, String relativePath){
     if(file==null){
       log.debug("File is mandatory");
       throw new FileUploadException("File is mandatory");
@@ -38,7 +38,8 @@ public class FileStorerService {
       StringUtils.defaultString(file.getOriginalFilename()));
     FileService.validateFilename(filename);
     Path relativeFileLocation = concatenatePaths(relativePath,filename);
-    Path absolutePath = concatenatePaths(foldersPathsConfig.getShared(), relativeFileLocation.toString());
+    Path organizationBasePath = concatenatePaths(foldersPathsConfig.getShared(), String.valueOf(organizationId));
+    Path absolutePath = concatenatePaths(organizationBasePath.toString(), relativeFileLocation.toString());
     //create missing parent folder, if any
     try {
       if (!Files.exists(absolutePath.getParent())){
