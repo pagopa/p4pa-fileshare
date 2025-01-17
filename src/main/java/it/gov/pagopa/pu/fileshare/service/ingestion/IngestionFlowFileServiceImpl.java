@@ -47,7 +47,7 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
     FileOrigin fileOrigin, MultipartFile ingestionFlowFile, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(ingestionFlowFile, validIngestionFlowFileExt);
-    String filePath = fileStorerService.saveToSharedFolder(ingestionFlowFile,
+    String filePath = fileStorerService.saveToSharedFolder(organizationId, ingestionFlowFile,
       foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType));
 
     return ingestionFlowFileClient.createIngestionFlowFile(
