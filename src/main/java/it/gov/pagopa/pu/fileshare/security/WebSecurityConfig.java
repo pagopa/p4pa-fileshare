@@ -36,6 +36,12 @@ public class WebSecurityConfig {
           "/actuator",
           "/actuator/**"
         ).permitAll()
+
+        // WebMVC
+        .requestMatchers(
+          "/error"
+        ).permitAll()
+
         .anyRequest().authenticated()
       )
       .sessionManagement(session -> session
