@@ -10,6 +10,7 @@ import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -55,7 +56,9 @@ class IngestionFlowFileServiceImplTest {
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
+    String expectedIngestionFlowFileId = "INGESTIONFLOWFILEID";
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
+
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
     Mockito.when(fileStorerServiceMock.saveToSharedFolder(file,receiptFilePath))
@@ -63,13 +66,15 @@ class IngestionFlowFileServiceImplTest {
     Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
         IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId,filePath))
         .thenReturn(ingestionFlowFileRequestDTO);
+    Mockito.when(ingestionFlowFileClientMock.createIngestionFlowFile(ingestionFlowFileRequestDTO,accessToken))
+      .thenReturn(expectedIngestionFlowFileId);
 
-    ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
-      file, TestUtils.getSampleUser(),accessToken);
+    String result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
+      file, TestUtils.getSampleUser(), accessToken);
 
+    Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId,TestUtils.getSampleUser(),accessToken);
     Mockito.verify(fileServiceMock).validateFile(file,VALID_FILE_EXTENSION);
-    Mockito.verify(ingestionFlowFileClientMock).createIngestionFlowFile(ingestionFlowFileRequestDTO,accessToken);
     Mockito.verifyNoMoreInteractions(userAuthorizationServiceMock,fileServiceMock,
       foldersPathsConfigMock,fileStorerServiceMock,ingestionFlowFileDTOMapperMock,ingestionFlowFileClientMock);
   }

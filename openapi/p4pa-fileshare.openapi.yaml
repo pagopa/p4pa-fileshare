@@ -40,8 +40,12 @@ paths:
                   type: string
                   format: binary
       responses:
-        '200':
-          description: OK
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadIngestionFlowFileResponseDTO'
         '500':
           description: Server Error
           content:
@@ -84,3 +88,10 @@ components:
         - PORTAL
         - SIL
         - PAGOPA
+    UploadIngestionFlowFileResponseDTO:
+      type: object
+      required:
+        - ingestionFlowFileId
+      properties:
+        ingestionFlowFileId:
+          type: string
