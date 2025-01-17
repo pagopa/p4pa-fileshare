@@ -43,13 +43,14 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
   }
 
   @Override
-  public void uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
+  public String uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
     FileOrigin fileOrigin, MultipartFile ingestionFlowFile, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(ingestionFlowFile, validIngestionFlowFileExt);
     String filePath = fileStorerService.saveToSharedFolder(ingestionFlowFile,
       foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType));
-    ingestionFlowFileClient.createIngestionFlowFile(
+
+    return ingestionFlowFileClient.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFile,
         ingestionFlowFileType, fileOrigin, organizationId, filePath)
       , accessToken);

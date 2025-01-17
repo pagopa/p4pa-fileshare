@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.fileshare.controller;
 import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
+import it.gov.pagopa.pu.fileshare.dto.generated.UploadIngestionFlowFileResponseDTO;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtils;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileService;
 import org.springframework.http.ResponseEntity;
@@ -20,9 +21,9 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
   }
 
   @Override
-  public ResponseEntity<Void> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, MultipartFile ingestionFlowFile) {
-    ingestionFlowFileService.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, fileOrigin, ingestionFlowFile, SecurityUtils.getLoggedUser(),
+  public ResponseEntity<UploadIngestionFlowFileResponseDTO> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, MultipartFile ingestionFlowFile) {
+    String ingestionFlowFileId = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, fileOrigin, ingestionFlowFile, SecurityUtils.getLoggedUser(),
       SecurityUtils.getAccessToken());
-    return ResponseEntity.ok(null);
+    return ResponseEntity.ok(new UploadIngestionFlowFileResponseDTO(ingestionFlowFileId));
   }
 }

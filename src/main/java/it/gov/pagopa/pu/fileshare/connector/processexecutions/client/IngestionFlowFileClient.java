@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions.client;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.config.ProcessExecutionsApisHolder;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
@@ -16,9 +17,11 @@ public class IngestionFlowFileClient {
     this.processExecutionsApisHolder = processExecutionsApisHolder;
   }
 
-  public void createIngestionFlowFile(IngestionFlowFileRequestDTO ingestionFlowFileDTO, String accessToken) {
+  public String createIngestionFlowFile(IngestionFlowFileRequestDTO ingestionFlowFileDTO, String accessToken) {
     try{
-      processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken).createIngestionFlowFile(ingestionFlowFileDTO);
+      return processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
+        .createIngestionFlowFileWithHttpInfo(ingestionFlowFileDTO)
+        .getHeaders().getFirst(HttpHeaders.LOCATION);
     } catch (HttpClientErrorException e) {
       log.error("Error creating ingestion flow file", e);
       throw e;

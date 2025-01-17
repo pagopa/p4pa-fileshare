@@ -1,9 +1,5 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
@@ -22,15 +18,16 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @WebMvcTest(value = IngestionFlowFileApi.class,excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
   classes = JwtAuthenticationFilter.class))
 @AutoConfigureMockMvc(addFilters = false)
 class IngestionFlowFilesControllerTest {
   @Autowired
   private MockMvc mockMvc;
-
-  @Autowired
-  private ObjectMapper objectMapper;
 
   @MockitoBean
   private IngestionFlowFileService serviceMock;
@@ -46,16 +43,18 @@ class IngestionFlowFilesControllerTest {
     );
     TestUtils.addSampleUserIntoSecurityContext();
 
+    Mockito.when(serviceMock.uploadIngestionFlowFile(Mockito.eq(organizationId),
+      Mockito.eq(IngestionFlowFileType.RECEIPT),Mockito.eq(FileOrigin.PAGOPA),Mockito.eq(file),
+      Mockito.any(), Mockito.anyString()))
+      .thenReturn("INGESTIONFLOWFILEID");
+
     mockMvc.perform(multipart("/ingestionflowfiles/"+organizationId)
         .file(file)
         .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
         .param("fileOrigin", FileOrigin.PAGOPA.toString())
         .contentType(MediaType.MULTIPART_FORM_DATA)
-      ).andExpect(status().isOk());
-
-    Mockito.verify(serviceMock).uploadIngestionFlowFile(Mockito.eq(organizationId),
-      Mockito.eq(IngestionFlowFileType.RECEIPT),Mockito.eq(FileOrigin.PAGOPA),Mockito.eq(file),
-      Mockito.any(), Mockito.anyString());
+      ).andExpect(status().isOk())
+      .andExpect(content().json("{\"ingestionFlowFileId\":\"INGESTIONFLOWFILEID\"}"));
   }
 
   @Test

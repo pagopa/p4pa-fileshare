@@ -12,12 +12,16 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
+
+import java.net.URI;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileClientTest {
-  @Mock
-  private ProcessExecutionsApisHolder processExecutionsApisHolderMock;
+
+  private final String accessToken = "ACCESSTOKEN";
+
   @Mock
   private IngestionFlowFileControllerApi ingestionFlowFileControllerApiMock;
 
@@ -25,6 +29,10 @@ class IngestionFlowFileClientTest {
 
   @BeforeEach
   void setUp() {
+    ProcessExecutionsApisHolder processExecutionsApisHolderMock = Mockito.mock(ProcessExecutionsApisHolder.class);
+    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
+      .thenReturn(ingestionFlowFileControllerApiMock);
+
     ingestionFlowFileClient = new IngestionFlowFileClient(
       processExecutionsApisHolderMock);
   }
@@ -32,35 +40,33 @@ class IngestionFlowFileClientTest {
   @AfterEach
   void verifyNoMoreInteractions() {
     Mockito.verifyNoMoreInteractions(
-      processExecutionsApisHolderMock
+      ingestionFlowFileControllerApiMock
     );
   }
 
   @Test
   void whenCreateIngestionFlowFileThenOK() {
     // Given
-    String accessToken = "ACCESSTOKEN";
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileControllerApiMock);
+    String expectedIngestionFlowFileId = "INGESTIONFLOWFILEID";
+    Mockito.when(ingestionFlowFileControllerApiMock.createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO))
+      .thenReturn(ResponseEntity.created(URI.create(expectedIngestionFlowFileId)).build());
+
     // When
-    ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken);
+    String result = ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken);
 
     // Then
-    Mockito.verify(ingestionFlowFileControllerApiMock).createIngestionFlowFile(ingestionFlowFileRequestDTO);
+    Assertions.assertSame(expectedIngestionFlowFileId, result);
   }
 
   @Test
   void givenGenericHttpExceptionWhenCreateIngestionFlowFileThenThrowIt() {
     // Given
-    String accessToken = "ACCESSTOKEN";
     HttpClientErrorException expectedException = new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileControllerApiMock);
-    Mockito.doThrow(expectedException).when(ingestionFlowFileControllerApiMock).createIngestionFlowFile(ingestionFlowFileRequestDTO);
+    Mockito.doThrow(expectedException).when(ingestionFlowFileControllerApiMock).createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO);
 
     // When
     HttpClientErrorException result = Assertions.assertThrows(expectedException.getClass(), () -> ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken));
@@ -72,13 +78,10 @@ class IngestionFlowFileClientTest {
   @Test
   void givenGenericExceptionWhenCreateIngestionFlowFileThenThrowIt() {
     // Given
-    String accessToken = "ACCESSTOKEN";
     RuntimeException expectedException = new RuntimeException();
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileControllerApiMock);
-    Mockito.doThrow(expectedException).when(ingestionFlowFileControllerApiMock).createIngestionFlowFile(ingestionFlowFileRequestDTO);
+    Mockito.doThrow(expectedException).when(ingestionFlowFileControllerApiMock).createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO);
 
     // When
     RuntimeException result = Assertions.assertThrows(expectedException.getClass(), () -> ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken));
