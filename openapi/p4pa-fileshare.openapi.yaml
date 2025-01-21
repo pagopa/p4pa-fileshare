@@ -64,6 +64,7 @@ components:
       type: string
       enum:
         - RECEIPT
+        - RECEIPT_PAGOPA
         - PAYMENTS_REPORTING
         - TREASURY_OPI
         - TREASURY_CSV
