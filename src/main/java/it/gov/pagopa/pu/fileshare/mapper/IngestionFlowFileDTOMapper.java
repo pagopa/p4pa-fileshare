@@ -12,13 +12,16 @@ import org.springframework.web.multipart.MultipartFile;
 public class IngestionFlowFileDTOMapper {
   public IngestionFlowFileRequestDTO mapToIngestionFlowFileDTO(
     MultipartFile ingestionFlowFile, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, Long organizationId, String filePath) {
-    return IngestionFlowFileRequestDTO.builder()
-      .organizationId(organizationId)
-      .filePathName(filePath)
-      .fileName(StringUtils.defaultString(ingestionFlowFile.getOriginalFilename()))
-      .fileSize(ingestionFlowFile.getSize())
-      .flowFileType(FlowFileTypeEnum.valueOf(ingestionFlowFileType.toString()))
-      .fileOrigin(fileOrigin.toString())
-      .build();
+
+    IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
+    ingestionFlowFileRequestDTO.setOrganizationId(organizationId);
+    ingestionFlowFileRequestDTO.setFilePathName(filePath);
+    ingestionFlowFileRequestDTO.setFileName(StringUtils.defaultString(ingestionFlowFile.getOriginalFilename()));
+    ingestionFlowFileRequestDTO.setFileSize(ingestionFlowFile.getSize());
+    ingestionFlowFileRequestDTO.flowFileType(FlowFileTypeEnum.valueOf(ingestionFlowFileType.toString()));
+    ingestionFlowFileRequestDTO.fileOrigin(fileOrigin.toString());
+
+    return ingestionFlowFileRequestDTO;
   }
+
 }

@@ -37,22 +37,30 @@ class IngestionFlowFileServiceImplTest {
   private IngestionFlowFileDTOMapper ingestionFlowFileDTOMapperMock;
   private IngestionFlowFileServiceImpl ingestionFlowFileService;
   private static final String VALID_FILE_EXTENSION = ".zip";
+  private static final String ARCHIVED_SUB_FOLDER = "Archived";
 
   @BeforeEach
   void setUp() {
-    ingestionFlowFileService = new IngestionFlowFileServiceImpl(userAuthorizationServiceMock,fileServiceMock,fileStorerServiceMock,
-      foldersPathsConfigMock,ingestionFlowFileClientMock,ingestionFlowFileDTOMapperMock,VALID_FILE_EXTENSION);
+    ingestionFlowFileService = new IngestionFlowFileServiceImpl(
+      userAuthorizationServiceMock,
+      fileServiceMock,
+      fileStorerServiceMock,
+      foldersPathsConfigMock,
+      ingestionFlowFileClientMock,
+      ingestionFlowFileDTOMapperMock,
+      VALID_FILE_EXTENSION,
+      ARCHIVED_SUB_FOLDER);
   }
 
   @Test
-  void givenAuthorizedUserWhenUploadIngestionFlowFileThenOk(){
+  void givenAuthorizedUserWhenUploadIngestionFlowFileThenOk() {
     String accessToken = "TOKEN";
     long organizationId = 1L;
     String receiptFilePath = "/receipt";
     String filePath = "/filepath";
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
-      "test"+VALID_FILE_EXTENSION,
+      "test" + VALID_FILE_EXTENSION,
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
@@ -61,22 +69,22 @@ class IngestionFlowFileServiceImplTest {
 
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
-    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file,receiptFilePath))
+    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath))
       .thenReturn(filePath);
     Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
-        IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId,filePath))
-        .thenReturn(ingestionFlowFileRequestDTO);
-    Mockito.when(ingestionFlowFileClientMock.createIngestionFlowFile(ingestionFlowFileRequestDTO,accessToken))
+        IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath))
+      .thenReturn(ingestionFlowFileRequestDTO);
+    Mockito.when(ingestionFlowFileClientMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
       .thenReturn(expectedIngestionFlowFileId);
 
     String result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
       file, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId,TestUtils.getSampleUser(),accessToken);
-    Mockito.verify(fileServiceMock).validateFile(file,VALID_FILE_EXTENSION);
-    Mockito.verifyNoMoreInteractions(userAuthorizationServiceMock,fileServiceMock,
-      foldersPathsConfigMock,fileStorerServiceMock,ingestionFlowFileDTOMapperMock,ingestionFlowFileClientMock);
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
+    Mockito.verify(fileServiceMock).validateFile(file, VALID_FILE_EXTENSION);
+    Mockito.verifyNoMoreInteractions(userAuthorizationServiceMock, fileServiceMock,
+      foldersPathsConfigMock, fileStorerServiceMock, ingestionFlowFileDTOMapperMock, ingestionFlowFileClientMock);
   }
 
 }
