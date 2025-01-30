@@ -21,10 +21,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayInputStream;
 
@@ -95,7 +93,7 @@ class IngestionFlowFileServiceImplTest {
       foldersPathsConfigMock, fileStorerServiceMock, ingestionFlowFileDTOMapperMock, ingestionFlowFileClientMock);
   }
 
-  /*@Test
+  @Test
   void givenAuthorizedUserWhenDownloadIngestionFlowFileThenReturnFileResource() {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
@@ -103,7 +101,7 @@ class IngestionFlowFileServiceImplTest {
     String sharedFolderPath = "/shared";
     String filePathName = "examplePath";
     String fileName = "testFile.zip";
-    String fullFilePath = sharedFolderPath + "/" + organizationId + "/" + filePathName + "/" + fileName;
+    String fullFilePath = sharedFolderPath + "/" + organizationId + "/" + filePathName + "/" + ARCHIVED_SUB_FOLDER + "/" + fileName;
     UserInfo user = TestUtils.getSampleUser();
 
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
@@ -126,5 +124,5 @@ class IngestionFlowFileServiceImplTest {
     Mockito.verify(ingestionFlowFileClientMock).getIngestionFlowFile(ingestionFlowFileId, accessToken);
     Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
   }
-*/
+
 }

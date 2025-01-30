@@ -172,17 +172,17 @@ class FileStorerServiceTest {
 
   @Test
   void givenExistingFileWhenDecryptFileThenReturnInputStreamResource() throws IOException {
-    String filePath = "C:/shared/organization";
+   /* String filePath = "./shared";
     String fileName = "test.txt";
     File directory = new File(filePath);
 
     File mockFile = new File(directory, fileName);
 
-    try (BufferedWriter writer = new BufferedWriter(new FileWriter(mockFile))) {
+    *//*try (BufferedWriter writer = new BufferedWriter(new FileWriter(mockFile))) {
       writer.write("Encrypted content");
-    }
+    }*/
 
-    assertTrue(mockFile.exists());
+//    assertTrue(mockFile.exists());
 
     InputStream cipherInputStream = new ByteArrayInputStream("Decrypted content".getBytes());
 
@@ -190,7 +190,7 @@ class FileStorerServiceTest {
       Mockito.when(AESUtils.decrypt(Mockito.anyString(), Mockito.any(InputStream.class)))
         .thenReturn(cipherInputStream);
 
-      InputStreamResource result = fileStorerService.decryptFile(filePath, fileName);
+      InputStreamResource result = fileStorerService.decryptFile("src/test/resources/shared", "test.txt");
 
       Assertions.assertNotNull(result);
       Assertions.assertEquals(cipherInputStream, result.getInputStream());
