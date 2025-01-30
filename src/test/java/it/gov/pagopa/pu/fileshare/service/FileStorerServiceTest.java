@@ -16,12 +16,14 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @ExtendWith(MockitoExtension.class)
 class FileStorerServiceTest {
@@ -172,18 +174,6 @@ class FileStorerServiceTest {
 
   @Test
   void givenExistingFileWhenDecryptFileThenReturnInputStreamResource() throws IOException {
-   /* String filePath = "./shared";
-    String fileName = "test.txt";
-    File directory = new File(filePath);
-
-    File mockFile = new File(directory, fileName);
-
-    *//*try (BufferedWriter writer = new BufferedWriter(new FileWriter(mockFile))) {
-      writer.write("Encrypted content");
-    }*/
-
-//    assertTrue(mockFile.exists());
-
     InputStream cipherInputStream = new ByteArrayInputStream("Decrypted content".getBytes());
 
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class)) {
@@ -201,14 +191,12 @@ class FileStorerServiceTest {
 
   @Test
   void givenNonExistingFileWhenDecryptFileThenReturnNull() {
-    String filePath = "C:/shared/organization";
-    String fileName = "nonexistent.txt";
-    File directory = new File(filePath);
-    File mockFile = new File(directory, fileName);
+    File directory = new File("src/test/resources/shared");
+    File mockFile = new File(directory, "nonexistent.txt");
 
     assertFalse(mockFile.exists());
 
-    InputStreamResource result = fileStorerService.decryptFile(filePath, fileName);
+    InputStreamResource result = fileStorerService.decryptFile("src/test/resources/shared", "nonexistent.txt");
 
     Assertions.assertNull(result);
   }
