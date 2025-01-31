@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFl
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileDecryptionException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
@@ -129,6 +130,83 @@ class IngestionFlowFileServiceImplTest {
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
     Mockito.verify(ingestionFlowFileClientMock).getIngestionFlowFile(ingestionFlowFileId, accessToken);
+    Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
+  }
+
+  @Test
+  void givenNullDecryptedInputStreamWhenDownloadIngestionFlowFileThenThrowFileDecryptionException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+    String sharedFolderPath = "/shared";
+    String filePathName = "examplePath";
+    String fileName = "testFile.zip";
+    Path organizationPath = Paths.get(sharedFolderPath, String.valueOf(organizationId));
+    String fullFilePath = organizationPath + "/" + filePathName + "/" + ARCHIVED_SUB_FOLDER + "/" + fileName;
+
+    UserInfo user = TestUtils.getSampleUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setFileName(fileName);
+    ingestionFlowFile.setFilePathName(filePathName);
+    ingestionFlowFile.setStatus(IngestionFlowFile.StatusEnum.COMPLETED);
+
+    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationPath);
+    Mockito.when(ingestionFlowFileClientMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
+    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(null);
+
+    FileDecryptionException exception = Assertions.assertThrows(FileDecryptionException.class,
+      () -> ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken));
+
+    Assertions.assertEquals("File could not be decrypted or was not found", exception.getMessage());
+    Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
+  }
+
+  @Test
+  void givenNullOrganizationBasePathWhenDownloadIngestionFlowFileThenThrowIllegalStateException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+
+    UserInfo user = TestUtils.getSampleUser();
+
+    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(null);
+
+    IllegalStateException exception = Assertions.assertThrows(IllegalStateException.class,
+      () -> ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken));
+
+    Assertions.assertEquals("Organization base path cannot be null.", exception.getMessage());
+    Mockito.verify(fileStorerServiceMock).buildOrganizationBasePath(organizationId);
+  }
+
+  @Test
+  void givenIngestionFlowFileInProgressWhenDownloadIngestionFlowFileThenReturnFilePath() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+    String sharedFolderPath = "/shared";
+    String filePathName = "examplePath";
+    String fileName = "testFile.zip";
+    Path organizationPath = Paths.get(sharedFolderPath, String.valueOf(organizationId));
+    String fullFilePath = organizationPath + "/" + filePathName + "/" + fileName;
+
+    UserInfo user = TestUtils.getSampleUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setFileName(fileName);
+    ingestionFlowFile.setFilePathName(filePathName);
+    ingestionFlowFile.setStatus(IngestionFlowFile.StatusEnum.PROCESSING);
+
+    InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
+
+    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationPath);
+    Mockito.when(ingestionFlowFileClientMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
+    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
+
+    FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken);
+
+    Assertions.assertNotNull(result);
+    Assertions.assertEquals(fileName, result.getFileName());
     Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
   }
 
