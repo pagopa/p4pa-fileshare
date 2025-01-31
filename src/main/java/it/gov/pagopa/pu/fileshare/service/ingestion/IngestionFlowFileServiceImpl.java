@@ -2,9 +2,10 @@ package it.gov.pagopa.pu.fileshare.service.ingestion;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileClient;
+import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
-import it.gov.pagopa.pu.fileshare.dto.generated.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileDecryptionException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
@@ -14,10 +15,11 @@ import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.server.ResponseStatusException;
+
+import java.io.InputStream;
+import java.nio.file.Path;
 
 import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile.StatusEnum.COMPLETED;
 import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile.StatusEnum.ERROR;
@@ -75,26 +77,31 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
 
     String filePath = getFilePath(organizationId, ingestionFlowFile);
 
-    InputStreamResource decryptedResource = fileStorerService.decryptFile(
+    InputStream decryptedInputStream = fileStorerService.decryptFile(
       filePath,
       ingestionFlowFile.getFileName());
 
-    if (decryptedResource == null) {
+    if (decryptedInputStream == null) {
       log.error("downloadIngestionFlowFile - File [{}] could not be decrypted or was not found", ingestionFlowFile.getFileName());
-      throw new ResponseStatusException(HttpStatus.NOT_FOUND, "File could not be decrypted or was not found");
+      throw new FileDecryptionException("File could not be decrypted or was not found");
     }
 
-    return new FileResourceDTO(decryptedResource, ingestionFlowFile.getFileName());
+    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
   }
 
   private String getFilePath(Long organizationId, IngestionFlowFile ingestionFlowFile) {
-    String organizationPath = String.format("%s/%d", foldersPathsConfig.getShared(), organizationId);
+    Path organizationBasePath = fileStorerService.buildOrganizationBasePath(organizationId);
+    if (organizationBasePath == null) {
+      log.error("Organization base path is null for organizationId: {}", organizationId);
+      throw new IllegalStateException("Organization base path cannot be null.");
+    }
+
     String filePath;
 
     if (ingestionFlowFile.getStatus() == COMPLETED || ingestionFlowFile.getStatus() == ERROR) {
-      filePath = String.format("%s/%s/%s/%s", organizationPath, ingestionFlowFile.getFilePathName(), archivedSubFolder, ingestionFlowFile.getFileName());
+      filePath = String.format("%s/%s/%s/%s", organizationBasePath, ingestionFlowFile.getFilePathName(), archivedSubFolder, ingestionFlowFile.getFileName());
     } else {
-      filePath = String.format("%s/%s/%s", organizationPath, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName());
+      filePath = String.format("%s/%s/%s", organizationBasePath, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName());
     }
     return filePath;
   }

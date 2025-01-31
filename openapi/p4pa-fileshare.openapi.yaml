@@ -125,13 +125,3 @@ components:
       properties:
         ingestionFlowFileId:
           type: string
-    FileResourceDTO:
-      type: object
-      properties:
-        resourceStream:
-          type: string
-          format: binary
-          description: The binary content of the file
-        fileName:
-          type: string
-          description: The name of the file

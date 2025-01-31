@@ -12,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
@@ -174,16 +173,16 @@ class FileStorerServiceTest {
 
   @Test
   void givenExistingFileWhenDecryptFileThenReturnInputStreamResource() throws IOException {
-    InputStream cipherInputStream = new ByteArrayInputStream("Decrypted content".getBytes());
+    InputStream cipherInputStream = Mockito.mock(ByteArrayInputStream.class);
 
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class)) {
       Mockito.when(AESUtils.decrypt(Mockito.anyString(), Mockito.any(InputStream.class)))
         .thenReturn(cipherInputStream);
 
-      InputStreamResource result = fileStorerService.decryptFile("src/test/resources/shared", "test.txt");
+      InputStream result = fileStorerService.decryptFile("src/test/resources/shared", "test.txt");
 
       Assertions.assertNotNull(result);
-      Assertions.assertEquals(cipherInputStream, result.getInputStream());
+      Assertions.assertSame(cipherInputStream, result);
 
       aesUtilsMockedStatic.verify(() -> AESUtils.decrypt(Mockito.anyString(), Mockito.any(InputStream.class)));
     }
@@ -196,7 +195,7 @@ class FileStorerServiceTest {
 
     assertFalse(mockFile.exists());
 
-    InputStreamResource result = fileStorerService.decryptFile("src/test/resources/shared", "nonexistent.txt");
+    InputStream result = fileStorerService.decryptFile("src/test/resources/shared", "nonexistent.txt");
 
     Assertions.assertNull(result);
   }

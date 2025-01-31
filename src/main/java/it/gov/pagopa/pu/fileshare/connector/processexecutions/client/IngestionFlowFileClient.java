@@ -8,7 +8,6 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
-import org.springframework.web.server.ResponseStatusException;
 
 @Slf4j
 @Service
@@ -41,7 +40,7 @@ public class IngestionFlowFileClient {
     } catch (HttpClientErrorException e) {
       log.error("Error fetching ingestion flow file with ID [{}]", ingestionFlowFileId, e);
       if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Ingestion Flow File not found");
+        return null;
       }
       throw e;
     } catch (Exception e) {

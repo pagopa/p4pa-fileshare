@@ -2,8 +2,8 @@ package it.gov.pagopa.pu.fileshare.service.ingestion;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileClient;
+import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
-import it.gov.pagopa.pu.fileshare.dto.generated.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
@@ -20,11 +20,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileServiceImplTest {
@@ -101,7 +103,9 @@ class IngestionFlowFileServiceImplTest {
     String sharedFolderPath = "/shared";
     String filePathName = "examplePath";
     String fileName = "testFile.zip";
-    String fullFilePath = sharedFolderPath + "/" + organizationId + "/" + filePathName + "/" + ARCHIVED_SUB_FOLDER + "/" + fileName;
+    Path organizationPath = Paths.get(sharedFolderPath, String.valueOf(organizationId));
+    String fullFilePath = organizationPath + "/" + filePathName + "/" + ARCHIVED_SUB_FOLDER + "/" + fileName;
+
     UserInfo user = TestUtils.getSampleUser();
 
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
@@ -109,11 +113,14 @@ class IngestionFlowFileServiceImplTest {
     ingestionFlowFile.setFilePathName(filePathName);
     ingestionFlowFile.setStatus(IngestionFlowFile.StatusEnum.COMPLETED);
 
-    InputStreamResource decryptedResource = new InputStreamResource(new ByteArrayInputStream("file content".getBytes()));
+    InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
 
-    Mockito.when(foldersPathsConfigMock.getShared()).thenReturn(sharedFolderPath);
+    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
+      .thenReturn(organizationPath);
+
     Mockito.when(ingestionFlowFileClientMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
-    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedResource);
+
+    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
 
     FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken);
 
