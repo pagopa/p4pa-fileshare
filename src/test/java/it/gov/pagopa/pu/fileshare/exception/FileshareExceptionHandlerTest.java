@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.fileshare.exception;
 
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileDecryptionException;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import lombok.extern.slf4j.Slf4j;
@@ -76,7 +76,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleFileDecryptionException() throws Exception {
-    doThrow(new FileDecryptionException("File not found")).when(testControllerSpy).testEndpoint(DATA);
+    doThrow(new FileNotFoundException("File not found")).when(testControllerSpy).testEndpoint(DATA);
 
     mockMvc.perform(MockMvcRequestBuilders.get("/test")
         .param(DATA, DATA)

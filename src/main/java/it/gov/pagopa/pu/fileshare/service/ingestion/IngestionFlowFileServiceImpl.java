@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFl
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileDecryptionException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
@@ -81,21 +80,11 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
       filePath,
       ingestionFlowFile.getFileName());
 
-    if (decryptedInputStream == null) {
-      log.error("downloadIngestionFlowFile - File [{}] could not be decrypted or was not found", ingestionFlowFile.getFileName());
-      throw new FileDecryptionException("File could not be decrypted or was not found");
-    }
-
     return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
   }
 
   private String getFilePath(Long organizationId, IngestionFlowFile ingestionFlowFile) {
     Path organizationBasePath = fileStorerService.buildOrganizationBasePath(organizationId);
-    if (organizationBasePath == null) {
-      log.error("Organization base path is null for organizationId: {}", organizationId);
-      throw new IllegalStateException("Organization base path cannot be null.");
-    }
-
     String filePath;
 
     if (ingestionFlowFile.getStatus() == COMPLETED || ingestionFlowFile.getStatus() == ERROR) {

@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.util.AESUtils;
@@ -27,6 +28,9 @@ public class FileStorerService {
 
   public FileStorerService(FoldersPathsConfig foldersPathsConfig,
                            @Value(("${app.fileEncryptPassword}")) String fileEncryptPassword) {
+    if (foldersPathsConfig.getShared() == null || foldersPathsConfig.getShared().isEmpty()) {
+      throw new IllegalStateException("Shared folder path is not configured.");
+    }
     this.foldersPathsConfig = foldersPathsConfig;
     this.fileEncryptPassword = fileEncryptPassword;
   }
@@ -85,7 +89,7 @@ public class FileStorerService {
       File file = Paths.get(filePath, fileName).toFile();
       if (!file.exists() || !file.isFile()) {
         log.warn("decryptFile - File [{}] not found", file.getAbsolutePath());
-        return null;
+        throw new FileNotFoundException("File not found: " + file.getAbsolutePath());
       }
 
       InputStream inputStream = new FileInputStream(file);
@@ -101,11 +105,7 @@ public class FileStorerService {
   }
 
   public Path buildOrganizationBasePath(Long organizationId) {
-    String sharedPath = foldersPathsConfig.getShared();
-    if (sharedPath == null) {
-      throw new IllegalStateException("Shared folder path is not configured.");
-    }
-    return concatenatePaths(sharedPath, String.valueOf(organizationId));
+    return concatenatePaths(foldersPathsConfig.getShared(), String.valueOf(organizationId));
   }
 
 }

@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.fileshare.exception;
 
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileDecryptionException;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -33,8 +33,8 @@ public class FileshareExceptionHandler {
     return handleFileshareErrorException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.FILE_UPLOAD_ERROR);
   }
 
-  @ExceptionHandler(FileDecryptionException.class)
-  public ResponseEntity<String> handleFileDecryptionException(FileDecryptionException ex) {
+  @ExceptionHandler(FileNotFoundException.class)
+  public ResponseEntity<String> handleFileNotFoundException(FileNotFoundException ex) {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
 
