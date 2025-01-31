@@ -17,7 +17,6 @@ import org.springframework.mock.web.MockMultipartFile;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -172,7 +171,7 @@ class FileStorerServiceTest {
   }
 
   @Test
-  void givenExistingFileWhenDecryptFileThenReturnInputStreamResource() throws IOException {
+  void givenExistingFileWhenDecryptFileThenReturnInputStreamResource() {
     InputStream cipherInputStream = Mockito.mock(ByteArrayInputStream.class);
 
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class)) {
