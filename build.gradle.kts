@@ -186,7 +186,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   description = "description"
 
   generatorName.set("java")
-  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-process-executions/refs/heads/$targetEnv/openapi/p4pa-process-executions.openapi.yaml")
+  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-process-executions/refs/heads/$targetEnv/openapi/generated.openapi.json")
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.pu.p4paprocessexecutions.controller.generated")
   modelPackage.set("it.gov.pagopa.pu.p4paprocessexecutions.dto.generated")
@@ -199,8 +199,7 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "serializationLibrary" to "jackson",
     "generateSupportingFiles" to "true",
     "generateConstructorWithAllArgs" to "true",
-    "generatedConstructorWithRequiredArgs" to "true",
-    "additionalModelTypeAnnotations" to "@lombok.Builder"
+    "generatedConstructorWithRequiredArgs" to "true"
   ))
   library.set("resttemplate")
 }

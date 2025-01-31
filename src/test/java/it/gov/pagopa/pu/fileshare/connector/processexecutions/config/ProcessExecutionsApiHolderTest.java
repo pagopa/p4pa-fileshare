@@ -49,4 +49,17 @@ class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
       String.class,
       processExecutionsApisHolder::unload);
   }
+
+  @Test
+  void whenGetIngestionFlowFileEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken -> {
+        processExecutionsApisHolder.getIngestionFlowFileEntityControllerApi(accessToken)
+          .crudGetIngestionflowfile("123");
+        return null;
+      },
+      String.class,
+      processExecutionsApisHolder::unload);
+  }
+
 }

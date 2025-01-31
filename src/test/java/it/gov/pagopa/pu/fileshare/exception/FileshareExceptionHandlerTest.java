@@ -1,8 +1,7 @@
 package it.gov.pagopa.pu.fileshare.exception;
 
-import static org.mockito.Mockito.doThrow;
-
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import lombok.extern.slf4j.Slf4j;
@@ -23,6 +22,8 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
+import static org.mockito.Mockito.doThrow;
+
 @ExtendWith({SpringExtension.class, MockitoExtension.class})
 @WebMvcTest(value = {FileshareExceptionHandlerTest.TestController.class}, excludeAutoConfiguration = SecurityAutoConfiguration.class)
 @ContextConfiguration(classes = {
@@ -30,46 +31,59 @@ import org.springframework.web.bind.annotation.RestController;
   FileshareExceptionHandler.class})
 class FileshareExceptionHandlerTest {
 
-    public static final String DATA = "data";
-    @Autowired
-    private MockMvc mockMvc;
+  public static final String DATA = "data";
+  @Autowired
+  private MockMvc mockMvc;
 
-    @MockitoSpyBean
-    private TestController testControllerSpy;
+  @MockitoSpyBean
+  private TestController testControllerSpy;
 
-    @RestController
-    @Slf4j
-    static class TestController {
+  @RestController
+  @Slf4j
+  static class TestController {
 
-        @GetMapping("/test")
-        String testEndpoint(@RequestParam(DATA) String data) {
-            return "OK";
-        }
+    @GetMapping("/test")
+    String testEndpoint(@RequestParam(DATA) String data) {
+      return "OK";
     }
+  }
 
-    @Test
-    void handleInvalidFileException() throws Exception {
-        doThrow(new InvalidFileException("Error")).when(testControllerSpy).testEndpoint(DATA);
+  @Test
+  void handleInvalidFileException() throws Exception {
+    doThrow(new InvalidFileException("Error")).when(testControllerSpy).testEndpoint(DATA);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/test")
-                        .param(DATA, DATA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isBadRequest())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.INVALID_FILE.toString()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
-    }
+    mockMvc.perform(MockMvcRequestBuilders.get("/test")
+        .param(DATA, DATA)
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON))
+      .andExpect(MockMvcResultMatchers.status().isBadRequest())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.INVALID_FILE.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
 
-    @Test
-    void handleFileUploadException() throws Exception {
-        doThrow(new FileUploadException("Error")).when(testControllerSpy).testEndpoint(DATA);
+  @Test
+  void handleFileUploadException() throws Exception {
+    doThrow(new FileUploadException("Error")).when(testControllerSpy).testEndpoint(DATA);
 
-        mockMvc.perform(MockMvcRequestBuilders.get("/test")
-                        .param(DATA, DATA)
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .accept(MediaType.APPLICATION_JSON))
-                .andExpect(MockMvcResultMatchers.status().isInternalServerError())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.FILE_UPLOAD_ERROR.toString()))
-                .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
-    }
+    mockMvc.perform(MockMvcRequestBuilders.get("/test")
+        .param(DATA, DATA)
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON))
+      .andExpect(MockMvcResultMatchers.status().isInternalServerError())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.FILE_UPLOAD_ERROR.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
+
+  @Test
+  void handleFileDecryptionException() throws Exception {
+    doThrow(new FileNotFoundException("File not found")).when(testControllerSpy).testEndpoint(DATA);
+
+    mockMvc.perform(MockMvcRequestBuilders.get("/test")
+        .param(DATA, DATA)
+        .contentType(MediaType.APPLICATION_JSON)
+        .accept(MediaType.APPLICATION_JSON))
+      .andExpect(MockMvcResultMatchers.status().isNotFound())
+      .andExpect(MockMvcResultMatchers.content().string("File not found"));
+  }
+
 }

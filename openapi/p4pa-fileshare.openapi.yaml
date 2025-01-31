@@ -52,6 +52,34 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FileshareErrorDTO'
+  /ingestionflowfiles/{organizationId}/{ingestionFlowFileId}:
+    get:
+      tags:
+        - ingestion-flow-file
+      summary: downloadIngestionFlowFile
+      description: Service to retrieve an ingestion flow file
+      operationId: downloadIngestionFlowFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: ingestionFlowFileId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
 security:
   - BearerAuth: []
 components:

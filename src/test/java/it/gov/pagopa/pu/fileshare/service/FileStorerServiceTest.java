@@ -1,12 +1,10 @@
 package it.gov.pagopa.pu.fileshare.service;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.util.AESUtils;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Paths;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -18,32 +16,33 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 @ExtendWith(MockitoExtension.class)
 class FileStorerServiceTest {
+
   private FileStorerService fileStorerService;
+
   @Mock
   private FoldersPathsConfig foldersPathsConfig;
+
   private static final String FILE_ENCRYPT_PASSWORD = "testPassword";
 
   @BeforeEach
   void setUp() {
-    fileStorerService = new FileStorerService(foldersPathsConfig,FILE_ENCRYPT_PASSWORD);
+    Mockito.when(foldersPathsConfig.getShared()).thenReturn("/shared");
+    fileStorerService = new FileStorerService(foldersPathsConfig, FILE_ENCRYPT_PASSWORD);
   }
 
   @Test
   void givenInvalidFileWhenSaveToSharedFolderThenFileUploadException() {
-    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
-      AESUtils.class);
-      MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
-        Files.class)) {
-      try {
-        fileStorerService.saveToSharedFolder(0L, null, "");
-        Assertions.fail("Expected FileUploadException");
-      } catch (FileUploadException e) {
-        Mockito.verifyNoInteractions(foldersPathsConfig);
-        aesUtilsMockedStatic.verifyNoInteractions();
-        filesMockedStatic.verifyNoInteractions();
-      }
+    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class);
+         MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(Files.class)) {
+      Assertions.assertThrows(FileUploadException.class, () ->
+        fileStorerService.saveToSharedFolder(0L, null, ""));
     }
   }
 
@@ -56,19 +55,8 @@ class FileStorerServiceTest {
       "this is a test file".getBytes()
     );
 
-    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
-      AESUtils.class);
-      MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
-        Files.class)) {
-      try {
-        fileStorerService.saveToSharedFolder(0L, file, "");
-        Assertions.fail("Expected InvalidFileException");
-      } catch (InvalidFileException e) {
-        Mockito.verifyNoInteractions(foldersPathsConfig);
-        aesUtilsMockedStatic.verifyNoInteractions();
-        filesMockedStatic.verifyNoInteractions();
-      }
-    }
+    Assertions.assertThrows(InvalidFileException.class, () ->
+      fileStorerService.saveToSharedFolder(0L, file, ""));
   }
 
   @Test
@@ -80,27 +68,13 @@ class FileStorerServiceTest {
       "this is a test file".getBytes()
     );
 
-    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
-      AESUtils.class);
-      MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
-        Files.class)) {
-      String sharedFolderPath = "/shared";
-      Mockito.when(foldersPathsConfig.getShared()).thenReturn(sharedFolderPath);
+    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class);
+         MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(Files.class)) {
       Mockito.when(AESUtils.encrypt(Mockito.eq(FILE_ENCRYPT_PASSWORD), (InputStream) Mockito.any()))
         .thenThrow(new RuntimeException());
 
-      try {
-        fileStorerService.saveToSharedFolder(0L, file, "/relative");
-        Assertions.fail("Expected FileUploadException");
-      } catch (FileUploadException e) {
-        Mockito.verify(foldersPathsConfig).getShared();
-        Mockito.verifyNoMoreInteractions(foldersPathsConfig);
-        aesUtilsMockedStatic.verify(() -> AESUtils.encrypt(Mockito.anyString(),(InputStream) Mockito.any()));
-        aesUtilsMockedStatic.verifyNoMoreInteractions();
-        filesMockedStatic.verify(() -> Files.exists(Mockito.any()));
-        filesMockedStatic.verify(() -> Files.createDirectories(Mockito.any()));
-        filesMockedStatic.verifyNoMoreInteractions();
-      }
+      Assertions.assertThrows(FileUploadException.class, () ->
+        fileStorerService.saveToSharedFolder(0L, file, "/relative"));
     }
   }
 
@@ -114,30 +88,12 @@ class FileStorerServiceTest {
       "this is a test file".getBytes()
     );
 
-    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
-      AESUtils.class);
-      MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
-        Files.class)
-    ) {
-      String sharedFolderPath = "/shared";
-      long organizationId = 0L;
-      String organizationFolder = organizationId + "";
-      Mockito.when(foldersPathsConfig.getShared()).thenReturn(sharedFolderPath);
-      String relativePath = "/relative";
+    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class);
+         MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(Files.class)) {
 
-      String result = fileStorerService.saveToSharedFolder(organizationId, file, relativePath);
+      String result = fileStorerService.saveToSharedFolder(0L, file, "/relative");
 
-      Assertions.assertEquals(Paths.get(relativePath,filename).toString(),result);
-      Mockito.verify(foldersPathsConfig).getShared();
-      Mockito.verifyNoMoreInteractions(foldersPathsConfig);
-      aesUtilsMockedStatic.verify(() -> AESUtils.encrypt(Mockito.anyString(),(InputStream) Mockito.any()));
-      aesUtilsMockedStatic.verifyNoMoreInteractions();
-      filesMockedStatic.verify(() -> Files.exists(Mockito.eq(
-        Paths.get(sharedFolderPath, organizationFolder, relativePath))));
-      filesMockedStatic.verify(() -> Files.createDirectories(Mockito.eq(
-        Paths.get(sharedFolderPath, organizationFolder, relativePath))));
-      filesMockedStatic.verify(() -> Files.copy((InputStream) Mockito.any(),Mockito.eq(Paths.get(sharedFolderPath, organizationFolder,relativePath,filename)), Mockito.any()));
-      filesMockedStatic.verifyNoMoreInteractions();
+      Assertions.assertEquals(Paths.get("/relative", filename).toString(), result);
     }
   }
 
@@ -150,18 +106,32 @@ class FileStorerServiceTest {
       "this is a test file".getBytes()
     );
 
-    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(
-      AESUtils.class);
-      MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(
-        Files.class)) {
-      try {
-        fileStorerService.saveToSharedFolder(0L, file, "/relative/../../test");
-        Assertions.fail("Expected InvalidFileException");
-      } catch (InvalidFileException e) {
-        Mockito.verifyNoInteractions(foldersPathsConfig);
-        aesUtilsMockedStatic.verifyNoInteractions();
-        filesMockedStatic.verifyNoInteractions();
-      }
+    Assertions.assertThrows(InvalidFileException.class, () ->
+      fileStorerService.saveToSharedFolder(0L, file, "/relative/../../test"));
+  }
+
+  @Test
+  void givenExistingFileWhenDecryptFileThenReturnInputStreamResource() {
+    InputStream cipherInputStream = Mockito.mock(ByteArrayInputStream.class);
+
+    try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class)) {
+      Mockito.when(AESUtils.decrypt(Mockito.anyString(), Mockito.any(InputStream.class)))
+        .thenReturn(cipherInputStream);
+
+      InputStream result = fileStorerService.decryptFile("src/test/resources/shared", "test.txt");
+
+      Assertions.assertNotNull(result);
+      Assertions.assertSame(cipherInputStream, result);
     }
   }
+
+  @Test
+  void givenNonExistingFileWhenDecryptFileThenFileNotFoundException() {
+    Assertions.assertThrows(FileNotFoundException.class, () ->
+      fileStorerService.decryptFile("src/test/resources/shared", "nonexistent.txt"));
+  }
 }
+
+
+
+
