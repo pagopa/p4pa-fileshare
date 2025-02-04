@@ -52,7 +52,7 @@ jobs:
           azure_devops_pat: ${{ secrets.AZURE_DEVOPS_TOKEN }}
           azure_template_parameters: |
             {
-              "APPS_TOP": "[p4pa-debt-positions]",
+              "APPS_TOP": "[p4pa-fileshare]",
               "POSTMAN_BRANCH": "${{ github.ref_name }}",
-              "TRIGGER_MESSAGE": "p4pa-debt-positions"
+              "TRIGGER_MESSAGE": "p4pa-fileshare"
             }
