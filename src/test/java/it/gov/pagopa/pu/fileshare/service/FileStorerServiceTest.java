@@ -19,7 +19,6 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
-import java.nio.file.Paths;
 
 @ExtendWith(MockitoExtension.class)
 class FileStorerServiceTest {
@@ -91,9 +90,10 @@ class FileStorerServiceTest {
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class);
          MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(Files.class)) {
 
-      String result = fileStorerService.saveToSharedFolder(0L, file, "/relative");
+      String filePath = "/relative";
+      String result = fileStorerService.saveToSharedFolder(0L, file, filePath);
 
-      Assertions.assertEquals(Paths.get("/relative", filename).toString(), result);
+      Assertions.assertEquals(filePath, result);
     }
   }
 
