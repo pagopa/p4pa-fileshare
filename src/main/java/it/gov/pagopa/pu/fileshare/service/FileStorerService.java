@@ -59,7 +59,7 @@ public class FileStorerService {
         "Error uploading file to shared folder %s".formatted(relativePath), e);
     }
     log.debug("File upload to shared folder {} completed", relativePath);
-    return relativeFileLocation.toString();
+    return relativePath;
   }
 
   /**
