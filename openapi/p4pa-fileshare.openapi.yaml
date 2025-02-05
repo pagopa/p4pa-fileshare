@@ -110,6 +110,8 @@ components:
           enum:
             - INVALID_FILE
             - FILE_UPLOAD_ERROR
+            - BAD_REQUEST
+            - GENERIC_ERROR
         message:
           type: string
     FileOrigin:
