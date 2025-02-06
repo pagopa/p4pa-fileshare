@@ -18,9 +18,11 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.ErrorResponse;
+import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.util.stream.Collectors;
 
@@ -48,18 +50,20 @@ public class FileshareExceptionHandler {
     return ResponseEntity.status(HttpStatus.NOT_FOUND).body(ex.getMessage());
   }
 
-  @ExceptionHandler({ValidationException.class, HttpMessageNotReadableException.class, MethodArgumentNotValidException.class})
+  @ExceptionHandler({ValidationException.class, HttpMessageNotReadableException.class, MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class})
   public ResponseEntity<FileshareErrorDTO> handleViolationException(Exception ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, FileshareErrorDTO.CodeEnum.BAD_REQUEST);
   }
 
-  @ExceptionHandler({ServletException.class})
-  public ResponseEntity<FileshareErrorDTO> handleServletException(ServletException ex, HttpServletRequest request) {
+  @ExceptionHandler({ServletException.class, ErrorResponseException.class})
+  public ResponseEntity<FileshareErrorDTO> handleServletException(Exception ex, HttpServletRequest request) {
     HttpStatusCode httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
     FileshareErrorDTO.CodeEnum errorCode = FileshareErrorDTO.CodeEnum.GENERIC_ERROR;
     if (ex instanceof ErrorResponse errorResponse) {
       httpStatus = errorResponse.getStatusCode();
-      if (httpStatus.is4xxClientError()) {
+      if(httpStatus.isSameCodeAs(HttpStatus.NOT_FOUND)) {
+        errorCode = CodeEnum.NOT_FOUND;
+      } else if (httpStatus.is4xxClientError()) {
         errorCode = FileshareErrorDTO.CodeEnum.BAD_REQUEST;
       }
     }

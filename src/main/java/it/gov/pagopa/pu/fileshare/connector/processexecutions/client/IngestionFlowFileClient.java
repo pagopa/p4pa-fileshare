@@ -9,6 +9,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.Objects;
+
 @Slf4j
 @Service
 public class IngestionFlowFileClient {
@@ -19,11 +21,12 @@ public class IngestionFlowFileClient {
     this.processExecutionsApisHolder = processExecutionsApisHolder;
   }
 
-  public String createIngestionFlowFile(IngestionFlowFileRequestDTO ingestionFlowFileDTO, String accessToken) {
+  public Long createIngestionFlowFile(IngestionFlowFileRequestDTO ingestionFlowFileDTO, String accessToken) {
     try {
-      return processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
-        .createIngestionFlowFileWithHttpInfo(ingestionFlowFileDTO)
-        .getHeaders().getFirst(HttpHeaders.LOCATION);
+      return Long.parseLong(Objects.requireNonNull(
+        processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
+          .createIngestionFlowFileWithHttpInfo(ingestionFlowFileDTO)
+          .getHeaders().getFirst(HttpHeaders.LOCATION)));
     } catch (HttpClientErrorException e) {
       log.error("Error creating ingestion flow file", e);
       throw e;

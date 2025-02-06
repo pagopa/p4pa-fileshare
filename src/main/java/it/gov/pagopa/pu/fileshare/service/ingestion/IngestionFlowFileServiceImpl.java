@@ -55,7 +55,7 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
   }
 
   @Override
-  public String uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
+  public Long uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
                                         FileOrigin fileOrigin, MultipartFile ingestionFlowFile, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(ingestionFlowFile, validIngestionFlowFileExt);

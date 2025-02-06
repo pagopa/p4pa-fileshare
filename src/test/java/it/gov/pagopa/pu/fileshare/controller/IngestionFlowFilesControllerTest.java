@@ -52,7 +52,7 @@ class IngestionFlowFilesControllerTest {
     Mockito.when(serviceMock.uploadIngestionFlowFile(Mockito.eq(organizationId),
         Mockito.eq(IngestionFlowFileType.RECEIPT), Mockito.eq(FileOrigin.PAGOPA), Mockito.eq(file),
         Mockito.any(), Mockito.anyString()))
-      .thenReturn("INGESTIONFLOWFILEID");
+      .thenReturn(1L);
 
     mockMvc.perform(multipart("/ingestionflowfiles/" + organizationId)
         .file(file)
@@ -60,7 +60,7 @@ class IngestionFlowFilesControllerTest {
         .param("fileOrigin", FileOrigin.PAGOPA.toString())
         .contentType(MediaType.MULTIPART_FORM_DATA)
       ).andExpect(status().isOk())
-      .andExpect(content().json("{\"ingestionFlowFileId\":\"INGESTIONFLOWFILEID\"}"));
+      .andExpect(content().json("{\"ingestionFlowFileId\":1}"));
   }
 
   @Test
@@ -204,8 +204,7 @@ class IngestionFlowFilesControllerTest {
 
     mockMvc.perform(get("/ingestionflowfiles/{organizationId}/{ingestionFlowFileId}", organizationId, ingestionFlowFileId)
         .contentType(MediaType.APPLICATION_OCTET_STREAM))
-      .andExpect(status().isNotFound())
-      .andExpect(status().reason("File not found"));
+      .andExpect(status().isNotFound());
 
     Mockito.verify(serviceMock).downloadIngestionFlowFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
       Mockito.any(), Mockito.anyString());
