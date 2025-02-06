@@ -73,7 +73,7 @@ class IngestionFlowFileServiceImplTest {
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
-    String expectedIngestionFlowFileId = "INGESTIONFLOWFILEID";
+    Long expectedIngestionFlowFileId = 1L;
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
@@ -86,7 +86,7 @@ class IngestionFlowFileServiceImplTest {
     Mockito.when(ingestionFlowFileClientMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
       .thenReturn(expectedIngestionFlowFileId);
 
-    String result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
+    Long result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
       file, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);

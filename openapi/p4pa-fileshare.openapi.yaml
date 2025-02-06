@@ -110,6 +110,7 @@ components:
           enum:
             - INVALID_FILE
             - FILE_UPLOAD_ERROR
+            - NOT_FOUND
             - BAD_REQUEST
             - GENERIC_ERROR
         message:
@@ -126,4 +127,5 @@ components:
         - ingestionFlowFileId
       properties:
         ingestionFlowFileId:
-          type: string
+          type: integer
+          format: int64

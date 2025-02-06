@@ -37,11 +37,11 @@ class IngestionFlowFileClientTest {
     IngestionFlowFileClient ingestionFlowFileClient = new IngestionFlowFileClient(processExecutionsApisHolderMock);
 
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
-    String expectedIngestionFlowFileId = "INGESTIONFLOWFILEID";
+    Long expectedIngestionFlowFileId = 1L;
     Mockito.when(ingestionFlowFileControllerApiMock.createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO))
-      .thenReturn(ResponseEntity.created(URI.create(expectedIngestionFlowFileId)).build());
+      .thenReturn(ResponseEntity.created(URI.create(String.valueOf(expectedIngestionFlowFileId))).build());
 
-    String result = ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken);
+    Long result = ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
 
