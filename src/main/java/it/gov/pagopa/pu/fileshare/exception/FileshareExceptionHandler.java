@@ -91,6 +91,9 @@ public class FileshareExceptionHandler {
       getRequestDetails(request),
       httpStatus.value(),
       ex.getMessage());
+    if(log.isDebugEnabled() && ex.getCause()!=null){
+      log.debug("CausedBy: ", ex.getCause());
+    }
   }
 
   private static String buildReturnedMessage(Exception ex) {
