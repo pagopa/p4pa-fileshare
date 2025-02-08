@@ -105,7 +105,7 @@ class IngestionFlowFileServiceImplTest {
     String filePathName = "examplePath";
     String fileName = "testFile.zip";
     Path organizationPath = Paths.get(sharedFolderPath, String.valueOf(organizationId));
-    String fullFilePath = organizationPath + "/" + filePathName + "/" + ARCHIVED_SUB_FOLDER + "/" + fileName;
+    Path fullFilePath = organizationPath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
 
     UserInfo user = TestUtils.getSampleUser();
 
@@ -142,7 +142,7 @@ class IngestionFlowFileServiceImplTest {
     String filePathName = "examplePath";
     String fileName = "testFile.zip";
     Path organizationPath = Paths.get(sharedFolderPath, String.valueOf(organizationId));
-    String fullFilePath = organizationPath + "/" + filePathName + "/" + ARCHIVED_SUB_FOLDER + "/" + fileName;
+    Path fullFilePath = organizationPath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
 
     UserInfo user = TestUtils.getSampleUser();
 
@@ -171,7 +171,7 @@ class IngestionFlowFileServiceImplTest {
     String filePathName = "examplePath";
     String fileName = "testFile.zip";
     Path organizationPath = Paths.get(sharedFolderPath, String.valueOf(organizationId));
-    String fullFilePath = organizationPath + "/" + filePathName + "/" + fileName;
+    Path fullFilePath = organizationPath.resolve(filePathName);
 
     UserInfo user = TestUtils.getSampleUser();
 

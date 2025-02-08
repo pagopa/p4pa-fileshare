@@ -74,23 +74,21 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
 
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileClient.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
-    String filePath = getFilePath(organizationId, ingestionFlowFile);
+    Path filePath = getFilePath(organizationId, ingestionFlowFile);
 
-    InputStream decryptedInputStream = fileStorerService.decryptFile(
-      filePath,
-      ingestionFlowFile.getFileName());
+    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, ingestionFlowFile.getFileName());
 
     return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
   }
 
-  private String getFilePath(Long organizationId, IngestionFlowFile ingestionFlowFile) {
+  private Path getFilePath(Long organizationId, IngestionFlowFile ingestionFlowFile) {
     Path organizationBasePath = fileStorerService.buildOrganizationBasePath(organizationId);
-    String filePath;
 
+    Path filePath = organizationBasePath
+      .resolve(ingestionFlowFile.getFilePathName());
     if (ingestionFlowFile.getStatus() == COMPLETED || ingestionFlowFile.getStatus() == ERROR) {
-      filePath = String.format("%s/%s/%s/%s", organizationBasePath, ingestionFlowFile.getFilePathName(), archivedSubFolder, ingestionFlowFile.getFileName());
-    } else {
-      filePath = String.format("%s/%s/%s", organizationBasePath, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName());
+      filePath = filePath
+        .resolve(archivedSubFolder);
     }
     return filePath;
   }

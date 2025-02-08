@@ -1,5 +1,8 @@
 package it.gov.pagopa.pu.fileshare.util;
 
+import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Test;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -8,8 +11,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
-import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.Test;
 
 class AESUtilsTest {
 
@@ -24,7 +25,7 @@ class AESUtilsTest {
         String result = AESUtils.decrypt(psw, cipher);
 
         // Then
-        Assertions.assertEquals(result, plain);
+        Assertions.assertEquals(plain, result);
     }
 
     @Test
@@ -38,7 +39,7 @@ class AESUtilsTest {
         InputStream resultStream = AESUtils.decrypt(psw, cipherStream);
 
         // Then
-        Assertions.assertEquals(new String(resultStream.readAllBytes(), StandardCharsets.UTF_8), plain);
+        Assertions.assertEquals(plain, new String(resultStream.readAllBytes(), StandardCharsets.UTF_8));
     }
 
     @Test
@@ -57,4 +58,38 @@ class AESUtilsTest {
         // Then
         Assertions.assertEquals(Files.readAllLines(decryptedFile), List.of(plain));
     }
+
+  @Test
+  void testFileThroughInputStream() throws IOException {
+    // Given
+    String plain = "PLAINTEXT";
+    String psw = "PSW";
+
+    Path targetPath = Path.of("build", "tmp");
+    String fileName = "cipherFile2.txt";
+
+    // When
+    AESUtils.encryptAndSave(psw, new ByteArrayInputStream(plain.getBytes(StandardCharsets.UTF_8)), targetPath, fileName);
+    try (InputStream decrypted = AESUtils.decrypt(psw, targetPath, fileName)) {
+      // Then
+      Assertions.assertEquals(plain, new String(decrypted.readAllBytes(), StandardCharsets.UTF_8));
+    }
+  }
+
+  @Test
+  void testFileThroughInputStreamUsingAlreadyExtendedFileName() throws IOException {
+    // Given
+    String plain = "PLAINTEXT";
+    String psw = "PSW";
+
+    Path targetPath = Path.of("build", "tmp");
+    String fileName = "cipherFile2.txt";
+
+    // When
+    AESUtils.encryptAndSave(psw, new ByteArrayInputStream(plain.getBytes(StandardCharsets.UTF_8)), targetPath, fileName);
+    try (InputStream decrypted = AESUtils.decrypt(psw, targetPath.resolve(fileName + AESUtils.CIPHER_EXTENSION).toFile())) {
+      // Then
+      Assertions.assertEquals(plain, new String(decrypted.readAllBytes(), StandardCharsets.UTF_8));
+    }
+  }
 }
