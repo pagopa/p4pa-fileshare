@@ -10,6 +10,7 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -33,13 +34,13 @@ public class AESUtils {
 
   public static final String CIPHER_EXTENSION = ".cipher";
 
-  public static byte[] getRandomNonce(int length) {
+  private static byte[] getRandomNonce(int length) {
     byte[] nonce = new byte[length];
     new SecureRandom().nextBytes(nonce);
     return nonce;
   }
 
-  public static SecretKey getSecretKey(String password, byte[] salt) {
+  private static SecretKey getSecretKey(String password, byte[] salt) {
     KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGTH);
 
     try {
@@ -50,6 +51,7 @@ public class AESUtils {
     }
   }
 
+  /** It will encrypt the input message using the provided password */
   public static byte[] encrypt(String password, String plainMessage) {
     byte[] salt = getRandomNonce(SALT_LENGTH_BYTE);
     SecretKey secretKey = getSecretKey(password, salt);
@@ -68,6 +70,7 @@ public class AESUtils {
       .array();
   }
 
+  /** It will wrap the provided inputStream into a ciphered inputStream using the provided password */
   public static InputStream encrypt(String password, InputStream plainStream) {
     byte[] salt = getRandomNonce(SALT_LENGTH_BYTE);
     SecretKey secretKey = getSecretKey(password, salt);
@@ -87,6 +90,8 @@ public class AESUtils {
       new CipherInputStream(new BufferedInputStream(plainStream), cipher));
   }
 
+  /** It will read and store the provided inputStream as a ciphered file using the provided password.<BR />
+   * If the ciphered file already exists, it will throw {@link java.nio.file.FileAlreadyExistsException} */
   public static void encryptAndSave(String password, InputStream plainStream, Path targetPath, String fileName)
     throws IOException {
     Path targetCipherFile = targetPath.resolve(fileName + CIPHER_EXTENSION);
@@ -96,6 +101,8 @@ public class AESUtils {
     }
   }
 
+  /** It will cipher the provided file using the provided password.<BR />
+   * If the ciphered file already exists, it will throw {@link java.nio.file.FileAlreadyExistsException} */
   public static File encrypt(String password, File plainFile) {
     File cipherFile = new File(plainFile.getAbsolutePath() + CIPHER_EXTENSION);
     try (FileInputStream fis = new FileInputStream(plainFile);
@@ -107,6 +114,7 @@ public class AESUtils {
     return cipherFile;
   }
 
+  /** It will decrypt the provided cipher message using the provided password */
   public static String decrypt(String password, byte[] cipherMessage) {
     ByteBuffer byteBuffer = ByteBuffer.wrap(cipherMessage);
 
@@ -126,6 +134,7 @@ public class AESUtils {
     return new String(decryptedMessageByte, UTF_8);
   }
 
+  /** It will wrap the provided inputStream into a decrypted inputStream using the provided password */
   public static InputStream decrypt(String password, InputStream cipherStream) {
     try {
       byte[] iv = cipherStream.readNBytes(IV_LENGTH_BYTE);
@@ -140,25 +149,30 @@ public class AESUtils {
     }
   }
 
+  /** @see #decrypt(String, Path, String, File)  */
   public static void decrypt(String password, File cipherFile, File outputPlainFile){
     AESUtils.decrypt(password, cipherFile.getParentFile().toPath(), cipherFile.getName(), outputPlainFile);
   }
 
+  /** It will decrypt the provided file using the provided password.<BR />
+   * If the decrypted file already exists, it will override it */
   public static void decrypt(String password, Path filePath, String fileName, File outputPlainFile) {
     Path cipherFilePath = resolveCipherFilePath(filePath, fileName);
 
     try (FileInputStream fis = new FileInputStream(cipherFilePath.toFile());
          InputStream plainStream = decrypt(password, fis)) {
-      Files.copy(plainStream, outputPlainFile.toPath());
+      Files.copy(plainStream, outputPlainFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
     } catch (IOException e) {
       throw new IllegalStateException("Something went wrong when deciphering input file " + cipherFilePath, e);
     }
   }
 
+  /** @see #decrypt(String, Path, String, File)  */
   public static InputStream decrypt(String password, File cipherFile){
     return AESUtils.decrypt(password, cipherFile.getParentFile().toPath(), cipherFile.getName());
   }
 
+  /** It will create an InputStream to read the provided file decrypting it using the given password */
   public static InputStream decrypt(String password, Path filePath, String fileName) {
     Path cipherFilePath = resolveCipherFilePath(filePath, fileName);
     try {
