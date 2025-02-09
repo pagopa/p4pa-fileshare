@@ -40,20 +40,20 @@ class FileStorerServiceTest {
   @Test
   void givenInvalidFileWhenSaveToSharedFolderThenFileUploadException() {
     Assertions.assertThrows(FileUploadException.class, () ->
-        fileStorerService.saveToSharedFolder(0L, null, ""));
+        fileStorerService.saveToSharedFolder(0L, null, "", ""));
   }
 
   @Test
   void givenInvalidFilenameWhenSaveToSharedFolderThenInvalidFileException() {
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
-      "../test.txt",
+      "test.txt",
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
 
     Assertions.assertThrows(InvalidFileException.class, () ->
-      fileStorerService.saveToSharedFolder(0L, file, ""));
+      fileStorerService.saveToSharedFolder(0L, file, "", "../test.txt"));
   }
 
   @Test
@@ -66,6 +66,7 @@ class FileStorerServiceTest {
     ));
     long organizationId = 0L;
     String relativePath = "relative";
+    String fileName = fileSpy.getOriginalFilename();
 
     InputStream inpustStreamMock = Mockito.mock(InputStream.class);
     Mockito.doReturn(inpustStreamMock)
@@ -76,11 +77,11 @@ class FileStorerServiceTest {
       aesUtilsMockedStatic.when(() -> AESUtils.encryptAndSave(FILE_ENCRYPT_PASSWORD,
           inpustStreamMock,
           Path.of(sharedFolder).resolve(organizationId+"").resolve(relativePath),
-          fileSpy.getOriginalFilename()))
+          fileName))
         .thenThrow(new RuntimeException());
 
       Assertions.assertThrows(FileUploadException.class, () ->
-        fileStorerService.saveToSharedFolder(organizationId, fileSpy, relativePath));
+        fileStorerService.saveToSharedFolder(organizationId, fileSpy, relativePath, fileName));
     }
   }
 
@@ -94,6 +95,7 @@ class FileStorerServiceTest {
     ));
     long organizationId = 0L;
     String relativeFilePath = "relative";
+    String fileName = fileSpy.getOriginalFilename();
 
     InputStream inpustStreamMock = Mockito.mock(InputStream.class);
     Mockito.doReturn(inpustStreamMock)
@@ -102,13 +104,13 @@ class FileStorerServiceTest {
 
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class)) {
 
-      String result = fileStorerService.saveToSharedFolder(organizationId, fileSpy, relativeFilePath);
+      String result = fileStorerService.saveToSharedFolder(organizationId, fileSpy, relativeFilePath, fileName);
 
       Assertions.assertEquals(relativeFilePath, result);
       aesUtilsMockedStatic.verify(() -> AESUtils.encryptAndSave(FILE_ENCRYPT_PASSWORD,
         inpustStreamMock,
         Path.of(sharedFolder).resolve(organizationId+"").resolve(relativeFilePath),
-        fileSpy.getOriginalFilename()));
+        fileName));
     }
   }
 
@@ -122,7 +124,7 @@ class FileStorerServiceTest {
     );
 
     Assertions.assertThrows(InvalidFileException.class, () ->
-      fileStorerService.saveToSharedFolder(0L, file, "relative/../../test"));
+      fileStorerService.saveToSharedFolder(0L, file, "relative/../../test", ""));
   }
 
   @Test

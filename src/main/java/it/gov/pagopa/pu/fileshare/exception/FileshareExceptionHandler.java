@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.fileshare.exception;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import jakarta.servlet.ServletException;
@@ -24,7 +25,6 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.io.FileNotFoundException;
-import java.nio.file.FileAlreadyExistsException;
 import java.util.stream.Collectors;
 
 /**
@@ -51,8 +51,8 @@ public class FileshareExceptionHandler {
     return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
   }
 
-  @ExceptionHandler({FileAlreadyExistsException.class})
-  public ResponseEntity<FileshareErrorDTO> handleFileAlreadyExistsException(FileAlreadyExistsException ex, HttpServletRequest request) {
+  @ExceptionHandler({FileAlreadyExistsException.class, java.nio.file.FileAlreadyExistsException.class})
+  public ResponseEntity<FileshareErrorDTO> handleFileAlreadyExistsException(Exception ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.CONFLICT, CodeEnum.CONFLICT);
   }
 

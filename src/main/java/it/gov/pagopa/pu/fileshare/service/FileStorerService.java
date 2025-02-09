@@ -30,16 +30,16 @@ public class FileStorerService {
     this.fileEncryptPassword = fileEncryptPassword;
   }
 
-  public String saveToSharedFolder(Long organizationId, MultipartFile file, String relativePath) {
+  public String saveToSharedFolder(Long organizationId, MultipartFile file, String relativePath, String fileName) {
     if (file == null) {
       log.debug("File is mandatory");
       throw new FileUploadException("File is mandatory");
     }
 
-    String filename = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(file.getOriginalFilename()));
-    FileService.validateFilename(filename);
+    fileName = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(fileName));
+    FileService.validateFilename(fileName);
 
-    Path relativeFileLocation = concatenatePaths(relativePath, filename);
+    Path relativeFileLocation = concatenatePaths(relativePath, fileName);
     Path organizationBasePath = buildOrganizationBasePath(organizationId);
     Path absolutePath = concatenatePaths(organizationBasePath.toString(), relativeFileLocation.toString());
 
