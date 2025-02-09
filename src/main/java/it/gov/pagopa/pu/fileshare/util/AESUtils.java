@@ -18,6 +18,10 @@ import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.KeySpec;
 
+/**
+ * Utility class for AES encryption and decryption using the GCM mode.
+ * Supports secure handling of files and data streams.
+ */
 public class AESUtils {
   private AESUtils() {
   }
@@ -34,12 +38,17 @@ public class AESUtils {
 
   public static final String CIPHER_EXTENSION = ".cipher";
 
+  /** Generates a random byte array to be used as a nonce. */
   private static byte[] getRandomNonce(int length) {
     byte[] nonce = new byte[length];
     new SecureRandom().nextBytes(nonce);
     return nonce;
   }
 
+  /**
+   * Derives an AES key from a password and a cryptographic salt using PBKDF2.
+   * @throws IllegalStateException if the key derivation fails.
+   */
   private static SecretKey getSecretKey(String password, byte[] salt) {
     KeySpec spec = new PBEKeySpec(password.toCharArray(), salt, ITERATION_COUNT, KEY_LENGTH);
 
@@ -51,7 +60,7 @@ public class AESUtils {
     }
   }
 
-  /** It will encrypt the input message using the provided password */
+  /** It will encrypt the input message using AES GCM mode configured with the provided password */
   public static byte[] encrypt(String password, String plainMessage) {
     byte[] salt = getRandomNonce(SALT_LENGTH_BYTE);
     SecretKey secretKey = getSecretKey(password, salt);
@@ -70,7 +79,7 @@ public class AESUtils {
       .array();
   }
 
-  /** It will wrap the provided inputStream into a ciphered inputStream using the provided password */
+  /** It will wrap the provided inputStream into a ciphered inputStream using AES GCM mode configured with the provided password */
   public static InputStream encrypt(String password, InputStream plainStream) {
     byte[] salt = getRandomNonce(SALT_LENGTH_BYTE);
     SecretKey secretKey = getSecretKey(password, salt);
@@ -90,7 +99,7 @@ public class AESUtils {
       new CipherInputStream(new BufferedInputStream(plainStream), cipher));
   }
 
-  /** It will read and store the provided inputStream as a ciphered file using the provided password.<BR />
+  /** It will read and store the provided inputStream as a ciphered file using AES GCM mode configured with the provided password.<BR />
    * If the ciphered file already exists, it will throw {@link java.nio.file.FileAlreadyExistsException} */
   public static void encryptAndSave(String password, InputStream plainStream, Path targetPath, String fileName)
     throws IOException {
@@ -101,7 +110,7 @@ public class AESUtils {
     }
   }
 
-  /** It will cipher the provided file using the provided password.<BR />
+  /** It will cipher the provided file using AES GCM mode configured with the provided password.<BR />
    * If the ciphered file already exists, it will throw {@link java.nio.file.FileAlreadyExistsException} */
   public static File encrypt(String password, File plainFile) {
     File cipherFile = new File(plainFile.getAbsolutePath() + CIPHER_EXTENSION);
@@ -114,7 +123,7 @@ public class AESUtils {
     return cipherFile;
   }
 
-  /** It will decrypt the provided cipher message using the provided password */
+  /** It will decrypt the provided cipher message using AES GCM mode configured with the provided password */
   public static String decrypt(String password, byte[] cipherMessage) {
     ByteBuffer byteBuffer = ByteBuffer.wrap(cipherMessage);
 
@@ -134,7 +143,7 @@ public class AESUtils {
     return new String(decryptedMessageByte, UTF_8);
   }
 
-  /** It will wrap the provided inputStream into a decrypted inputStream using the provided password */
+  /** It will wrap the provided inputStream into a decrypted inputStream using AES GCM mode configured with the provided password */
   public static InputStream decrypt(String password, InputStream cipherStream) {
     try {
       byte[] iv = cipherStream.readNBytes(IV_LENGTH_BYTE);
@@ -154,7 +163,7 @@ public class AESUtils {
     AESUtils.decrypt(password, cipherFile.getParentFile().toPath(), cipherFile.getName(), outputPlainFile);
   }
 
-  /** It will decrypt the provided file using the provided password.<BR />
+  /** It will decrypt the provided file using AES GCM mode configured with the provided password.<BR />
    * If the decrypted file already exists, it will override it */
   public static void decrypt(String password, Path filePath, String fileName, File outputPlainFile) {
     Path cipherFilePath = resolveCipherFilePath(filePath, fileName);
@@ -172,7 +181,7 @@ public class AESUtils {
     return AESUtils.decrypt(password, cipherFile.getParentFile().toPath(), cipherFile.getName());
   }
 
-  /** It will create an InputStream to read the provided file decrypting it using the given password */
+  /** It will create an InputStream to read the provided file decrypting it using AES GCM mode configured with the given password */
   public static InputStream decrypt(String password, Path filePath, String fileName) {
     Path cipherFilePath = resolveCipherFilePath(filePath, fileName);
     try {
@@ -182,6 +191,7 @@ public class AESUtils {
     }
   }
 
+  /** A ciphered file should have {@link #CIPHER_EXTENSION} extension  */
   private static Path resolveCipherFilePath(Path filePath, String fileName) {
     Path cipherFilePath;
     if(fileName.endsWith(CIPHER_EXTENSION)) {
@@ -200,6 +210,15 @@ public class AESUtils {
     }
   }
 
+  /**
+   * Initializes a Cipher instance with the specified mode, secret key, and IV.
+   *
+   * @param mode the cipher mode (Cipher.ENCRYPT_MODE or Cipher.DECRYPT_MODE).
+   * @param secretKey the secret key.
+   * @param iv the initialization vector.
+   * @return an initialized Cipher instance.
+   * @throws IllegalStateException if cipher initialization fails.
+   */
   private static Cipher initCipher(int mode, SecretKey secretKey, byte[] iv) {
     try {
       Cipher cipher = Cipher.getInstance(ALGORITHM);
