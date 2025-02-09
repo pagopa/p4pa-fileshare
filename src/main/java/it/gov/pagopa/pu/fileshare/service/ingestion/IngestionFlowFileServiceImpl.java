@@ -108,8 +108,8 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
     Path filePath = fileStorerService.buildOrganizationBasePath(organizationId)
       .resolve(ingestionFlowFilePath);
     String fileNameCiphered = fileName + AESUtils.CIPHER_EXTENSION;
-    return Files.exists(filePath.resolve(fileNameCiphered))
-      || Files.exists(filePath.resolve(archivedSubFolder).resolve(fileNameCiphered));
+    return Files.exists(FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered))
+      || Files.exists(FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered));
   }
 
 }

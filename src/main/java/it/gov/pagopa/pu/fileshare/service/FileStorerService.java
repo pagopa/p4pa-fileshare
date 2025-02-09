@@ -61,7 +61,7 @@ public class FileStorerService {
    * This method expects two paths whose concatenation does not resolve into an outer folder.
    * The normalized path still starts with the first path.
    */
-  private Path concatenatePaths(String firstPath, String secondPath) {
+  public static Path concatenatePaths(String firstPath, String secondPath) {
     Path concatenatedPath = Paths.get(firstPath, secondPath).normalize();
     if (!concatenatedPath.startsWith(firstPath)) {
       log.debug("Invalid file path");
