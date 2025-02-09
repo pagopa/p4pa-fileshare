@@ -10,7 +10,6 @@ import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.NoSuchAlgorithmException;
@@ -93,7 +92,7 @@ public class AESUtils {
     Path targetCipherFile = targetPath.resolve(fileName + CIPHER_EXTENSION);
     try (InputStream is = plainStream;
          InputStream cipherIs = encrypt(password, is)) {
-      Files.copy(cipherIs, targetCipherFile, StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(cipherIs, targetCipherFile);
     }
   }
 
@@ -101,7 +100,7 @@ public class AESUtils {
     File cipherFile = new File(plainFile.getAbsolutePath() + CIPHER_EXTENSION);
     try (FileInputStream fis = new FileInputStream(plainFile);
          InputStream cipherStream = encrypt(password, fis)) {
-      Files.copy(cipherStream, cipherFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(cipherStream, cipherFile.toPath());
     } catch (IOException e) {
       throw new IllegalStateException("Something went wrong when ciphering input file " + plainFile.getAbsolutePath(), e);
     }
@@ -150,7 +149,7 @@ public class AESUtils {
 
     try (FileInputStream fis = new FileInputStream(cipherFilePath.toFile());
          InputStream plainStream = decrypt(password, fis)) {
-      Files.copy(plainStream, outputPlainFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+      Files.copy(plainStream, outputPlainFile.toPath());
     } catch (IOException e) {
       throw new IllegalStateException("Something went wrong when deciphering input file " + cipherFilePath, e);
     }
