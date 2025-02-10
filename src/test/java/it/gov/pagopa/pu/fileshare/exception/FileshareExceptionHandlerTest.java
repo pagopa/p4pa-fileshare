@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.fileshare.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.fileshare.config.json.JsonConfig;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import jakarta.servlet.ServletException;
@@ -36,6 +36,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
+import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -123,12 +124,36 @@ class FileshareExceptionHandlerTest {
   }
 
   @Test
-  void handleFileDecryptionException() throws Exception {
-    doThrow(new FileNotFoundException("File not found")).when(testControllerSpy).testEndpoint(DATA, BODY);
+  void handleFileNotFoundException() throws Exception {
+    doThrow(new FileNotFoundException("File not found"))
+      .when(requestMappingHandlerAdapterSpy).handle(any(), any(), any());
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
-      .andExpect(MockMvcResultMatchers.content().string("File not found"));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("NOT_FOUND"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("File not found"));
+  }
+
+  @Test
+  void handleFileAlreadyExistsException() throws Exception {
+    doThrow(new java.nio.file.FileAlreadyExistsException("Conflict"))
+      .when(requestMappingHandlerAdapterSpy).handle(any(), any(), any());
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isConflict())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CONFLICT"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Conflict"));
+  }
+
+  @Test
+  void handleCustomFileAlreadyExistsException() throws Exception {
+    doThrow(new FileAlreadyExistsException("Conflict"))
+      .when(requestMappingHandlerAdapterSpy).handle(any(), any(), any());
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isConflict())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CONFLICT"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Conflict"));
   }
 
   @Test
@@ -138,7 +163,6 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("BAD_REQUEST"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Required request parameter 'data' for method parameter type String is not present"));
-
   }
 
   @Test

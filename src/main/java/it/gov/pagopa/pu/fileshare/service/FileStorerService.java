@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.fileshare.service;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.util.AESUtils;
@@ -11,14 +10,10 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
 
 @Slf4j
 @Service
@@ -35,16 +30,16 @@ public class FileStorerService {
     this.fileEncryptPassword = fileEncryptPassword;
   }
 
-  public String saveToSharedFolder(Long organizationId, MultipartFile file, String relativePath) {
+  public String saveToSharedFolder(Long organizationId, MultipartFile file, String relativePath, String fileName) {
     if (file == null) {
       log.debug("File is mandatory");
       throw new FileUploadException("File is mandatory");
     }
 
-    String filename = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(file.getOriginalFilename()));
-    FileService.validateFilename(filename);
+    fileName = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(fileName));
+    FileService.validateFilename(fileName);
 
-    Path relativeFileLocation = concatenatePaths(relativePath, filename);
+    Path relativeFileLocation = concatenatePaths(relativePath, fileName);
     Path organizationBasePath = buildOrganizationBasePath(organizationId);
     Path absolutePath = concatenatePaths(organizationBasePath.toString(), relativeFileLocation.toString());
 
@@ -53,7 +48,7 @@ public class FileStorerService {
       if (!Files.exists(absolutePath.getParent())) {
         Files.createDirectories(absolutePath.getParent());
       }
-      encryptAndSaveFile(file, absolutePath);
+      AESUtils.encryptAndSave(fileEncryptPassword, file.getInputStream(), absolutePath.getParent(), absolutePath.getFileName().toString());
     } catch (Exception e) {
       throw new FileUploadException(
         "Error uploading file to shared folder %s".formatted(relativePath), e);
@@ -66,7 +61,7 @@ public class FileStorerService {
    * This method expects two paths whose concatenation does not resolve into an outer folder.
    * The normalized path still starts with the first path.
    */
-  private Path concatenatePaths(String firstPath, String secondPath) {
+  public static Path concatenatePaths(String firstPath, String secondPath) {
     Path concatenatedPath = Paths.get(firstPath, secondPath).normalize();
     if (!concatenatedPath.startsWith(firstPath)) {
       log.debug("Invalid file path");
@@ -75,33 +70,8 @@ public class FileStorerService {
     return concatenatedPath;
   }
 
-  private void encryptAndSaveFile(MultipartFile file, Path fileLocation)
-    throws IOException {
-    try (InputStream is = file.getInputStream();
-         InputStream cipherIs = AESUtils.encrypt(fileEncryptPassword, is)) {
-      Files.copy(cipherIs, fileLocation, StandardCopyOption.REPLACE_EXISTING);
-    }
-  }
-
-  public InputStream decryptFile(String filePath, String fileName) {
-    try {
-      // Build the complete file path
-      File file = Paths.get(filePath, fileName).toFile();
-      if (!file.exists() || !file.isFile()) {
-        log.warn("decryptFile - File [{}] not found", file.getAbsolutePath());
-        throw new FileNotFoundException("File not found: " + file.getAbsolutePath());
-      }
-
-      InputStream inputStream = new FileInputStream(file);
-
-      log.debug("decryptFile - Decrypting file [{}]", file.getName());
-      inputStream = AESUtils.decrypt(fileEncryptPassword, inputStream);
-
-      return inputStream;
-    } catch (IOException e) {
-      log.error("decryptFile - Error while decrypting file [{}]", filePath, e);
-      throw new IllegalStateException("Error while decrypting the file", e);
-    }
+  public InputStream decryptFile(Path filePath, String fileName) {
+    return AESUtils.decrypt(fileEncryptPassword, filePath, fileName);
   }
 
   public Path buildOrganizationBasePath(Long organizationId) {

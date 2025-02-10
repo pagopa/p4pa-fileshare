@@ -111,6 +111,7 @@ components:
             - INVALID_FILE
             - FILE_UPLOAD_ERROR
             - NOT_FOUND
+            - CONFLICT
             - BAD_REQUEST
             - GENERIC_ERROR
         message:

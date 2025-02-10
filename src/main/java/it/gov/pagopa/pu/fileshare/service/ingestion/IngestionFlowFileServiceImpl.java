@@ -5,10 +5,12 @@ import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFl
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
+import it.gov.pagopa.pu.fileshare.util.AESUtils;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile.StatusEnum.COMPLETED;
@@ -59,8 +62,16 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
                                         FileOrigin fileOrigin, MultipartFile ingestionFlowFile, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(ingestionFlowFile, validIngestionFlowFileExt);
+
+    String fileName = ingestionFlowFile.getOriginalFilename();
+    String ingestionFlowFilePath = foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType);
+
+    if(checkIfAlreadyUploadedOrArchived(organizationId, ingestionFlowFilePath, fileName)) {
+      throw new FileAlreadyExistsException("File already uploaded or archived");
+    }
+
     String filePath = fileStorerService.saveToSharedFolder(organizationId, ingestionFlowFile,
-      foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType));
+      ingestionFlowFilePath, fileName);
 
     return ingestionFlowFileClient.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFile,
@@ -74,25 +85,31 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
 
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileClient.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
-    String filePath = getFilePath(organizationId, ingestionFlowFile);
+    Path filePath = getFilePath(ingestionFlowFile);
 
-    InputStream decryptedInputStream = fileStorerService.decryptFile(
-      filePath,
-      ingestionFlowFile.getFileName());
+    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, ingestionFlowFile.getFileName());
 
     return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
   }
 
-  private String getFilePath(Long organizationId, IngestionFlowFile ingestionFlowFile) {
-    Path organizationBasePath = fileStorerService.buildOrganizationBasePath(organizationId);
-    String filePath;
+  private Path getFilePath(IngestionFlowFile ingestionFlowFile) {
+    Path organizationBasePath = fileStorerService.buildOrganizationBasePath(ingestionFlowFile.getOrganizationId());
 
+    Path filePath = organizationBasePath
+      .resolve(ingestionFlowFile.getFilePathName());
     if (ingestionFlowFile.getStatus() == COMPLETED || ingestionFlowFile.getStatus() == ERROR) {
-      filePath = String.format("%s/%s/%s/%s", organizationBasePath, ingestionFlowFile.getFilePathName(), archivedSubFolder, ingestionFlowFile.getFileName());
-    } else {
-      filePath = String.format("%s/%s/%s", organizationBasePath, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName());
+      filePath = filePath
+        .resolve(archivedSubFolder);
     }
     return filePath;
+  }
+
+  private boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String ingestionFlowFilePath, String fileName) {
+    Path filePath = fileStorerService.buildOrganizationBasePath(organizationId)
+      .resolve(ingestionFlowFilePath);
+    String fileNameCiphered = fileName + AESUtils.CIPHER_EXTENSION;
+    return Files.exists(FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered))
+      || Files.exists(FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered));
   }
 
 }
