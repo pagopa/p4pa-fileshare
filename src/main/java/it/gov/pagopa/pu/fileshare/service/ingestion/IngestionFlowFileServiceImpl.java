@@ -59,11 +59,11 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
 
   @Override
   public Long uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
-                                        FileOrigin fileOrigin, MultipartFile ingestionFlowFile, UserInfo user, String accessToken) {
+                                      FileOrigin fileOrigin, String fileName, MultipartFile ingestionFlowFile,
+                                      UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(ingestionFlowFile, validIngestionFlowFileExt);
 
-    String fileName = ingestionFlowFile.getOriginalFilename();
     String ingestionFlowFilePath = foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType);
 
     if(checkIfAlreadyUploadedOrArchived(organizationId, ingestionFlowFilePath, fileName)) {

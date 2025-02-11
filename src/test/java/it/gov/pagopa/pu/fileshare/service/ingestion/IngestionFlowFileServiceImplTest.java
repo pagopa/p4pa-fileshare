@@ -81,6 +81,7 @@ class IngestionFlowFileServiceImplTest {
     Path organizationBasePath = Path.of("/organizationFolder");
     String receiptFilePath = "/receipt";
     String filePath = "/filepath";
+    String fileName = "fileName.txt";
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test" + VALID_FILE_EXTENSION,
@@ -94,7 +95,7 @@ class IngestionFlowFileServiceImplTest {
       .thenReturn(organizationBasePath);
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
-    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, file.getOriginalFilename()))
+    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(filePath);
     Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
         IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath))
@@ -103,7 +104,7 @@ class IngestionFlowFileServiceImplTest {
       .thenReturn(expectedIngestionFlowFileId);
 
     Long result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
-      file, TestUtils.getSampleUser(), accessToken);
+      fileName, file, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
@@ -122,7 +123,7 @@ class IngestionFlowFileServiceImplTest {
 
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
-      fileName,
+      "orginalFileName.txt",
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
@@ -142,7 +143,7 @@ class IngestionFlowFileServiceImplTest {
 
       Assertions.assertThrows(FileAlreadyExistsException.class, () -> ingestionFlowFileService
         .uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
-          file, userInfo, accessToken));
+          fileName, file, userInfo, accessToken));
 
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, userInfo, accessToken);
       Mockito.verify(fileServiceMock).validateFile(file, VALID_FILE_EXTENSION);
@@ -161,7 +162,7 @@ class IngestionFlowFileServiceImplTest {
 
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
-      fileName,
+      "originalFileName.txt",
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
@@ -187,7 +188,7 @@ class IngestionFlowFileServiceImplTest {
 
       Assertions.assertThrows(FileAlreadyExistsException.class, () -> ingestionFlowFileService
         .uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
-          file, userInfo, accessToken));
+          fileName, file, userInfo, accessToken));
 
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, userInfo, accessToken);
       Mockito.verify(fileServiceMock).validateFile(file, VALID_FILE_EXTENSION);
