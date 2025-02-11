@@ -28,6 +28,11 @@ paths:
           required: true
           schema:
             $ref: "#/components/schemas/FileOrigin"
+        - name: fileName
+          in: query
+          required: true
+          schema:
+            type: string
       requestBody:
         content:
           'multipart/form-data':

@@ -41,6 +41,7 @@ class IngestionFlowFilesControllerTest {
   @Test
   void givenCorrectRequestWhenUploadIngestionFlowFileThenOk() throws Exception {
     long organizationId = 1L;
+    String fileName = "fileName.txt";
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test.txt",
@@ -50,14 +51,15 @@ class IngestionFlowFilesControllerTest {
     TestUtils.addSampleUserIntoSecurityContext();
 
     Mockito.when(serviceMock.uploadIngestionFlowFile(Mockito.eq(organizationId),
-        Mockito.eq(IngestionFlowFileType.RECEIPT), Mockito.eq(FileOrigin.PAGOPA), Mockito.eq(file),
-        Mockito.any(), Mockito.anyString()))
+        Mockito.eq(IngestionFlowFileType.RECEIPT), Mockito.eq(FileOrigin.PAGOPA), Mockito.eq(fileName),
+        Mockito.eq(file), Mockito.any(), Mockito.anyString()))
       .thenReturn(1L);
 
     mockMvc.perform(multipart("/ingestionflowfiles/" + organizationId)
         .file(file)
         .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
         .param("fileOrigin", FileOrigin.PAGOPA.toString())
+        .param("fileName", fileName)
         .contentType(MediaType.MULTIPART_FORM_DATA)
       ).andExpect(status().isOk())
       .andExpect(content().json("{\"ingestionFlowFileId\":1}"));
@@ -78,31 +80,35 @@ class IngestionFlowFilesControllerTest {
       .file(file)
       .param("ingestionFlowFileType", "WrongValue")
       .param("fileOrigin", FileOrigin.PAGOPA.toString())
+      .param("fileName", file.getName())
       .contentType(MediaType.MULTIPART_FORM_DATA)
     ).andExpect(status().is4xxClientError());
 
     Mockito.verify(serviceMock, Mockito.times(0)).uploadIngestionFlowFile(Mockito.any(),
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
   }
 
   @Test
   void givenNoFileWhenUploadIngestionFlowFileThenError() throws Exception {
     long organizationId = 1L;
+    String fileName = "fileName.txt";
     TestUtils.addSampleUserIntoSecurityContext();
 
     mockMvc.perform(multipart("/ingestionflowfiles/" + organizationId)
       .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
       .param("fileOrigin", FileOrigin.PAGOPA.toString())
+      .param("fileName",fileName)
       .contentType(MediaType.MULTIPART_FORM_DATA)
     ).andExpect(status().is4xxClientError());
 
     Mockito.verify(serviceMock, Mockito.times(0)).uploadIngestionFlowFile(Mockito.any(),
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
   }
 
   @Test
   void givenNoIngestionFlowFileTypeWhenUploadIngestionFlowFileThenError() throws Exception {
     long organizationId = 1L;
+    String fileName = "fileName.txt";
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test.txt",
@@ -115,15 +121,17 @@ class IngestionFlowFilesControllerTest {
       .file(file)
       .param("fileOrigin", FileOrigin.PAGOPA.toString())
       .contentType(MediaType.MULTIPART_FORM_DATA)
+      .param("fileName",fileName)
     ).andExpect(status().is4xxClientError());
 
     Mockito.verify(serviceMock, Mockito.times(0)).uploadIngestionFlowFile(Mockito.any(),
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
   }
 
   @Test
   void givenInvalidFileOriginWhenUploadIngestionFlowFileThenError() throws Exception {
     long organizationId = 1L;
+    String fileName = "fileName.txt";
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test.txt",
@@ -136,16 +144,18 @@ class IngestionFlowFilesControllerTest {
       .file(file)
       .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
       .param("fileOrigin", "WrongValue")
+      .param("fileName",fileName)
       .contentType(MediaType.MULTIPART_FORM_DATA)
     ).andExpect(status().is4xxClientError());
 
     Mockito.verify(serviceMock, Mockito.times(0)).uploadIngestionFlowFile(Mockito.any(),
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
   }
 
   @Test
   void givenNoFileOriginWhenUploadIngestionFlowFileThenError() throws Exception {
     long organizationId = 1L;
+    String fileName = "fileName.txt";
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test.txt",
@@ -158,10 +168,11 @@ class IngestionFlowFilesControllerTest {
       .file(file)
       .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
       .contentType(MediaType.MULTIPART_FORM_DATA)
+      .param("fileName",fileName)
     ).andExpect(status().is4xxClientError());
 
     Mockito.verify(serviceMock, Mockito.times(0)).uploadIngestionFlowFile(Mockito.any(),
-      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
+      Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.any(), Mockito.anyString());
   }
 
   @Test
