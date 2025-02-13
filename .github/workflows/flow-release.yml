@@ -52,6 +52,8 @@ jobs:
           azure_devops_pat: ${{ secrets.AZURE_DEVOPS_TOKEN }}
           azure_template_parameters: |
             {
+              "APPS_TOP": "[]",
               "APPS_MID": "[p4pa-fileshare]",
+              "APPS_EXT": "[]",
               "TRIGGER_MESSAGE": "p4pa-fileshare"
             }
