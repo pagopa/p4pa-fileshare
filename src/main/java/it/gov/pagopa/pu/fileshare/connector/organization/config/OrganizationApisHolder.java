@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.organization.config;
 
+import it.gov.pagopa.pu.fileshare.config.RestTemplateConfig;
 import it.gov.pagopa.pu.p4paorganization.controller.ApiClient;
 import it.gov.pagopa.pu.p4paorganization.controller.BaseApi;
 import it.gov.pagopa.pu.p4paorganization.controller.generated.OrganizationEntityControllerApi;
@@ -19,13 +20,18 @@ public class OrganizationApisHolder {
     private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
     public OrganizationApisHolder(
-            @Value("${rest.organization.base-url}") String baseUrl,
-
-            RestTemplateBuilder restTemplateBuilder) {
+        OrganizationClientConfig clientConfig,
+        RestTemplateBuilder restTemplateBuilder
+    ) {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ApiClient apiClient = new ApiClient(restTemplate);
-        apiClient.setBasePath(baseUrl);
-        apiClient.setBearerToken(bearerTokenHolder::get);
+      apiClient.setBasePath(clientConfig.getBaseUrl());
+      apiClient.setBearerToken(bearerTokenHolder::get);
+      apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
+      apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
+      if (clientConfig.isPrintBodyWhenError()) {
+        restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("ORGANIZATION"));
+      }
 
         this.organizationEntityControllerApi = new OrganizationEntityControllerApi(apiClient);
     }

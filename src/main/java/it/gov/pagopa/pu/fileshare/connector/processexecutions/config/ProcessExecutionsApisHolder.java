@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions.config;
 
+import it.gov.pagopa.pu.fileshare.config.RestTemplateConfig;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.ApiClient;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.BaseApi;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileControllerApi;
@@ -22,13 +23,18 @@ public class ProcessExecutionsApisHolder {
     private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
     public ProcessExecutionsApisHolder(
-            @Value("${rest.process-executions.base-url}") String baseUrl,
-
-            RestTemplateBuilder restTemplateBuilder) {
+        ProcessExecutionsClientConfig clientConfig,
+        RestTemplateBuilder restTemplateBuilder
+    ) {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ApiClient apiClient = new ApiClient(restTemplate);
-        apiClient.setBasePath(baseUrl);
-        apiClient.setBearerToken(bearerTokenHolder::get);
+      apiClient.setBasePath(clientConfig.getBaseUrl());
+      apiClient.setBearerToken(bearerTokenHolder::get);
+      apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
+      apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
+      if (clientConfig.isPrintBodyWhenError()) {
+        restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("ORGANIZATION"));
+      }
 
         this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(apiClient);
         this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(apiClient);
