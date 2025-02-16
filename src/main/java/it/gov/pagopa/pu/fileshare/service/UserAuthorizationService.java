@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.fileshare.service;
 
-import it.gov.pagopa.pu.fileshare.connector.organization.client.OrganizationClient;
+import it.gov.pagopa.pu.fileshare.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paorganization.dto.generated.Organization;
 import lombok.extern.slf4j.Slf4j;
@@ -11,14 +11,14 @@ import org.springframework.util.CollectionUtils;
 @Slf4j
 @Service
 public class UserAuthorizationService {
-  private final OrganizationClient organizationClient;
+  private final OrganizationService organizationService;
 
-  public UserAuthorizationService(OrganizationClient organizationClient) {
-    this.organizationClient = organizationClient;
+  public UserAuthorizationService(OrganizationService organizationService) {
+    this.organizationService = organizationService;
   }
 
   public void checkUserAuthorization(Long organizationId, UserInfo user, String accessToken) {
-    Organization organization = organizationClient.getOrganizationById(organizationId, accessToken);
+    Organization organization = organizationService.getOrganizationById(organizationId, accessToken);
     boolean isAuthorized = user.getOrganizations().stream()
       .anyMatch(o -> o.getOrganizationIpaCode().equals(organization.getIpaCode())
         && !CollectionUtils.isEmpty(o.getRoles()));

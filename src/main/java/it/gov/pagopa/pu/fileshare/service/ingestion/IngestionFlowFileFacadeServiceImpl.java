@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
-import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileClient;
+import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
@@ -28,30 +28,31 @@ import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlow
 
 @Slf4j
 @Service
-public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
+public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFacadeService {
   private final UserAuthorizationService userAuthorizationService;
   private final FileService fileService;
   private final FileStorerService fileStorerService;
   private final FoldersPathsConfig foldersPathsConfig;
-  private final IngestionFlowFileClient ingestionFlowFileClient;
+  private final IngestionFlowFileService ingestionFlowFileService;
   private final IngestionFlowFileDTOMapper ingestionFlowFileDTOMapper;
   private final String validIngestionFlowFileExt;
   private final String archivedSubFolder;
 
-  public IngestionFlowFileServiceImpl(
+  public IngestionFlowFileFacadeServiceImpl(
     UserAuthorizationService userAuthorizationService,
     FileService fileService,
     FileStorerService fileStorerService,
     FoldersPathsConfig foldersPathsConfig,
-    IngestionFlowFileClient ingestionFlowFileClient,
+    IngestionFlowFileService ingestionFlowFileService,
     IngestionFlowFileDTOMapper ingestionFlowFileDTOMapper,
     @Value("${uploads.ingestion-flow-file.valid-extension}") String validIngestionFlowFileExt,
-    @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder) {
+    @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder
+  ) {
     this.userAuthorizationService = userAuthorizationService;
     this.fileService = fileService;
     this.fileStorerService = fileStorerService;
     this.foldersPathsConfig = foldersPathsConfig;
-    this.ingestionFlowFileClient = ingestionFlowFileClient;
+    this.ingestionFlowFileService = ingestionFlowFileService;
     this.ingestionFlowFileDTOMapper = ingestionFlowFileDTOMapper;
     this.validIngestionFlowFileExt = validIngestionFlowFileExt;
     this.archivedSubFolder = archivedSubFolder;
@@ -73,7 +74,7 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
     String filePath = fileStorerService.saveToSharedFolder(organizationId, ingestionFlowFile,
       ingestionFlowFilePath, fileName);
 
-    return ingestionFlowFileClient.createIngestionFlowFile(
+    return ingestionFlowFileService.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFile,
         ingestionFlowFileType, fileOrigin, organizationId, filePath)
       , accessToken);
@@ -83,7 +84,7 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
   public FileResourceDTO downloadIngestionFlowFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
 
-    IngestionFlowFile ingestionFlowFile = ingestionFlowFileClient.getIngestionFlowFile(ingestionFlowFileId, accessToken);
+    IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
     Path filePath = getFilePath(ingestionFlowFile);
 
