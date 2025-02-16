@@ -23,7 +23,7 @@ class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
   void setUp() {
     Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
     Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-    ProcessExecutionsClientConfig clientConfig = ProcessExecutionsClientConfig.builder()
+    ProcessExecutionsApiClientConfig clientConfig = ProcessExecutionsApiClientConfig.builder()
       .baseUrl("http://example.com")
       .build();
     processExecutionsApisHolder = new ProcessExecutionsApisHolder(clientConfig, restTemplateBuilderMock);

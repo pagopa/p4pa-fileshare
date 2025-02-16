@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.p4paauth.controller.ApiClient;
 import it.gov.pagopa.pu.p4paauth.controller.BaseApi;
 import it.gov.pagopa.pu.p4paauth.controller.generated.AuthnApi;
 import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
@@ -18,7 +17,7 @@ public class AuthApisHolder {
     private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
     public AuthApisHolder(
-        AuthClientConfig clientConfig,
+        AuthApiClientConfig clientConfig,
         RestTemplateBuilder restTemplateBuilder
     ) {
         RestTemplate restTemplate = restTemplateBuilder.build();
@@ -28,7 +27,7 @@ public class AuthApisHolder {
       apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
       apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
       if (clientConfig.isPrintBodyWhenError()) {
-        restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("ORGANIZATION"));
+        restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("AUTH"));
       }
 
         this.authnApi = new AuthnApi(apiClient);
