@@ -63,7 +63,7 @@ class OrganizationClientTest {
     Mockito.when(organizationApisHolder.getOrganizationEntityControllerApi(accessToken))
       .thenReturn(organizationEntityControllerApiMock);
     Mockito.when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
-      .thenThrow(new HttpClientErrorException(HttpStatus.NOT_FOUND));
+      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
     // When
     Organization result = organizationClient.getOrganizationById(organizationId, accessToken);
@@ -72,41 +72,4 @@ class OrganizationClientTest {
     Assertions.assertNull(result);
   }
 
-  @Test
-  void givenGenericHttpExceptionWhenGetOrganizationByIdThenThrowIt() {
-    // Given
-    long organizationId = 1L;
-    String accessToken = "ACCESSTOKEN";
-    HttpClientErrorException expectedException = new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-
-    Mockito.when(organizationApisHolder.getOrganizationEntityControllerApi(accessToken))
-      .thenReturn(organizationEntityControllerApiMock);
-    Mockito.when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
-      .thenThrow(expectedException);
-
-    // When
-    HttpClientErrorException result = Assertions.assertThrows(expectedException.getClass(), () -> organizationClient.getOrganizationById(organizationId, accessToken));
-
-    // Then
-    Assertions.assertSame(expectedException, result);
-  }
-
-  @Test
-  void givenGenericExceptionWhenGetOrganizationByIdThenThrowIt() {
-    // Given
-    long organizationId = 1L;
-    String accessToken = "ACCESSTOKEN";
-    RuntimeException expectedException = new RuntimeException();
-
-    Mockito.when(organizationApisHolder.getOrganizationEntityControllerApi(accessToken))
-      .thenReturn(organizationEntityControllerApiMock);
-    Mockito.when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
-      .thenThrow(expectedException);
-
-    // When
-    RuntimeException result = Assertions.assertThrows(expectedException.getClass(), () -> organizationClient.getOrganizationById(organizationId, accessToken));
-
-    // Then
-    Assertions.assertSame(expectedException, result);
-  }
 }

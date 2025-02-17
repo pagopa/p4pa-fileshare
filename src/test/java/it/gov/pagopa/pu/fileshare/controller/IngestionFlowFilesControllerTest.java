@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
-import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileService;
+import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -36,7 +36,7 @@ class IngestionFlowFilesControllerTest {
   private MockMvc mockMvc;
 
   @MockitoBean
-  private IngestionFlowFileService serviceMock;
+  private IngestionFlowFileFacadeService serviceMock;
 
   @Test
   void givenCorrectRequestWhenUploadIngestionFlowFileThenOk() throws Exception {

@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.organization.config;
 
 import it.gov.pagopa.pu.fileshare.connector.BaseApiHolderTest;
-import it.gov.pagopa.pu.p4paorganization.controller.ApiClient;
 import it.gov.pagopa.pu.p4paorganization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,10 +24,10 @@ class OrganizationApiHolderTest extends BaseApiHolderTest {
   void setUp() {
     Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
     Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-    ApiClient apiClient = new ApiClient(restTemplateMock);
-    String baseUrl = "http://example.com";
-    apiClient.setBasePath(baseUrl);
-    organizationApisHolder = new OrganizationApisHolder(baseUrl, restTemplateBuilderMock);
+    OrganizationApiClientConfig clientConfig = OrganizationApiClientConfig.builder()
+      .baseUrl("http://example.com")
+      .build();
+    organizationApisHolder = new OrganizationApisHolder(clientConfig, restTemplateBuilderMock);
   }
 
   @AfterEach
