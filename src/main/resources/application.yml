@@ -66,11 +66,14 @@ folders:
     errors: "\${PROCESS_TARGET_SUB_FOLDER_ERRORS:errors}"
   ingestion-flow-file-type-paths:
     RECEIPT: "data/receipt"
+    RECEIPT_PAGOPA: "data/receipt/pagopa"
     PAYMENTS_REPORTING: "data/payments_reporting"
+    PAYMENTS_REPORTING_PAGOPA: "data/payments_reporting/pagopa"
     TREASURY_OPI: "data/treasury/opi"
     TREASURY_CSV: "data/treasury/csv"
     TREASURY_XLS: "data/treasury/xls"
     TREASURY_POSTE: "data/treasury/poste"
+    DP_INSTALLMENTS: "data/installment"
 
 rest:
   default-timeout:
