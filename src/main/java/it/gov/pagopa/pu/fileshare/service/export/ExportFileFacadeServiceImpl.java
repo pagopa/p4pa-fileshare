@@ -4,10 +4,8 @@ package it.gov.pagopa.pu.fileshare.service.export;
 import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile.StatusEnum.COMPLETED;
 import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile.StatusEnum.ERROR;
 
-import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.ExportFileClient;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
-import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
@@ -17,13 +15,13 @@ import java.nio.file.Path;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 
-public class ExportFileServiceImpl implements ExportFileService {
+public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
   private final UserAuthorizationService userAuthorizationService;
   private final FileStorerService fileStorerService;
   private final ExportFileClient exportFileClient;
   private final String archivedSubFolder;
 
-  public ExportFileServiceImpl(
+  public ExportFileFacadeServiceImpl(
     UserAuthorizationService userAuthorizationService,
     FileStorerService fileStorerService,
     ExportFileClient exportFileClient,

@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.fileshare.security;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
-import it.gov.pagopa.pu.fileshare.service.export.ExportFileService;
+import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,7 +28,7 @@ class WebSecurityConfigTest {
   @MockitoBean
   private IngestionFlowFileFacadeService ingestionFlowFileFacadeServiceMock;
   @MockitoBean
-  private ExportFileService exportFileServiceMock;
+  private ExportFileFacadeService exportFileFacadeServiceMock;
 
   @Test
   void givenURLWhenWithoutAccessTokenThenReturn403() throws Exception {

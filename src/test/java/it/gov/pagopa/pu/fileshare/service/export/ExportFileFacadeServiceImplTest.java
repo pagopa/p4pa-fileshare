@@ -20,7 +20,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 @ExtendWith(MockitoExtension.class)
-class ExportFileServiceImplTest {
+class ExportFileFacadeServiceImplTest {
 
   @Mock
   private UserAuthorizationService userAuthorizationServiceMock;
@@ -29,12 +29,12 @@ class ExportFileServiceImplTest {
   @Mock
   private ExportFileClient exportFileClientMock;
   @Mock
-  private ExportFileServiceImpl exportFileService;
+  private ExportFileFacadeServiceImpl exportFileService;
   private static final String ARCHIVED_SUB_FOLDER = "Archived";
 
   @BeforeEach
   void setUp() {
-    exportFileService = new ExportFileServiceImpl(
+    exportFileService = new ExportFileFacadeServiceImpl(
       userAuthorizationServiceMock,
       fileStorerServiceMock,
       exportFileClientMock,

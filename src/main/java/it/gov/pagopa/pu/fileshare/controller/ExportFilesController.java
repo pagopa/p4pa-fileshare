@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.fileshare.controller;
 import it.gov.pagopa.pu.fileshare.controller.generated.ExportFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtils;
-import it.gov.pagopa.pu.fileshare.service.export.ExportFileService;
+import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -15,17 +15,17 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 public class ExportFilesController implements ExportFileApi {
 
-  private final ExportFileService exportFileService;
+  private final ExportFileFacadeService exportFileFacadeService;
 
   public ExportFilesController(
-    ExportFileService exportFileService) {
-    this.exportFileService = exportFileService;
+    ExportFileFacadeService exportFileFacadeService) {
+    this.exportFileFacadeService = exportFileFacadeService;
   }
 
 
   @Override
   public ResponseEntity<Resource> downloadExportFile(Long organizationId, Long exportFileId) {
-    FileResourceDTO fileResourceDTO = exportFileService.downloadExportFile(organizationId, exportFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
+    FileResourceDTO fileResourceDTO = exportFileFacadeService.downloadExportFile(organizationId, exportFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
 
     Resource fileResource = new InputStreamResource(fileResourceDTO.getResourceStream());
 

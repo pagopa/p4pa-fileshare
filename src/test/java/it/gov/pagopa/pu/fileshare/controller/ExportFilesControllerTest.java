@@ -8,7 +8,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import it.gov.pagopa.pu.fileshare.controller.generated.ExportFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
-import it.gov.pagopa.pu.fileshare.service.export.ExportFileService;
+import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
 import java.io.ByteArrayInputStream;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ class ExportFilesControllerTest {
   private MockMvc mockMvc;
 
   @MockitoBean
-  private ExportFileService serviceMock;
+  private ExportFileFacadeService serviceMock;
 
   @Test
   void givenCorrectRequestWhenDownloadExportFileThenReturnFile() throws Exception {
