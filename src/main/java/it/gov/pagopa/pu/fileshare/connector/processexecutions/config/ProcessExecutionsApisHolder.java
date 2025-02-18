@@ -1,18 +1,16 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions.config;
 
+import it.gov.pagopa.pu.fileshare.config.RestTemplateConfig;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.ApiClient;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.BaseApi;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.ExportFileEntityControllerApi;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileControllerApi;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
 import jakarta.annotation.PreDestroy;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.web.client.RestTemplateBuilder;
-import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
-@Lazy
 @Service
 public class ProcessExecutionsApisHolder {
 
@@ -24,13 +22,19 @@ public class ProcessExecutionsApisHolder {
 
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
-  public ProcessExecutionsApisHolder(
-    @Value("${rest.process-executions.base-url}") String baseUrl,
-    RestTemplateBuilder restTemplateBuilder) {
-    RestTemplate restTemplate = restTemplateBuilder.build();
-    ApiClient apiClient = new ApiClient(restTemplate);
-    apiClient.setBasePath(baseUrl);
-    apiClient.setBearerToken(bearerTokenHolder::get);
+    public ProcessExecutionsApisHolder(
+        ProcessExecutionsApiClientConfig clientConfig,
+        RestTemplateBuilder restTemplateBuilder
+    ) {
+        RestTemplate restTemplate = restTemplateBuilder.build();
+        ApiClient apiClient = new ApiClient(restTemplate);
+      apiClient.setBasePath(clientConfig.getBaseUrl());
+      apiClient.setBearerToken(bearerTokenHolder::get);
+      apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
+      apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
+      if (clientConfig.isPrintBodyWhenError()) {
+        restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("PROCESS-EXECUTIONS"));
+      }
 
     this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(
       apiClient);

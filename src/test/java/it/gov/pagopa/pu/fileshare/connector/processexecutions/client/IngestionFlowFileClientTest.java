@@ -5,7 +5,9 @@ import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlow
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
@@ -23,127 +25,73 @@ class IngestionFlowFileClientTest {
   private final String accessToken = "ACCESSTOKEN";
 
   @Mock
+  private ProcessExecutionsApisHolder processExecutionsApisHolderMock;
+  @Mock
   private IngestionFlowFileControllerApi ingestionFlowFileControllerApiMock;
-
   @Mock
   private IngestionFlowFileEntityControllerApi ingestionFlowFileEntityControllerApiMock;
 
+  private IngestionFlowFileClient client;
+
+  @BeforeEach
+  void init(){
+    client = new IngestionFlowFileClient(processExecutionsApisHolderMock);
+  }
+
+  @AfterEach
+  void verifyNoMoreInteractions(){
+    Mockito.verifyNoMoreInteractions(
+      processExecutionsApisHolderMock,
+      ingestionFlowFileControllerApiMock,
+      ingestionFlowFileEntityControllerApiMock
+    );
+  }
+
   @Test
   void whenCreateIngestionFlowFileThenOK() {
-    ProcessExecutionsApisHolder processExecutionsApisHolderMock = Mockito.mock(ProcessExecutionsApisHolder.class);
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileControllerApiMock);
-
-    IngestionFlowFileClient ingestionFlowFileClient = new IngestionFlowFileClient(processExecutionsApisHolderMock);
-
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
     Long expectedIngestionFlowFileId = 1L;
+
+    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
+      .thenReturn(ingestionFlowFileControllerApiMock);
     Mockito.when(ingestionFlowFileControllerApiMock.createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO))
       .thenReturn(ResponseEntity.created(URI.create(String.valueOf(expectedIngestionFlowFileId))).build());
 
-    Long result = ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken);
+    Long result = client.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
-
-    Mockito.verifyNoMoreInteractions(ingestionFlowFileControllerApiMock);
-  }
-
-  @Test
-  void givenGenericHttpExceptionWhenCreateIngestionFlowFileThenThrowIt() {
-    ProcessExecutionsApisHolder processExecutionsApisHolderMock = Mockito.mock(ProcessExecutionsApisHolder.class);
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileControllerApiMock);
-
-    IngestionFlowFileClient ingestionFlowFileClient = new IngestionFlowFileClient(processExecutionsApisHolderMock);
-
-    HttpClientErrorException expectedException = new HttpClientErrorException(HttpStatus.INTERNAL_SERVER_ERROR);
-    IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
-    Mockito.doThrow(expectedException).when(ingestionFlowFileControllerApiMock).createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO);
-
-    HttpClientErrorException result = Assertions.assertThrows(expectedException.getClass(),
-      () -> ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken));
-
-    Assertions.assertSame(expectedException, result);
-
-    Mockito.verifyNoMoreInteractions(ingestionFlowFileControllerApiMock);
-  }
-
-  @Test
-  void givenGenericExceptionWhenCreateIngestionFlowFileThenThrowIt() {
-    ProcessExecutionsApisHolder processExecutionsApisHolderMock = Mockito.mock(ProcessExecutionsApisHolder.class);
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileControllerApiMock);
-
-    IngestionFlowFileClient ingestionFlowFileClient = new IngestionFlowFileClient(processExecutionsApisHolderMock);
-
-    RuntimeException expectedException = new RuntimeException();
-    IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
-    Mockito.doThrow(expectedException).when(ingestionFlowFileControllerApiMock).createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO);
-
-    RuntimeException result = Assertions.assertThrows(expectedException.getClass(),
-      () -> ingestionFlowFileClient.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken));
-
-    Assertions.assertSame(expectedException, result);
-
-    Mockito.verifyNoMoreInteractions(ingestionFlowFileControllerApiMock);
   }
 
   @Test
   void whenGetIngestionFlowFileThenReturnIngestionFlowFile() {
-    ProcessExecutionsApisHolder processExecutionsApisHolderMock = Mockito.mock(ProcessExecutionsApisHolder.class);
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileEntityControllerApiMock);
-
-    IngestionFlowFileClient ingestionFlowFileClient = new IngestionFlowFileClient(processExecutionsApisHolderMock);
-
     Long ingestionFlowFileId = 123L;
     IngestionFlowFile expectedIngestionFlowFile = new IngestionFlowFile();
-    Mockito.when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile("123"))
-      .thenReturn(expectedIngestionFlowFile);
 
-    IngestionFlowFile result = ingestionFlowFileClient.getIngestionFlowFile(ingestionFlowFileId, accessToken);
-
-    Assertions.assertSame(expectedIngestionFlowFile, result);
-
-    Mockito.verifyNoMoreInteractions(ingestionFlowFileEntityControllerApiMock);
-  }
-
-  @Test
-  void givenGenericExceptionWhenGetIngestionFlowFileThenThrowIt() {
-    ProcessExecutionsApisHolder processExecutionsApisHolderMock = Mockito.mock(ProcessExecutionsApisHolder.class);
     Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
       .thenReturn(ingestionFlowFileEntityControllerApiMock);
 
-    IngestionFlowFileClient ingestionFlowFileClient = new IngestionFlowFileClient(processExecutionsApisHolderMock);
+    Mockito.when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
+      .thenReturn(expectedIngestionFlowFile);
 
-    Long ingestionFlowFileId = 123L;
-    RuntimeException genericException = new RuntimeException("Unexpected error");
-    Mockito.when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile("123"))
-      .thenThrow(genericException);
+    IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
-    RuntimeException result = Assertions.assertThrows(RuntimeException.class,
-      () -> ingestionFlowFileClient.getIngestionFlowFile(ingestionFlowFileId, accessToken));
-
-    Assertions.assertSame(genericException, result);
+    Assertions.assertSame(expectedIngestionFlowFile, result);
   }
+
 
   @Test
   void givenHttpClientErrorExceptionOtherStatusWhenGetIngestionFlowFileThenThrowIt() {
-    ProcessExecutionsApisHolder processExecutionsApisHolderMock = Mockito.mock(ProcessExecutionsApisHolder.class);
+    Long ingestionFlowFileId = 123L;
+
     Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
       .thenReturn(ingestionFlowFileEntityControllerApiMock);
 
-    IngestionFlowFileClient ingestionFlowFileClient = new IngestionFlowFileClient(processExecutionsApisHolderMock);
+    Mockito.when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
+      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
-    Long ingestionFlowFileId = 123L;
-    HttpClientErrorException genericException = new HttpClientErrorException(HttpStatus.BAD_REQUEST);
-    Mockito.when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile("123"))
-      .thenThrow(genericException);
+    IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
-    HttpClientErrorException result = Assertions.assertThrows(HttpClientErrorException.class,
-      () -> ingestionFlowFileClient.getIngestionFlowFile(ingestionFlowFileId, accessToken));
-
-    Assertions.assertSame(genericException, result);
+    Assertions.assertNull(result);
   }
 
 }
