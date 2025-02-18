@@ -85,6 +85,34 @@ paths:
               schema:
                 type: string
                 format: binary
+  /exportfiles/{organizationId}/{exportFileId}:
+    get:
+      tags:
+        - export-file
+      summary: downloadExportFile
+      description: Service to retrieve an export file
+      operationId: downloadExportFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: exportFileId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
 security:
   - BearerAuth: []
 components:
