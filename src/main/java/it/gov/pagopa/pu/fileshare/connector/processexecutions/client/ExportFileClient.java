@@ -22,15 +22,9 @@ public class ExportFileClient {
     try {
       log.debug("Fetching export file with ID [{}]", exportFileId);
       return processExecutionsApisHolder.getExportFileEntityControllerApi(accessToken).crudGetExportfile(String.valueOf(exportFileId));
-    } catch (HttpClientErrorException e) {
-      log.error("Error fetching ingestion flow file with ID [{}]", exportFileId, e);
-      if (e.getStatusCode() == HttpStatus.NOT_FOUND) {
-        return null;
-      }
-      throw e;
-    } catch (Exception e) {
-      log.error("Unexpected error fetching ingestion flow file with ID [{}]", exportFileId, e);
-      throw e;
+    } catch (HttpClientErrorException.NotFound e) {
+      log.info("Cannot find ExportFile with ID [{}]", exportFileId, e);
+      return null;
     }
   }
 
