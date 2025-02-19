@@ -1,8 +1,9 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.config.ProcessExecutionsApisHolder;
-import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileControllerApi;
-import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
+import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.ExportFileEntityControllerApi;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ClassificationsExportFile;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import java.net.URI;
@@ -26,69 +27,51 @@ class ExportFileClientTest {
   @Mock
   private ProcessExecutionsApisHolder processExecutionsApisHolderMock;
   @Mock
-  private IngestionFlowFileControllerApi ingestionFlowFileControllerApiMock;
-  @Mock
-  private IngestionFlowFileEntityControllerApi ingestionFlowFileEntityControllerApiMock;
+  private ExportFileEntityControllerApi exportFileEntityControllerApiMock;
 
-  private IngestionFlowFileClient client;
+  private ExportFileClient client;
 
   @BeforeEach
   void init(){
-    client = new IngestionFlowFileClient(processExecutionsApisHolderMock);
+    client = new ExportFileClient(processExecutionsApisHolderMock);
   }
 
   @AfterEach
   void verifyNoMoreInteractions(){
     Mockito.verifyNoMoreInteractions(
       processExecutionsApisHolderMock,
-      ingestionFlowFileControllerApiMock,
-      ingestionFlowFileEntityControllerApiMock
+      exportFileEntityControllerApiMock
     );
   }
 
   @Test
-  void whenCreateIngestionFlowFileThenOK() {
-    IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
-    Long expectedIngestionFlowFileId = 1L;
-
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileControllerApiMock);
-    Mockito.when(ingestionFlowFileControllerApiMock.createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO))
-      .thenReturn(ResponseEntity.created(URI.create(String.valueOf(expectedIngestionFlowFileId))).build());
-
-    Long result = client.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken);
-
-    Assertions.assertSame(expectedIngestionFlowFileId, result);
-  }
-
-  @Test
   void whenGetIngestionFlowFileThenReturnIngestionFlowFile() {
-    Long ingestionFlowFileId = 123L;
-    IngestionFlowFile expectedIngestionFlowFile = new IngestionFlowFile();
+    Long exportFileId = 123L;
+    ExportFile expectedExportFile = new ExportFile();
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileEntityControllerApiMock);
+    Mockito.when(processExecutionsApisHolderMock.getExportFileEntityControllerApi(accessToken))
+      .thenReturn(exportFileEntityControllerApiMock);
 
-    Mockito.when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
-      .thenReturn(expectedIngestionFlowFile);
+    Mockito.when(exportFileEntityControllerApiMock.crudGetExportfile(exportFileId+""))
+      .thenReturn(expectedExportFile);
 
-    IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
+    ExportFile result = client.getExportFile(exportFileId, accessToken);
 
-    Assertions.assertSame(expectedIngestionFlowFile, result);
+    Assertions.assertSame(expectedExportFile, result);
   }
 
 
   @Test
   void givenHttpClientErrorExceptionOtherStatusWhenGetIngestionFlowFileThenThrowIt() {
-    Long ingestionFlowFileId = 123L;
+    Long exportFileId = 123L;
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
-      .thenReturn(ingestionFlowFileEntityControllerApiMock);
+    Mockito.when(processExecutionsApisHolderMock.getExportFileEntityControllerApi(accessToken))
+      .thenReturn(exportFileEntityControllerApiMock);
 
-    Mockito.when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
+    Mockito.when(exportFileEntityControllerApiMock.crudGetExportfile(exportFileId+""))
       .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
-    IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
+    ExportFile result = client.getExportFile(exportFileId, accessToken);
 
     Assertions.assertNull(result);
   }
