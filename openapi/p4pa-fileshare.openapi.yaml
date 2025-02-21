@@ -147,6 +147,7 @@ components:
             - NOT_FOUND
             - CONFLICT
             - BAD_REQUEST
+            - UNAUTHORIZED
             - GENERIC_ERROR
         message:
           type: string

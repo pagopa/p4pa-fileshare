@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.fileshare.service.export;
 
-import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.ExportFileClient;
+import it.gov.pagopa.pu.fileshare.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
@@ -27,7 +27,7 @@ class ExportFileFacadeServiceImplTest {
   @Mock
   private FileStorerService fileStorerServiceMock;
   @Mock
-  private ExportFileClient exportFileClientMock;
+  private ExportFileService exportFileServiceMock;
   @Mock
   private ExportFileFacadeServiceImpl exportFileService;
   private static final String ARCHIVED_SUB_FOLDER = "Archived";
@@ -37,8 +37,7 @@ class ExportFileFacadeServiceImplTest {
     exportFileService = new ExportFileFacadeServiceImpl(
       userAuthorizationServiceMock,
       fileStorerServiceMock,
-      exportFileClientMock,
-      ARCHIVED_SUB_FOLDER);
+      exportFileServiceMock);
   }
 
   @AfterEach
@@ -46,7 +45,7 @@ class ExportFileFacadeServiceImplTest {
     Mockito.verifyNoMoreInteractions(
       userAuthorizationServiceMock,
       fileStorerServiceMock,
-      exportFileClientMock);
+      exportFileServiceMock);
   }
 
   @Test
@@ -57,7 +56,7 @@ class ExportFileFacadeServiceImplTest {
     Path organizationBasePath = Path.of("/organizationFolder");
     String filePathName = "examplePath";
     String fileName = "testFile.zip";
-    Path fullFilePath = organizationBasePath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
+    Path fullFilePath = organizationBasePath.resolve(filePathName);
 
     UserInfo user = TestUtils.getSampleUser();
 
@@ -72,7 +71,7 @@ class ExportFileFacadeServiceImplTest {
     Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
       .thenReturn(organizationBasePath);
 
-    Mockito.when(exportFileClientMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
+    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, organizationId, user, accessToken)).thenReturn(exportFile);
 
     Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
 
@@ -82,7 +81,7 @@ class ExportFileFacadeServiceImplTest {
     Assertions.assertEquals(fileName, result.getFileName());
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    Mockito.verify(exportFileClientMock).getExportFile(exportFileId, accessToken);
+    Mockito.verify(exportFileServiceMock).getExportFile(exportFileId, organizationId, user, accessToken);
     Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
   }
 
@@ -107,7 +106,7 @@ class ExportFileFacadeServiceImplTest {
     InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
 
     Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationBasePath);
-    Mockito.when(exportFileClientMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
+    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, organizationId, user, accessToken)).thenReturn(exportFile);
     Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
 
     FileResourceDTO result = exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);

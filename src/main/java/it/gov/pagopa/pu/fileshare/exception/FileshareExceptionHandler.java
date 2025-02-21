@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
+import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
@@ -39,6 +40,11 @@ public class FileshareExceptionHandler {
   @ExceptionHandler({InvalidFileException.class})
   public ResponseEntity<FileshareErrorDTO> handleInvalidFileError(RuntimeException ex, HttpServletRequest request){
     return handleException(ex, request, HttpStatus.BAD_REQUEST, CodeEnum.INVALID_FILE);
+  }
+
+  @ExceptionHandler({UnauthorizedFileDownloadException.class})
+  public ResponseEntity<FileshareErrorDTO> handleUnauthorizedFileDownloadError(RuntimeException ex, HttpServletRequest request){
+    return handleException(ex, request, HttpStatus.UNAUTHORIZED, CodeEnum.UNAUTHORIZED);
   }
 
   @ExceptionHandler({FileUploadException.class})

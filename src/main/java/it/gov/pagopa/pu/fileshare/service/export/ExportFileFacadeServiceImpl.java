@@ -1,10 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service.export;
 
 
-import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile.StatusEnum.COMPLETED;
-import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile.StatusEnum.ERROR;
-
-import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.ExportFileClient;
+import it.gov.pagopa.pu.fileshare.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
@@ -12,24 +9,20 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
 import java.io.InputStream;
 import java.nio.file.Path;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 
 public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
   private final UserAuthorizationService userAuthorizationService;
   private final FileStorerService fileStorerService;
-  private final ExportFileClient exportFileClient;
-  private final String archivedSubFolder;
+  private final ExportFileService exportFileService;
 
   public ExportFileFacadeServiceImpl(
     UserAuthorizationService userAuthorizationService,
     FileStorerService fileStorerService,
-    ExportFileClient exportFileClient,
-    @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder) {
+    ExportFileService exportFileService) {
     this.userAuthorizationService = userAuthorizationService;
     this.fileStorerService = fileStorerService;
-    this.exportFileClient = exportFileClient;
-    this.archivedSubFolder = archivedSubFolder;
+    this.exportFileService = exportFileService;
   }
 
   @Override
@@ -38,7 +31,7 @@ public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
     String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
 
-    ExportFile exportFile = exportFileClient.getExportFile(exportFileId, accessToken);
+    ExportFile exportFile = exportFileService.getExportFile(exportFileId, organizationId, user, accessToken);
 
     Path filePath = getFilePath(exportFile);
 
@@ -52,10 +45,7 @@ public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
 
     Path filePath = organizationBasePath
       .resolve(exportFile.getFilePathName());
-    if (exportFile.getStatus() == COMPLETED || exportFile.getStatus() == ERROR) {
-      filePath = filePath
-        .resolve(archivedSubFolder);
-    }
+
     return filePath;
   }
 }

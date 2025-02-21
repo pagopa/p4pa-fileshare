@@ -2,11 +2,7 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.config.ProcessExecutionsApisHolder;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.ExportFileEntityControllerApi;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ClassificationsExportFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
-import java.net.URI;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,7 +12,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
