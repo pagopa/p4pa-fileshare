@@ -3,9 +3,11 @@ package it.gov.pagopa.pu.fileshare.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.fileshare.config.json.JsonConfig;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
+import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
+import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import jakarta.servlet.ServletException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -110,6 +112,16 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(FileshareErrorDTO.CodeEnum.INVALID_FILE.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
+
+  @Test
+  void handleUnauthorizedFileDownloadException() throws Exception {
+    doThrow(new UnauthorizedFileDownloadException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.UNAUTHORIZED.toString()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
   }
 

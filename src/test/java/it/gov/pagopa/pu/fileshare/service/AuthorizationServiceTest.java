@@ -5,6 +5,8 @@ import static org.mockito.Mockito.mock;
 import it.gov.pagopa.pu.fileshare.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidAccessTokenException;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
+import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -54,6 +56,37 @@ class AuthorizationServiceTest {
       "Bad Access Token provided",
       result.getMessage()
     );
+  }
+
+  @Test
+  void givenAdminRoleWhenIsAdminRoleThenOK() {
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(1L);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(2L);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    boolean adminRole = AuthorizationService.isAdminRole(1L, userInfo);
+
+    Assertions.assertTrue(adminRole);
+  }
+
+  @Test
+  void givenNoAdminRoleWhenIsAdminRoleThenAuthorizationDeniedException() {
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(1L);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(2L);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    userInfo.setMappedExternalUserId("externalUserId");
+    boolean adminRole = AuthorizationService.isAdminRole(2L, userInfo);
+
+    Assertions.assertFalse(adminRole);
   }
 
 
