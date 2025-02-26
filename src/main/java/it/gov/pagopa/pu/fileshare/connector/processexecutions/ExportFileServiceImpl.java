@@ -17,21 +17,7 @@ public class ExportFileServiceImpl implements ExportFileService {
   }
 
   @Override
-  public ExportFile getExportFile(Long exportFileId, Long organizationId, UserInfo loggedUser, String accessToken) {
-    boolean isLoggedUserAdmin = AuthorizationService.isAdminRole(
-      organizationId, loggedUser);
-    String operatorExternalUserId = null;
-
-    if(!isLoggedUserAdmin){
-      operatorExternalUserId = loggedUser.getMappedExternalUserId();
-    }
-
-    ExportFile exportFile = client.getExportFile(exportFileId, accessToken);
-
-    if (!isLoggedUserAdmin && !operatorExternalUserId.equals(exportFile.getOperatorExternalId())) {
-      throw new UnauthorizedFileDownloadException("User is not authorized to download export file with ID " + exportFileId);
-    }
-
-    return exportFile;
+  public ExportFile getExportFile(Long exportFileId, String accessToken) {
+    return client.getExportFile(exportFileId, accessToken);
   }
 }

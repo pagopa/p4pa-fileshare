@@ -41,43 +41,15 @@ class ExportFileServiceTest {
     // Given
     Long organizationId = 1L;
     String accessToken = "ACCESSTOKEN";
-    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
-    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
-    userAdminRole.setOrganizationId(1L);
-    UserInfo user = new UserInfo();
-    user.setOrganizations(List.of(userAdminRole));
     ExportFile expectedResult = new ExportFile();
 
     Mockito.when(clientMock.getExportFile(Mockito.eq(1L), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When
-    ExportFile result = service.getExportFile(1L, organizationId, user, accessToken);
+    ExportFile result = service.getExportFile(1L, accessToken);
 
     // Then
     Assertions.assertSame(expectedResult, result);
-  }
-
-  @Test
-  void whenGetIngestionFlowFileUnauthorizedUserThenThrowException(){
-    // Given
-    Long organizationId = 1L;
-    String accessToken = "ACCESSTOKEN";
-    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
-    userTestRole.setRoles(List.of("TEST"));
-    userTestRole.setOrganizationId(organizationId);
-    UserInfo user = new UserInfo();
-    user.setOrganizations(List.of(userTestRole));
-    user.setMappedExternalUserId("TEST");
-    ExportFile expectedResult = new ExportFile();
-
-    Mockito.when(clientMock.getExportFile(Mockito.eq(1L), Mockito.same(accessToken)))
-      .thenReturn(expectedResult);
-
-    // When
-    Executable exec = () -> service.getExportFile(1L, organizationId, user, accessToken);
-
-    // Then
-    Assertions.assertThrows(UnauthorizedFileDownloadException.class, exec);
   }
 }
