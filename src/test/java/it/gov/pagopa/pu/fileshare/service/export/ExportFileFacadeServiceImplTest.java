@@ -52,8 +52,7 @@ class ExportFileFacadeServiceImplTest {
   }
 
   @Test
-  void givenAuthorizedUserWhenDownloadExportFileThenReturnFileResource()
-    throws FileNotFoundException {
+  void givenAuthorizedUserWhenDownloadExportFileThenReturnFileResource() {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long exportFileId = 10L;
@@ -128,8 +127,7 @@ class ExportFileFacadeServiceImplTest {
   }
 
   @Test
-  void givenExportFileInProgressWhenDownloadExportFileThenReturnFilePath()
-    throws FileNotFoundException {
+  void givenExportFileInProgressWhenDownloadExportFileThenReturnFilePath() {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long exportFileId = 10L;
@@ -171,10 +169,6 @@ class ExportFileFacadeServiceImplTest {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long exportFileId = 10L;
-    Path organizationBasePath = Path.of("/organizationFolder");
-    String filePathName = "examplePath";
-    String fileName = "testFile.zip";
-    Path fullFilePath = organizationBasePath.resolve(filePathName);
 
     UserOrganizationRoles userTestRole = new UserOrganizationRoles();
     userTestRole.setRoles(List.of("TEST", "ADMIN"));

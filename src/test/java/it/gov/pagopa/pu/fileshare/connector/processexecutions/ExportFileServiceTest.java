@@ -30,9 +30,8 @@ class ExportFileServiceTest {
   }
 
   @Test
-  void whenGetIngestionFlowFileThenInvokeClient(){
+  void whenGetExportFileThenInvokeClient(){
     // Given
-    Long organizationId = 1L;
     String accessToken = "ACCESSTOKEN";
     ExportFile expectedResult = new ExportFile();
 

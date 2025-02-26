@@ -5,7 +5,5 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import java.io.FileNotFoundException;
 
 public interface ExportFileFacadeService {
-  FileResourceDTO downloadExportFile(Long organizationId, Long exportFileId, UserInfo user, String accessToken)
-    throws FileNotFoundException;
-
+  FileResourceDTO downloadExportFile(Long organizationId, Long exportFileId, UserInfo user, String accessToken);
 }

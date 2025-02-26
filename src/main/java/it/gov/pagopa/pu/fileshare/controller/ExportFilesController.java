@@ -33,14 +33,9 @@ public class ExportFilesController implements ExportFileApi {
       "Requesting to download export file [exportFileId: {}] of organization [organizationId: {}]",
       exportFileId, organizationId);
 
-    FileResourceDTO fileResourceDTO;
-    try {
-      fileResourceDTO = exportFileFacadeService.downloadExportFile(
-        organizationId, exportFileId, SecurityUtils.getLoggedUser(),
-        SecurityUtils.getAccessToken());
-    } catch (FileNotFoundException e) {
-      return ResponseEntity.notFound().build();
-    }
+    FileResourceDTO fileResourceDTO = exportFileFacadeService.downloadExportFile(
+      organizationId, exportFileId, SecurityUtils.getLoggedUser(),
+      SecurityUtils.getAccessToken());
 
     Resource fileResource = new InputStreamResource(
       fileResourceDTO.getResourceStream());
