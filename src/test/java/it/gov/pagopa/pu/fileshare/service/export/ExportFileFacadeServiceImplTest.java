@@ -34,7 +34,6 @@ class ExportFileFacadeServiceImplTest {
   private ExportFileService exportFileServiceMock;
   @Mock
   private ExportFileFacadeServiceImpl exportFileService;
-  private static final String ARCHIVED_SUB_FOLDER = "Archived";
 
   @BeforeEach
   void setUp() {
