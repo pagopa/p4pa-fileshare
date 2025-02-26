@@ -11,6 +11,7 @@ import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,7 +70,7 @@ class ExportFilesControllerTest {
 
     Mockito.when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
         Mockito.any(), Mockito.anyString()))
-      .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found"));
+      .thenThrow(new FileNotFoundException("File not found"));
 
     TestUtils.addSampleUserIntoSecurityContext();
 

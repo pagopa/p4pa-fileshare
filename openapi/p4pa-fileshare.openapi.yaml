@@ -113,6 +113,8 @@ paths:
               schema:
                 type: string
                 format: binary
+        '404':
+          description: Not Found
 security:
   - BearerAuth: []
 components:

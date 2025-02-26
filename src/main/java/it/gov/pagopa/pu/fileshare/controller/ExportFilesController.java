@@ -4,6 +4,7 @@ import it.gov.pagopa.pu.fileshare.controller.generated.ExportFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtils;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
+import java.io.FileNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
@@ -26,12 +27,23 @@ public class ExportFilesController implements ExportFileApi {
 
 
   @Override
-  public ResponseEntity<Resource> downloadExportFile(Long organizationId, Long exportFileId) {
-    log.debug("Requesting to download export file [exportFileId: {}] of organization [organizationId: {}]", exportFileId, organizationId);
+  public ResponseEntity<Resource> downloadExportFile(Long organizationId,
+    Long exportFileId) {
+    log.info(
+      "Requesting to download export file [exportFileId: {}] of organization [organizationId: {}]",
+      exportFileId, organizationId);
 
-    FileResourceDTO fileResourceDTO = exportFileFacadeService.downloadExportFile(organizationId, exportFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
+    FileResourceDTO fileResourceDTO;
+    try {
+      fileResourceDTO = exportFileFacadeService.downloadExportFile(
+        organizationId, exportFileId, SecurityUtils.getLoggedUser(),
+        SecurityUtils.getAccessToken());
+    } catch (FileNotFoundException e) {
+      return ResponseEntity.notFound().build();
+    }
 
-    Resource fileResource = new InputStreamResource(fileResourceDTO.getResourceStream());
+    Resource fileResource = new InputStreamResource(
+      fileResourceDTO.getResourceStream());
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentDisposition(ContentDisposition.attachment()

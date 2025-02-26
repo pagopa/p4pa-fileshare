@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import org.springframework.core.io.InputStreamResource;
@@ -30,14 +31,17 @@ public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
   @Override
   public FileResourceDTO downloadExportFile(Long organizationId,
     Long exportFileId, UserInfo user,
-    String accessToken) {
+    String accessToken) throws FileNotFoundException {
     userAuthorizationService.checkUserAuthorization(organizationId, user,
       accessToken);
 
     ExportFile exportFile = exportFileService.getExportFile(exportFileId, accessToken);
 
+    if (exportFile == null) {
+      throw new FileNotFoundException("Export file with id %s was not found".formatted(exportFileId));
+    }
+
     if (!AuthorizationService.isAdminRole(organizationId, user) &&
-      exportFile != null &&
       !user.getMappedExternalUserId().equals(exportFile.getOperatorExternalId())) {
       throw new UnauthorizedFileDownloadException(
         "User is not authorized to download export file with ID "

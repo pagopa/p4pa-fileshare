@@ -9,6 +9,7 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
 import java.io.ByteArrayInputStream;
+import java.io.FileNotFoundException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
@@ -52,7 +53,8 @@ class ExportFileFacadeServiceImplTest {
   }
 
   @Test
-  void givenAuthorizedUserWhenDownloadExportFileThenReturnFileResource() {
+  void givenAuthorizedUserWhenDownloadExportFileThenReturnFileResource()
+    throws FileNotFoundException {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long exportFileId = 10L;
@@ -127,7 +129,8 @@ class ExportFileFacadeServiceImplTest {
   }
 
   @Test
-  void givenExportFileInProgressWhenDownloadExportFileThenReturnFilePath() {
+  void givenExportFileInProgressWhenDownloadExportFileThenReturnFilePath()
+    throws FileNotFoundException {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long exportFileId = 10L;
@@ -161,6 +164,31 @@ class ExportFileFacadeServiceImplTest {
     Assertions.assertNotNull(result);
     Assertions.assertEquals(fileName, result.getFileName());
     Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+  }
+
+  @Test
+  void givenExportFileNotFoundWhenDownloadExportFileThenThrowException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long exportFileId = 10L;
+    Path organizationBasePath = Path.of("/organizationFolder");
+    String filePathName = "examplePath";
+    String fileName = "testFile.zip";
+    Path fullFilePath = organizationBasePath.resolve(filePathName);
+
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST", "ADMIN"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo user = new UserInfo();
+    user.setOrganizations(List.of(userTestRole));
+    user.setMappedExternalUserId("TEST");
+
+    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(null);
+
+    Executable exec = () -> exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
+
+    Assertions.assertThrows(FileNotFoundException.class, exec);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
