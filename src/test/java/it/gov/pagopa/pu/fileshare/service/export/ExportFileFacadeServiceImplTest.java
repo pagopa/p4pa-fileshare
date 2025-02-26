@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.fileshare.service.export;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.ExportFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
-import it.gov.pagopa.pu.fileshare.exception.custom.FlowFileNotFoundException;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
@@ -181,7 +181,7 @@ class ExportFileFacadeServiceImplTest {
 
     Executable exec = () -> exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
 
-    Assertions.assertThrows(FlowFileNotFoundException.class, exec);
+    Assertions.assertThrows(FileNotFoundException.class, exec);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 

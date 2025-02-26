@@ -6,7 +6,7 @@ import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
-import it.gov.pagopa.pu.fileshare.exception.custom.FlowFileNotFoundException;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import jakarta.servlet.ServletException;
@@ -39,7 +39,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
-import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -118,7 +117,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleFlowFileNotFoundException() throws Exception {
-    doThrow(new FlowFileNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new FileNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -148,7 +147,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleFileNotFoundException() throws Exception {
-    doThrow(new FileNotFoundException("File not found"))
+    doThrow(new java.io.FileNotFoundException("File not found"))
       .when(requestMappingHandlerAdapterSpy).handle(any(), any(), any());
 
     performRequest(DATA, MediaType.APPLICATION_JSON)

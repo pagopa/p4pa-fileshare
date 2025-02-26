@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
@@ -85,6 +86,10 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
 
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
+
+    if (ingestionFlowFile == null) {
+      throw new FileNotFoundException("Ingestion flow file with id %s was not found".formatted(ingestionFlowFileId));
+    }
 
     Path filePath = getFilePath(ingestionFlowFile);
 

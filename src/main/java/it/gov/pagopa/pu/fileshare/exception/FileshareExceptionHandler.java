@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
-import it.gov.pagopa.pu.fileshare.exception.custom.FlowFileNotFoundException;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import jakarta.servlet.ServletException;
@@ -26,7 +26,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
-import java.io.FileNotFoundException;
 import java.util.stream.Collectors;
 
 /**
@@ -43,7 +42,7 @@ public class FileshareExceptionHandler {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, CodeEnum.INVALID_FILE);
   }
 
-  @ExceptionHandler({FlowFileNotFoundException.class})
+  @ExceptionHandler({FileNotFoundException.class})
   public ResponseEntity<FileshareErrorDTO> handleFileNotFoundError(RuntimeException ex, HttpServletRequest request){
     return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
   }
@@ -58,8 +57,9 @@ public class FileshareExceptionHandler {
     return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.FILE_UPLOAD_ERROR);
   }
 
-  @ExceptionHandler({FileNotFoundException.class})
-  public ResponseEntity<FileshareErrorDTO> handleFileNotFoundException(FileNotFoundException ex, HttpServletRequest request) {
+  @ExceptionHandler({java.io.FileNotFoundException.class})
+  public ResponseEntity<FileshareErrorDTO> handleFileNotFoundException(
+    java.io.FileNotFoundException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
   }
 
