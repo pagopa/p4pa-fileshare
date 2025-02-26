@@ -12,7 +12,6 @@ import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
 import java.io.ByteArrayInputStream;
-import java.io.FileNotFoundException;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
