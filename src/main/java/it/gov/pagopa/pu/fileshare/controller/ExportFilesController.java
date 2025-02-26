@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.fileshare.controller.generated.ExportFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtils;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
-import java.io.FileNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
