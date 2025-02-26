@@ -1,19 +1,12 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.ExportFileClient;
-import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
-import java.util.List;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;

@@ -1,9 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.ExportFileClient;
-import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
-import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
 import org.springframework.stereotype.Service;
 
