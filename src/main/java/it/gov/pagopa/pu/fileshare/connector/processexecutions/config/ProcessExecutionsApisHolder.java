@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions.config;
 import it.gov.pagopa.pu.fileshare.config.RestTemplateConfig;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.ApiClient;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.BaseApi;
+import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.ExportFileEntityControllerApi;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileControllerApi;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
 import jakarta.annotation.PreDestroy;
@@ -13,11 +14,13 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class ProcessExecutionsApisHolder {
 
-    private final IngestionFlowFileControllerApi ingestionFlowFileControllerApi;
+  private final IngestionFlowFileControllerApi ingestionFlowFileControllerApi;
 
-    private final IngestionFlowFileEntityControllerApi ingestionFlowFileEntityControllerApi;
+  private final IngestionFlowFileEntityControllerApi ingestionFlowFileEntityControllerApi;
 
-    private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
+  private final ExportFileEntityControllerApi exportFileEntityControllerApi;
+
+  private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
     public ProcessExecutionsApisHolder(
         ProcessExecutionsApiClientConfig clientConfig,
@@ -33,26 +36,41 @@ public class ProcessExecutionsApisHolder {
         restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("PROCESS-EXECUTIONS"));
       }
 
-        this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(apiClient);
-        this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(apiClient);
-    }
+    this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(
+      apiClient);
+    this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(
+      apiClient);
 
-    @PreDestroy
-    public void unload(){
-        bearerTokenHolder.remove();
-    }
+    this.exportFileEntityControllerApi = new ExportFileEntityControllerApi(
+      apiClient);
+  }
 
-    /** It will return a {@link IngestionFlowFileControllerApi} instrumented with the provided accessToken. Use null if auth is not required */
-    public IngestionFlowFileControllerApi getIngestionFlowFileControllerApi(String accessToken){
-        return getApi(accessToken, ingestionFlowFileControllerApi);
-    }
+  @PreDestroy
+  public void unload() {
+    bearerTokenHolder.remove();
+  }
 
-  public IngestionFlowFileEntityControllerApi getIngestionFlowFileEntityControllerApi(String accessToken){
+  /**
+   * It will return a {@link IngestionFlowFileControllerApi} instrumented with
+   * the provided accessToken. Use null if auth is not required
+   */
+  public IngestionFlowFileControllerApi getIngestionFlowFileControllerApi(
+    String accessToken) {
+    return getApi(accessToken, ingestionFlowFileControllerApi);
+  }
+
+  public IngestionFlowFileEntityControllerApi getIngestionFlowFileEntityControllerApi(
+    String accessToken) {
     return getApi(accessToken, ingestionFlowFileEntityControllerApi);
   }
 
-    private <T extends BaseApi> T getApi(String accessToken, T api) {
-        bearerTokenHolder.set(accessToken);
-        return api;
-    }
+  public ExportFileEntityControllerApi getExportFileEntityControllerApi(
+    String accessToken) {
+    return getApi(accessToken, exportFileEntityControllerApi);
+  }
+
+  private <T extends BaseApi> T getApi(String accessToken, T api) {
+    bearerTokenHolder.set(accessToken);
+    return api;
+  }
 }

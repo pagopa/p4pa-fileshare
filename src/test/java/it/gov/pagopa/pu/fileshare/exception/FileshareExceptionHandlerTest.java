@@ -3,9 +3,12 @@ package it.gov.pagopa.pu.fileshare.exception;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.fileshare.config.json.JsonConfig;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
+import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
+import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import jakarta.servlet.ServletException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -36,7 +39,6 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
-import java.io.FileNotFoundException;
 import java.time.LocalDateTime;
 import java.util.Set;
 
@@ -114,6 +116,26 @@ class FileshareExceptionHandlerTest {
   }
 
   @Test
+  void handleFlowFileNotFoundException() throws Exception {
+    doThrow(new FileNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isNotFound())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.NOT_FOUND.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
+
+  @Test
+  void handleUnauthorizedFileDownloadException() throws Exception {
+    doThrow(new UnauthorizedFileDownloadException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isUnauthorized())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.UNAUTHORIZED.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
+
+  @Test
   void handleFileUploadException() throws Exception {
     doThrow(new FileUploadException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
@@ -125,7 +147,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleFileNotFoundException() throws Exception {
-    doThrow(new FileNotFoundException("File not found"))
+    doThrow(new java.io.FileNotFoundException("File not found"))
       .when(requestMappingHandlerAdapterSpy).handle(any(), any(), any());
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
