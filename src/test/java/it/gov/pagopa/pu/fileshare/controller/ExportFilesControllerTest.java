@@ -7,6 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 import it.gov.pagopa.pu.fileshare.controller.generated.ExportFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
+import it.gov.pagopa.pu.fileshare.exception.custom.FlowFileNotFoundException;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
@@ -68,7 +69,7 @@ class ExportFilesControllerTest {
 
     Mockito.when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
         Mockito.any(), Mockito.anyString()))
-      .thenThrow(new FileNotFoundException("File not found"));
+      .thenThrow(new FlowFileNotFoundException("File not found"));
 
     TestUtils.addSampleUserIntoSecurityContext();
 
