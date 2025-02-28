@@ -185,4 +185,30 @@ class ExportFileFacadeServiceImplTest {
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
+  @Test
+  void givenExportFileNotReadyWhenDownloadExportFileThenThrowException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long exportFileId = 10L;
+
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST", "ADMIN"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo user = new UserInfo();
+    user.setOrganizations(List.of(userTestRole));
+    user.setMappedExternalUserId("TEST");
+
+    ExportFile exportFile = new ExportFile();
+    exportFile.setOrganizationId(organizationId);
+    exportFile.setStatus(ExportFile.StatusEnum.REQUESTED);
+    exportFile.setOperatorExternalId("TEST");
+
+    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
+
+    Executable exec = () -> exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
+
+    Assertions.assertThrows(FileNotFoundException.class, exec);
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+  }
+
 }
