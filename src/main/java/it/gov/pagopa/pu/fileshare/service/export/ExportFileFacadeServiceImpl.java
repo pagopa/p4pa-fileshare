@@ -12,8 +12,12 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
 import java.io.InputStream;
 import java.nio.file.Path;
-import org.springframework.core.io.InputStreamResource;
 
+import org.apache.commons.lang3.StringUtils;
+import org.springframework.core.io.InputStreamResource;
+import org.springframework.stereotype.Service;
+
+@Service
 public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
   private final UserAuthorizationService userAuthorizationService;
   private final FileStorerService fileStorerService;
@@ -61,6 +65,9 @@ public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
   }
 
   private Path getFilePath(ExportFile exportFile) {
+    if(StringUtils.isEmpty(exportFile.getFilePathName())){
+      throw new FileNotFoundException("ExportFile not ready");
+    }
     Path organizationBasePath = fileStorerService.buildOrganizationBasePath(
       exportFile.getOrganizationId());
 
