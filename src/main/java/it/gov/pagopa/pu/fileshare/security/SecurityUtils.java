@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.fileshare.security;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import org.springframework.security.core.context.SecurityContextHolder;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -42,6 +43,12 @@ public class SecurityUtils {
 
   public static String getAccessToken(){
     return SecurityContextHolder.getContext().getAuthentication().getCredentials().toString();
+  }
+
+  public static String removePiiFromURI(URI uri){
+    return uri != null
+      ? uri.toString().replaceAll("=[^&]*", "=***")
+      : null;
   }
 
 }
