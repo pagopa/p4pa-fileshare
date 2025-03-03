@@ -8,6 +8,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.context.SecurityContextImpl;
 
+import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -86,6 +87,17 @@ class SecurityUtilsTest {
     String result = SecurityUtils.getAccessToken();
     // Then
     Assertions.assertEquals("token",result);
+  }
+
+  @Test
+  void givenUriWhenRemovePiiFromURIThenOk(){
+    String result = SecurityUtils.removePiiFromURI(URI.create("https://host/path?param1=PII&param2=noPII"));
+    Assertions.assertEquals("https://host/path?param1=***&param2=***", result);
+  }
+
+  @Test
+  void givenNullUriWhenRemovePiiFromURIThenOk(){
+    Assertions.assertNull(SecurityUtils.removePiiFromURI(null));
   }
 
 }
