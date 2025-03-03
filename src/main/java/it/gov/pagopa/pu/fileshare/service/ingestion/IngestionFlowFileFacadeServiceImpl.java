@@ -36,7 +36,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   private final FoldersPathsConfig foldersPathsConfig;
   private final IngestionFlowFileService ingestionFlowFileService;
   private final IngestionFlowFileDTOMapper ingestionFlowFileDTOMapper;
-  private final String validIngestionFlowFileExt;
   private final String archivedSubFolder;
 
   public IngestionFlowFileFacadeServiceImpl(
@@ -46,7 +45,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     FoldersPathsConfig foldersPathsConfig,
     IngestionFlowFileService ingestionFlowFileService,
     IngestionFlowFileDTOMapper ingestionFlowFileDTOMapper,
-    @Value("${uploads.ingestion-flow-file.valid-extension}") String validIngestionFlowFileExt,
     @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder
   ) {
     this.userAuthorizationService = userAuthorizationService;
@@ -55,7 +53,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     this.foldersPathsConfig = foldersPathsConfig;
     this.ingestionFlowFileService = ingestionFlowFileService;
     this.ingestionFlowFileDTOMapper = ingestionFlowFileDTOMapper;
-    this.validIngestionFlowFileExt = validIngestionFlowFileExt;
     this.archivedSubFolder = archivedSubFolder;
   }
 
@@ -64,7 +61,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
                                       FileOrigin fileOrigin, String fileName, MultipartFile ingestionFlowFile,
                                       UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
-    fileService.validateFile(ingestionFlowFile, validIngestionFlowFileExt);
+    fileService.validateFile(ingestionFlowFile);
 
     String ingestionFlowFilePath = foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType);
 

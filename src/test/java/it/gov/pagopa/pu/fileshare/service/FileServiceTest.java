@@ -12,7 +12,6 @@ import org.springframework.mock.web.MockMultipartFile;
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
   private FileService fileService;
-  private static final String VALID_FILE_EXTENSION = ".zip";
 
   @BeforeEach
   void setUp() {
@@ -23,35 +22,18 @@ class FileServiceTest {
   void givenValidFileExtensionWhenValidateFileThenOk(){
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
-      "test"+VALID_FILE_EXTENSION,
+      "test.zip",
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
 
-    fileService.validateFile(file, VALID_FILE_EXTENSION);
+    fileService.validateFile(file);
   }
 
   @Test
   void givenNoFileWhenValidateFileThenInvalidFileException(){
     try{
-      fileService.validateFile(null, VALID_FILE_EXTENSION);
-      Assertions.fail("Expected InvalidFileException");
-    }catch(InvalidFileException e){
-      //do nothing
-    }
-  }
-
-  @Test
-  void givenInvalidFileExtensionWhenValidateFileThenInvalidFileException(){
-    MockMultipartFile file = new MockMultipartFile(
-      "ingestionFlowFile",
-      "test.txt",
-      MediaType.TEXT_PLAIN_VALUE,
-      "this is a test file".getBytes()
-    );
-
-    try{
-      fileService.validateFile(file, VALID_FILE_EXTENSION);
+      fileService.validateFile(null);
       Assertions.fail("Expected InvalidFileException");
     }catch(InvalidFileException e){
       //do nothing
@@ -68,7 +50,7 @@ class FileServiceTest {
     );
 
     try{
-      fileService.validateFile(file, VALID_FILE_EXTENSION);
+      fileService.validateFile(file);
       Assertions.fail("Expected InvalidFileException");
     }catch(InvalidFileException e){
       //do nothing
