@@ -95,9 +95,5 @@ rest:
     wait-time-millis: "\${PROCESS_EXECUTIONS_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${PROCESS_EXECUTIONS_PRINT_BODY_WHEN_ERROR:true}"
 
-uploads:
-  ingestion-flow-file:
-    valid-extension: "\${INGESTION_FLOW_FILE_VALID_EXTENSION:.zip}"
-
 app:
   fileEncryptPassword: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"

@@ -47,7 +47,6 @@ class IngestionFlowFileFacadeServiceImplTest {
   @Mock
   private IngestionFlowFileDTOMapper ingestionFlowFileDTOMapperMock;
   private IngestionFlowFileFacadeServiceImpl ingestionFlowFileService;
-  private static final String VALID_FILE_EXTENSION = ".zip";
   private static final String ARCHIVED_SUB_FOLDER = "Archived";
 
   @BeforeEach
@@ -59,7 +58,6 @@ class IngestionFlowFileFacadeServiceImplTest {
       foldersPathsConfigMock,
       ingestionFlowFileServiceMock,
       ingestionFlowFileDTOMapperMock,
-      VALID_FILE_EXTENSION,
       ARCHIVED_SUB_FOLDER);
   }
 
@@ -84,7 +82,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     String fileName = "fileName.txt";
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
-      "test" + VALID_FILE_EXTENSION,
+      "test.zip",
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
@@ -108,7 +106,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
-    Mockito.verify(fileServiceMock).validateFile(file, VALID_FILE_EXTENSION);
+    Mockito.verify(fileServiceMock).validateFile(file);
   }
 
   @Test
@@ -146,7 +144,7 @@ class IngestionFlowFileFacadeServiceImplTest {
           fileName, file, userInfo, accessToken));
 
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, userInfo, accessToken);
-      Mockito.verify(fileServiceMock).validateFile(file, VALID_FILE_EXTENSION);
+      Mockito.verify(fileServiceMock).validateFile(file);
     }
   }
 
@@ -191,7 +189,7 @@ class IngestionFlowFileFacadeServiceImplTest {
           fileName, file, userInfo, accessToken));
 
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, userInfo, accessToken);
-      Mockito.verify(fileServiceMock).validateFile(file, VALID_FILE_EXTENSION);
+      Mockito.verify(fileServiceMock).validateFile(file);
     }
   }
 
