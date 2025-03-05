@@ -4,7 +4,7 @@ info:
   description: Api and Models
   version: "1.0.0"
 paths:
-  /ingestionflowfiles/{organizationId}:
+  /organization/{organizationId}/ingestionflowfiles:
     post:
       tags:
         - ingestion-flow-file
@@ -57,7 +57,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/FileshareErrorDTO'
-  /ingestionflowfiles/{organizationId}/{ingestionFlowFileId}:
+  /organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}:
     get:
       tags:
         - ingestion-flow-file
@@ -85,7 +85,7 @@ paths:
               schema:
                 type: string
                 format: binary
-  /exportfiles/{organizationId}/{exportFileId}:
+  /organization/{organizationId}/exportfiles/{exportFileId}:
     get:
       tags:
         - export-file
