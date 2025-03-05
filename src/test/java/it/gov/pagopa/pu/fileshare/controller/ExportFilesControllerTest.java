@@ -1,10 +1,5 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import it.gov.pagopa.pu.fileshare.controller.generated.ExportFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
@@ -23,6 +18,10 @@ import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(value = ExportFileApi.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
   classes = JwtAuthenticationFilter.class))
@@ -51,7 +50,7 @@ class ExportFilesControllerTest {
 
     TestUtils.addSampleUserIntoSecurityContext();
 
-    mockMvc.perform(get("/exportfiles/{organizationId}/{exportFileId}", organizationId, exportFileId)
+    mockMvc.perform(get("/organization/{organizationId}/exportfiles/{exportFileId}", organizationId, exportFileId)
         .contentType(MediaType.APPLICATION_OCTET_STREAM))
       .andExpect(status().isOk())
       .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
@@ -72,7 +71,7 @@ class ExportFilesControllerTest {
 
     TestUtils.addSampleUserIntoSecurityContext();
 
-    mockMvc.perform(get("/exportfiles/{organizationId}/{exportFileId}", organizationId, exportFileId)
+    mockMvc.perform(get("/organization/{organizationId}/exportfiles/{exportFileId}", organizationId, exportFileId)
         .contentType(MediaType.APPLICATION_OCTET_STREAM))
       .andExpect(status().isNotFound());
 

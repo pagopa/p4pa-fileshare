@@ -1,12 +1,13 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
 import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
-import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
+import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
+import java.io.ByteArrayInputStream;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,13 +21,12 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.web.server.ResponseStatusException;
-
-import java.io.ByteArrayInputStream;
-
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import org.springframework.web.server.ResponseStatusException;
 
 @WebMvcTest(value = IngestionFlowFileApi.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
   classes = JwtAuthenticationFilter.class))
@@ -55,7 +55,7 @@ class IngestionFlowFilesControllerTest {
         Mockito.eq(file), Mockito.any(), Mockito.anyString()))
       .thenReturn(1L);
 
-    mockMvc.perform(multipart("/ingestionflowfiles/" + organizationId)
+    mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles",organizationId)
         .file(file)
         .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
         .param("fileOrigin", FileOrigin.PAGOPA.toString())
@@ -76,7 +76,7 @@ class IngestionFlowFilesControllerTest {
     );
     TestUtils.addSampleUserIntoSecurityContext();
 
-    mockMvc.perform(multipart("/ingestionflowfiles/" + organizationId)
+    mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles",organizationId)
       .file(file)
       .param("ingestionFlowFileType", "WrongValue")
       .param("fileOrigin", FileOrigin.PAGOPA.toString())
@@ -94,7 +94,7 @@ class IngestionFlowFilesControllerTest {
     String fileName = "fileName.txt";
     TestUtils.addSampleUserIntoSecurityContext();
 
-    mockMvc.perform(multipart("/ingestionflowfiles/" + organizationId)
+    mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles",organizationId)
       .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
       .param("fileOrigin", FileOrigin.PAGOPA.toString())
       .param("fileName",fileName)
@@ -117,7 +117,7 @@ class IngestionFlowFilesControllerTest {
     );
     TestUtils.addSampleUserIntoSecurityContext();
 
-    mockMvc.perform(multipart("/ingestionflowfiles/" + organizationId)
+    mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles",organizationId)
       .file(file)
       .param("fileOrigin", FileOrigin.PAGOPA.toString())
       .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -140,7 +140,7 @@ class IngestionFlowFilesControllerTest {
     );
     TestUtils.addSampleUserIntoSecurityContext();
 
-    mockMvc.perform(multipart("/ingestionflowfiles/" + organizationId)
+    mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles",organizationId)
       .file(file)
       .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
       .param("fileOrigin", "WrongValue")
@@ -164,7 +164,7 @@ class IngestionFlowFilesControllerTest {
     );
     TestUtils.addSampleUserIntoSecurityContext();
 
-    mockMvc.perform(multipart("/ingestionflowfiles/" + organizationId)
+    mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles",organizationId)
       .file(file)
       .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
       .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -192,7 +192,7 @@ class IngestionFlowFilesControllerTest {
 
     TestUtils.addSampleUserIntoSecurityContext();
 
-    mockMvc.perform(get("/ingestionflowfiles/{organizationId}/{ingestionFlowFileId}", organizationId, ingestionFlowFileId)
+    mockMvc.perform(get("/organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}", organizationId, ingestionFlowFileId)
         .contentType(MediaType.APPLICATION_OCTET_STREAM))
       .andExpect(status().isOk())
       .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
@@ -213,7 +213,7 @@ class IngestionFlowFilesControllerTest {
 
     TestUtils.addSampleUserIntoSecurityContext();
 
-    mockMvc.perform(get("/ingestionflowfiles/{organizationId}/{ingestionFlowFileId}", organizationId, ingestionFlowFileId)
+    mockMvc.perform(get("/organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}", organizationId, ingestionFlowFileId)
         .contentType(MediaType.APPLICATION_OCTET_STREAM))
       .andExpect(status().isNotFound());
 
