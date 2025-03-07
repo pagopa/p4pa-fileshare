@@ -7,7 +7,9 @@ import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
+import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
+import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
@@ -17,6 +19,7 @@ import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -86,6 +89,16 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     if (ingestionFlowFile == null) {
       throw new FileNotFoundException("Ingestion flow file with id %s was not found".formatted(ingestionFlowFileId));
+    }
+
+    if(!organizationId.equals(ingestionFlowFile.getOrganizationId())){
+      throw new AuthorizationDeniedException("Access Denied");
+    }
+
+    if (!AuthorizationService.isAdminRole(organizationId, user) &&
+      !user.getMappedExternalUserId().equals(ingestionFlowFile.getOperatorExternalId())) {
+      throw new UnauthorizedFileDownloadException(
+        "User is not authorized to download ingestion flow file with ID " + ingestionFlowFileId);
     }
 
     Path filePath = getFilePath(ingestionFlowFile);

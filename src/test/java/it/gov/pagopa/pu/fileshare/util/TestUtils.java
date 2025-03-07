@@ -1,17 +1,15 @@
 package it.gov.pagopa.pu.fileshare.util;
 
+import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
 import org.junit.jupiter.api.Assertions;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
+
+import java.util.*;
 
 public class TestUtils {
 
@@ -45,22 +43,28 @@ public class TestUtils {
     SecurityContextHolder.getContext().setAuthentication(authToken);
   }
 
-  public static UserInfo getSampleUser(){
-    return getSampleUser(true);
+  public static UserInfo getSampleAdminUser(){
+    return getSampleUser(true, AuthorizationService.ROLE_ADMIN);
   }
 
-  public static UserInfo getSampleUser(Boolean organizationAccess){
+  public static UserInfo getSampleUser(){
+    return getSampleUser(true, "ROLE_OPER");
+  }
+
+  public static UserInfo getSampleUser(Boolean organizationAccess, String role){
     List<UserOrganizationRoles> organizations = List.of(
       new UserOrganizationRoles()
         .operatorId("operator1")
+        .organizationId(1L)
         .organizationIpaCode("ORG")
         .email("email1@example.com")
-        .roles(List.of("ROLE")),
+        .roles(List.of(role)),
       new UserOrganizationRoles()
         .operatorId("operator2")
+        .organizationId(2L)
         .organizationIpaCode("ORG2")
         .email("email2@example.com")
-        .roles(List.of("ROLE2"))
+        .roles(List.of(role))
     );
     return new UserInfo().mappedExternalUserId("MAPPEDEXTERNALUSERID")
       .fiscalCode("FISCALCODE")
