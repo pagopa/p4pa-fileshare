@@ -22,6 +22,7 @@ import org.junit.jupiter.api.function.Executable;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 
 @ExtendWith(MockitoExtension.class)
 class ExportFileFacadeServiceImplTest {
@@ -92,6 +93,38 @@ class ExportFileFacadeServiceImplTest {
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
     Mockito.verify(exportFileServiceMock).getExportFile(exportFileId, accessToken);
     Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
+  }
+
+  @Test
+  void givenUnauthorizedOrganizationWhenDownloadExportFileThenThrowException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long exportFileId = 10L;
+    String filePathName = "examplePath";
+    String fileName = "testFile.zip";
+
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo user = new UserInfo();
+    user.setOrganizations(List.of(userTestRole));
+    user.setMappedExternalUserId("UNAUTHORIZED_OPERATOR");
+
+    ExportFile exportFile = new ExportFile();
+    exportFile.setOrganizationId(-1L);
+    exportFile.setFileName(fileName);
+    exportFile.setFilePathName(filePathName);
+    exportFile.setStatus(ExportFile.StatusEnum.COMPLETED);
+    exportFile.setOperatorExternalId("TEST");
+
+    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
+
+    Executable exec = () -> exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
+
+    Assertions.assertThrows(AuthorizationDeniedException.class, exec);
+
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    Mockito.verify(exportFileServiceMock).getExportFile(exportFileId, accessToken);
   }
 
   @Test

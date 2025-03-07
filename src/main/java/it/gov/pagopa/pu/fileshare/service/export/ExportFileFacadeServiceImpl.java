@@ -15,6 +15,7 @@ import java.nio.file.Path;
 
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -45,6 +46,10 @@ public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
     if (exportFile == null) {
       throw new FileNotFoundException(
         "Export file with id %s was not found".formatted(exportFileId));
+    }
+
+    if(!organizationId.equals(exportFile.getOrganizationId())){
+      throw new AuthorizationDeniedException("Access Denied");
     }
 
     if (!AuthorizationService.isAdminRole(organizationId, user) &&
