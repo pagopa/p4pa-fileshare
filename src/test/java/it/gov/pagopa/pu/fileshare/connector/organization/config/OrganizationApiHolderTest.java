@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.organization.config;
 
 import it.gov.pagopa.pu.fileshare.connector.BaseApiHolderTest;
-import it.gov.pagopa.pu.p4paorganization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,6 +9,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 @ExtendWith(MockitoExtension.class)
@@ -43,7 +43,7 @@ class OrganizationApiHolderTest extends BaseApiHolderTest {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken -> organizationApisHolder.getOrganizationEntityControllerApi(accessToken)
         .crudGetOrganization(String.valueOf(organizationId)),
-      Organization.class,
+      new ParameterizedTypeReference<>() {},
       organizationApisHolder::unload);
   }
 }

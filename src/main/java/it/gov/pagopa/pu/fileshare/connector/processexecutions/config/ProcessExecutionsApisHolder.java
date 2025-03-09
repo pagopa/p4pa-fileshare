@@ -15,32 +15,28 @@ import org.springframework.web.client.RestTemplate;
 public class ProcessExecutionsApisHolder {
 
   private final IngestionFlowFileControllerApi ingestionFlowFileControllerApi;
-
   private final IngestionFlowFileEntityControllerApi ingestionFlowFileEntityControllerApi;
-
   private final ExportFileEntityControllerApi exportFileEntityControllerApi;
-
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
-    public ProcessExecutionsApisHolder(
-        ProcessExecutionsApiClientConfig clientConfig,
-        RestTemplateBuilder restTemplateBuilder
-    ) {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ApiClient apiClient = new ApiClient(restTemplate);
-      apiClient.setBasePath(clientConfig.getBaseUrl());
-      apiClient.setBearerToken(bearerTokenHolder::get);
-      apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
-      apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
-      if (clientConfig.isPrintBodyWhenError()) {
-        restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("PROCESS-EXECUTIONS"));
-      }
+  public ProcessExecutionsApisHolder(
+    ProcessExecutionsApiClientConfig clientConfig,
+    RestTemplateBuilder restTemplateBuilder
+  ) {
+    RestTemplate restTemplate = restTemplateBuilder.build();
+    ApiClient apiClient = new ApiClient(restTemplate);
+    apiClient.setBasePath(clientConfig.getBaseUrl());
+    apiClient.setBearerToken(bearerTokenHolder::get);
+    apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
+    apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
+    if (clientConfig.isPrintBodyWhenError()) {
+      restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("PROCESS-EXECUTIONS"));
+    }
 
     this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(
       apiClient);
     this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(
       apiClient);
-
     this.exportFileEntityControllerApi = new ExportFileEntityControllerApi(
       apiClient);
   }

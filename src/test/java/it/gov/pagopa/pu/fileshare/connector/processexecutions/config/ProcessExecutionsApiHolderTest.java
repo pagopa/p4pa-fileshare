@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 @ExtendWith(MockitoExtension.class)
@@ -40,36 +41,31 @@ class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
   @Test
   void whenGetIngestionFlowFileControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken ->{
+      accessToken -> {
         processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
-        .createIngestionFlowFile(new IngestionFlowFileRequestDTO());
-        return null;
+          .createIngestionFlowFile(new IngestionFlowFileRequestDTO());
+        return voidMock;
       },
-      String.class,
+      new ParameterizedTypeReference<>() {},
       processExecutionsApisHolder::unload);
   }
 
   @Test
   void whenGetIngestionFlowFileEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> {
+      accessToken ->
         processExecutionsApisHolder.getIngestionFlowFileEntityControllerApi(accessToken)
-          .crudGetIngestionflowfile("123");
-        return null;
-      },
-      String.class,
+          .crudGetIngestionflowfile("123"),
+      new ParameterizedTypeReference<>() {},
       processExecutionsApisHolder::unload);
   }
 
   @Test
   void whenGetExportFileEntityControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> {
-        processExecutionsApisHolder.getExportFileEntityControllerApi(accessToken)
-          .crudGetExportfile("123");
-        return null;
-      },
-      String.class,
+      accessToken -> processExecutionsApisHolder.getExportFileEntityControllerApi(accessToken)
+          .crudGetExportfile("123"),
+      new ParameterizedTypeReference<>() {},
       processExecutionsApisHolder::unload);
   }
 

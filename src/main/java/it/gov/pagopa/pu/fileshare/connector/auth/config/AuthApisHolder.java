@@ -12,39 +12,41 @@ import org.springframework.web.client.RestTemplate;
 @Service
 public class AuthApisHolder {
 
-    private final AuthnApi authnApi;
+  private final AuthnApi authnApi;
 
-    private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
+  private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
-    public AuthApisHolder(
-        AuthApiClientConfig clientConfig,
-        RestTemplateBuilder restTemplateBuilder
-    ) {
-        RestTemplate restTemplate = restTemplateBuilder.build();
-        ApiClient apiClient = new ApiClient(restTemplate);
-      apiClient.setBasePath(clientConfig.getBaseUrl());
-      apiClient.setBearerToken(bearerTokenHolder::get);
-      apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
-      apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
-      if (clientConfig.isPrintBodyWhenError()) {
-        restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("AUTH"));
-      }
-
-        this.authnApi = new AuthnApi(apiClient);
+  public AuthApisHolder(
+    AuthApiClientConfig clientConfig,
+    RestTemplateBuilder restTemplateBuilder
+  ) {
+    RestTemplate restTemplate = restTemplateBuilder.build();
+    ApiClient apiClient = new ApiClient(restTemplate);
+    apiClient.setBasePath(clientConfig.getBaseUrl());
+    apiClient.setBearerToken(bearerTokenHolder::get);
+    apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
+    apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
+    if (clientConfig.isPrintBodyWhenError()) {
+      restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("AUTH"));
     }
 
-    @PreDestroy
-    public void unload(){
-        bearerTokenHolder.remove();
-    }
+    this.authnApi = new AuthnApi(apiClient);
+  }
 
-    /** It will return a {@link AuthnApi} instrumented with the provided accessToken. Use null if auth is not required */
-    public AuthnApi getAuthnApi(String accessToken){
-        return getApi(accessToken, authnApi);
-    }
+  @PreDestroy
+  public void unload() {
+    bearerTokenHolder.remove();
+  }
 
-    private <T extends BaseApi> T getApi(String accessToken, T api) {
-        bearerTokenHolder.set(accessToken);
-        return api;
-    }
+  /**
+   * It will return a {@link AuthnApi} instrumented with the provided accessToken. Use null if auth is not required
+   */
+  public AuthnApi getAuthnApi(String accessToken) {
+    return getApi(accessToken, authnApi);
+  }
+
+  private <T extends BaseApi> T getApi(String accessToken, T api) {
+    bearerTokenHolder.set(accessToken);
+    return api;
+  }
 }
