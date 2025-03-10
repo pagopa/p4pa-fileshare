@@ -12,6 +12,7 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
 import lombok.extern.slf4j.Slf4j;
+import org.slf4j.event.Level;
 import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
@@ -30,7 +31,6 @@ import java.util.stream.Collectors;
 
 /**
  * A class exception that handles errors related to workflows.
- *
  */
 @RestControllerAdvice
 @Slf4j
@@ -38,22 +38,22 @@ import java.util.stream.Collectors;
 public class FileshareExceptionHandler {
 
   @ExceptionHandler({InvalidFileException.class})
-  public ResponseEntity<FileshareErrorDTO> handleInvalidFileError(RuntimeException ex, HttpServletRequest request){
+  public ResponseEntity<FileshareErrorDTO> handleInvalidFileError(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, CodeEnum.INVALID_FILE);
   }
 
   @ExceptionHandler({FileNotFoundException.class})
-  public ResponseEntity<FileshareErrorDTO> handleFileNotFoundError(RuntimeException ex, HttpServletRequest request){
+  public ResponseEntity<FileshareErrorDTO> handleFileNotFoundError(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
   }
 
   @ExceptionHandler({UnauthorizedFileDownloadException.class})
-  public ResponseEntity<FileshareErrorDTO> handleUnauthorizedFileDownloadError(RuntimeException ex, HttpServletRequest request){
+  public ResponseEntity<FileshareErrorDTO> handleUnauthorizedFileDownloadError(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.UNAUTHORIZED, CodeEnum.UNAUTHORIZED);
   }
 
   @ExceptionHandler({FileUploadException.class})
-  public ResponseEntity<FileshareErrorDTO> handleFileStorageError(RuntimeException ex, HttpServletRequest request){
+  public ResponseEntity<FileshareErrorDTO> handleFileStorageError(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.FILE_UPLOAD_ERROR);
   }
 
@@ -79,7 +79,7 @@ public class FileshareExceptionHandler {
     FileshareErrorDTO.CodeEnum errorCode = FileshareErrorDTO.CodeEnum.GENERIC_ERROR;
     if (ex instanceof ErrorResponse errorResponse) {
       httpStatus = errorResponse.getStatusCode();
-      if(httpStatus.isSameCodeAs(HttpStatus.NOT_FOUND)) {
+      if (httpStatus.isSameCodeAs(HttpStatus.NOT_FOUND)) {
         errorCode = CodeEnum.NOT_FOUND;
       } else if (httpStatus.is4xxClientError()) {
         errorCode = FileshareErrorDTO.CodeEnum.BAD_REQUEST;
@@ -104,19 +104,24 @@ public class FileshareExceptionHandler {
   }
 
   private static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {
-    log.info("A {} occurred handling request {}: HttpStatus {} - {}",
-      ex.getClass(),
-      getRequestDetails(request),
-      httpStatus.value(),
-      ex.getMessage());
-    if(log.isDebugEnabled() && ex.getCause()!=null){
+    boolean printStackTrace = httpStatus.is5xxServerError();
+    Level logLevel = printStackTrace ? Level.ERROR : Level.INFO;
+    log.makeLoggingEventBuilder(logLevel)
+      .log("A {} occurred handling request {}: HttpStatus {} - {}",
+        ex.getClass(),
+        getRequestDetails(request),
+        httpStatus.value(),
+        ex.getMessage(),
+        printStackTrace ? ex : null
+      );
+    if (!printStackTrace && log.isDebugEnabled() && ex.getCause() != null) {
       log.debug("CausedBy: ", ex.getCause());
     }
   }
 
   private static String buildReturnedMessage(Exception ex) {
     if (ex instanceof HttpMessageNotReadableException) {
-      if(ex.getCause() instanceof JsonMappingException jsonMappingException){
+      if (ex.getCause() instanceof JsonMappingException jsonMappingException) {
         return "Cannot parse body: " +
           jsonMappingException.getPath().stream()
             .map(JsonMappingException.Reference::getFieldName)
@@ -129,7 +134,7 @@ public class FileshareExceptionHandler {
         methodArgumentNotValidException.getBindingResult()
           .getAllErrors().stream()
           .map(e -> " " +
-            (e instanceof FieldError fieldError? fieldError.getField(): e.getObjectName()) +
+            (e instanceof FieldError fieldError ? fieldError.getField() : e.getObjectName()) +
             ": " + e.getDefaultMessage())
           .sorted()
           .collect(Collectors.joining(";"));
