@@ -81,6 +81,7 @@ folders:
     TREASURY_XLS: "data/treasury/xls"
     TREASURY_POSTE: "data/treasury/poste"
     DP_INSTALLMENTS: "data/installment"
+  send-file-folder: "data/send"
 
 rest:
   default-timeout:
