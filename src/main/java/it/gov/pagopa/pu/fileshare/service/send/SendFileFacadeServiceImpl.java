@@ -20,25 +20,25 @@ import org.springframework.web.multipart.MultipartFile;
 
 @Slf4j
 @Service
-public class SendFileFacadeServiceImpl implements SendFileFacadeService{
+public class SendFileFacadeServiceImpl implements SendFileFacadeService {
 
-  private final String sendFolder;
-  private final String archivedSubFolder;
   private final UserAuthorizationService userAuthorizationService;
   private final FileService fileService;
   private final FileStorerService fileStorerService;
+  private final String sendFolder;
+  private final String archivedSubFolder;
 
 
   public SendFileFacadeServiceImpl(
-    @Value("${folders.send-file-folder}") String sendFolder,
-    @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder,
     UserAuthorizationService userAuthorizationService, FileService fileService,
-    FileStorerService fileStorerService) {
+    FileStorerService fileStorerService,
+    @Value("${folders.send-file-folder}") String sendFolder,
+    @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder) {
     this.userAuthorizationService = userAuthorizationService;
     this.fileService = fileService;
+    this.fileStorerService = fileStorerService;
     this.sendFolder = sendFolder;
     this.archivedSubFolder = archivedSubFolder;
-    this.fileStorerService = fileStorerService;
   }
 
   @Override
@@ -46,18 +46,19 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService{
     MultipartFile sendFile, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(sendFile);
+    String fileName = sendNotificationId+"_"+sendFile.getOriginalFilename();
     try {
-      if(!digest.equals(FileUtils.calculateFileHash(sendFile.getResource().getFile())))
+      if(!digest.equals(FileUtils.calculateFileHash(sendFile.getInputStream())))
         throw new InvalidFileException("Invalid digest");
     } catch (IOException | NoSuchAlgorithmException e) {
       throw new FileUploadException(e.getMessage());
     }
 
-    if(checkIfAlreadyUploadedOrArchived(organizationId, sendFolder, sendFile.getOriginalFilename())) {
+    if(checkIfAlreadyUploadedOrArchived(organizationId, sendFolder, fileName)) {
       throw new FileAlreadyExistsException("File already uploaded or archived");
     }
-
-    fileStorerService.saveToSharedFolder(organizationId, sendFile, sendFolder, sendFile.getOriginalFilename());
+    fileStorerService.saveToSharedFolder(organizationId, sendFile, sendFolder, fileName);
+    //call sendstartnotification
   }
 
   private boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String sendFolder, String fileName) {

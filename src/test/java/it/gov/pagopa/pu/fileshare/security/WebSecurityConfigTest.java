@@ -5,6 +5,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
+import it.gov.pagopa.pu.fileshare.service.send.SendFileFacadeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;
@@ -29,6 +30,8 @@ class WebSecurityConfigTest {
   private IngestionFlowFileFacadeService ingestionFlowFileFacadeServiceMock;
   @MockitoBean
   private ExportFileFacadeService exportFileFacadeServiceMock;
+  @MockitoBean
+  private SendFileFacadeService sendFileFacadeService;
 
   @Test
   void givenURLWhenWithoutAccessTokenThenReturn403() throws Exception {

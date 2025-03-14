@@ -115,7 +115,7 @@ paths:
                 format: binary
         '404':
           description: Not Found
-  /organization/{organizationId}/uploadsendfiles{sendNotificationId}:
+  /organization/{organizationId}/uploadsendfiles/{sendNotificationId}:
     post:
       tags:
         - send-file
