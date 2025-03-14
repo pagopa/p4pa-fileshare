@@ -9,6 +9,8 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Objects;
+
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -51,7 +53,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, token, authorities);
         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
         SecurityContextHolder.getContext().setAuthentication(authToken);
-        MDC.put("externalUserId", userInfo.getMappedExternalUserId());
+        String userExternalId = userInfo.getMappedExternalUserId();
+        String mdcUserId = SecurityUtils.resolvePuSystemUser(userExternalId);
+        if(!Objects.equals(userExternalId, SecurityUtils.resolvePuSystemUser(mdcUserId))){
+          mdcUserId = userExternalId+"]["+mdcUserId;
+        }
+        MDC.put("externalUserId", mdcUserId);
       }
     } catch (InvalidAccessTokenException e){
       log.info("An invalid accessToken has been provided: " + e.getMessage());
