@@ -1,8 +1,11 @@
 package it.gov.pagopa.pu.fileshare.util;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -24,6 +27,22 @@ class FileUtilsTest {
     String expectedHash = "9e9LsYp4qQ4bjyGI4Mp/jmBN2jKehKTTaonMr1AJEPU=";
     // When
     String actualHash = FileUtils.calculateFileHash(tempFile);
+
+    // Then
+    assertEquals(expectedHash, actualHash);
+  }
+
+  @Test
+  void givenValidInputStreamWhenCalculateFileHashThenVerifyHash()
+    throws NoSuchAlgorithmException, IOException {
+    // Given
+    String content = "TEST FILE HASH P4PA SEND";
+    InputStream inputStream = new ByteArrayInputStream(content.getBytes(
+      StandardCharsets.UTF_8));
+
+    String expectedHash = "9e9LsYp4qQ4bjyGI4Mp/jmBN2jKehKTTaonMr1AJEPU=";
+    // When
+    String actualHash = FileUtils.calculateFileHash(inputStream);
 
     // Then
     assertEquals(expectedHash, actualHash);
