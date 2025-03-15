@@ -1,0 +1,325 @@
+{
+  "openapi" : "3.1.0",
+  "info" : {
+    "title" : "p4pa-fileshare",
+    "description" : "Api and Models",
+    "version" : "0.0.1"
+  },
+  "servers" : [ {
+    "url" : "http://localhost",
+    "description" : "Generated server url"
+  } ],
+  "security" : [ {
+    "BearerAuth" : [ ]
+  } ],
+  "tags" : [ {
+    "name" : "export-file",
+    "description" : "the export-file API"
+  }, {
+    "name" : "send-file",
+    "description" : "the send-file API"
+  }, {
+    "name" : "ingestion-flow-file",
+    "description" : "the ingestion-flow-file API"
+  } ],
+  "paths" : {
+    "/organization/{organizationId}/uploadsendfiles/{sendNotificationId}" : {
+      "post" : {
+        "tags" : [ "send-file" ],
+        "summary" : "uploadSendFile",
+        "description" : "Service to store a send file",
+        "operationId" : "uploadSendFile",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "sendNotificationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        }, {
+          "name" : "digest",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "sendFile" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "sendFile" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StartNotificationResponse"
+                }
+              }
+            }
+          },
+          "202" : {
+            "description" : "Accepted and waiting for all files",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/StartNotificationResponse"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileshareErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/organization/{organizationId}/ingestionflowfiles" : {
+      "post" : {
+        "tags" : [ "ingestion-flow-file" ],
+        "summary" : "uploadIngestionFlowFile",
+        "description" : "Service to store an ingestion flow file",
+        "operationId" : "uploadIngestionFlowFile",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "ingestionFlowFileType",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "DP_INSTALLMENTS" ]
+          }
+        }, {
+          "name" : "fileOrigin",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string",
+            "enum" : [ "PORTAL", "SIL", "PAGOPA" ]
+          }
+        }, {
+          "name" : "fileName",
+          "in" : "query",
+          "required" : true,
+          "schema" : {
+            "type" : "string"
+          }
+        } ],
+        "requestBody" : {
+          "content" : {
+            "multipart/form-data" : {
+              "schema" : {
+                "type" : "object",
+                "properties" : {
+                  "ingestionFlowFile" : {
+                    "type" : "string",
+                    "format" : "binary"
+                  }
+                },
+                "required" : [ "ingestionFlowFile" ]
+              }
+            }
+          }
+        },
+        "responses" : {
+          "201" : {
+            "description" : "Created",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/UploadIngestionFlowFileResponseDTO"
+                }
+              }
+            }
+          },
+          "500" : {
+            "description" : "Server Error",
+            "content" : {
+              "application/json" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileshareErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}" : {
+      "get" : {
+        "tags" : [ "ingestion-flow-file" ],
+        "summary" : "downloadIngestionFlowFile",
+        "description" : "Service to retrieve an ingestion flow file",
+        "operationId" : "downloadIngestionFlowFile",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "ingestionFlowFileId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/organization/{organizationId}/exportfiles/{exportFileId}" : {
+      "get" : {
+        "tags" : [ "export-file" ],
+        "summary" : "downloadExportFile",
+        "description" : "Service to retrieve an export file",
+        "operationId" : "downloadExportFile",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "exportFileId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    }
+  },
+  "components" : {
+    "schemas" : {
+      "StartNotificationResponse" : {
+        "type" : "object",
+        "properties" : {
+          "workFlowId" : {
+            "type" : "string"
+          }
+        }
+      },
+      "FileshareErrorDTO" : {
+        "type" : "object",
+        "properties" : {
+          "code" : {
+            "type" : "string",
+            "enum" : [ "INVALID_FILE", "FILE_UPLOAD_ERROR", "NOT_FOUND", "CONFLICT", "BAD_REQUEST", "UNAUTHORIZED", "GENERIC_ERROR" ]
+          },
+          "message" : {
+            "type" : "string"
+          }
+        },
+        "required" : [ "code", "message" ]
+      },
+      "UploadIngestionFlowFileResponseDTO" : {
+        "type" : "object",
+        "properties" : {
+          "ingestionFlowFileId" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        },
+        "required" : [ "ingestionFlowFileId" ]
+      }
+    },
+    "securitySchemes" : {
+      "BearerAuth" : {
+        "type" : "http",
+        "scheme" : "bearer",
+        "bearerFormat" : "JWT"
+      }
+    }
+  }
+}

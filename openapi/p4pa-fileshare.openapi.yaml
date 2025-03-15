@@ -151,6 +151,12 @@ paths:
       responses:
         '200':
           description: OK
+          content:
+            application/json:
+              schema:
+                type: 'StartNotificationResponse'
+        '202':
+          description: Accepted and waiting for all files
         '500':
           description: Server Error
           content:
