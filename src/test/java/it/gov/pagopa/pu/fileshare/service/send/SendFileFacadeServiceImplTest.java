@@ -19,7 +19,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.security.NoSuchAlgorithmException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -92,7 +91,7 @@ class SendFileFacadeServiceImplTest {
 
   @Test
   void givenInvalidFileDigestWhenUploadSendFileThenInvalidDigest()
-    throws IOException, NoSuchAlgorithmException {
+    throws IOException {
     // GIVEN
     String content = "TEST FILE HASH P4PA SEND";
     InputStream inputStream = new ByteArrayInputStream(content.getBytes(
