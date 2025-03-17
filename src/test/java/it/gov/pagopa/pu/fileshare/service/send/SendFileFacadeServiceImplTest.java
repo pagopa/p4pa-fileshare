@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.fileshare.service.send;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -18,13 +19,18 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.MockedStatic;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.http.MediaType;
+import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -87,6 +93,43 @@ class SendFileFacadeServiceImplTest {
     verify(fileService).validateFile(multipartFile);
     verify(fileStorerService).saveToSharedFolder(ORGANIZATION_ID, multipartFile, SEND_FOLDER, expectedFileName);
     assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenAlreadyUploadedWhenThenFileAlreadyExistsException() {
+    MockMultipartFile file = new MockMultipartFile(
+      "sendFile",
+      "orginalFileName.txt",
+      MediaType.TEXT_PLAIN_VALUE,
+      "TEST FILE HASH P4PA SEND".getBytes()
+    );
+
+    Path organizationBasePath = Path.of("/organizationFolder");
+    StartNotificationResponse expectedResponse = new StartNotificationResponse();
+
+    // When
+    Mockito.when(fileStorerService.buildOrganizationBasePath(ORGANIZATION_ID))
+      .thenReturn(organizationBasePath);
+    try (MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(Files.class)) {
+      filesMockedStatic.when(() -> Files.exists(
+          organizationBasePath
+            .resolve(SEND_FOLDER)
+            .resolve(FILE_NAME + ".cipher")))
+        .thenReturn(true);
+
+      when(notificationService.startNotification(eq(SEND_NOTIFICATION_ID), eq(ORGANIZATION_ID), any(
+        LoadFileRequest.class), eq(ACCESS_TOKEN)))
+        .thenReturn(expectedResponse);
+
+      StartNotificationResponse result = sendFileFacadeService.uploadSendFile(
+        ORGANIZATION_ID, SEND_NOTIFICATION_ID, VALID_DIGEST, file, userInfo, ACCESS_TOKEN
+      );
+
+      verify(userAuthorizationService).checkUserAuthorization(ORGANIZATION_ID, userInfo, ACCESS_TOKEN);
+      verify(fileService).validateFile(file);
+      verify(fileStorerService, never()).saveToSharedFolder(ORGANIZATION_ID, file, SEND_FOLDER, "orginalFileName.txt");
+      assertEquals(expectedResponse, result);
+    }
   }
 
   @Test
