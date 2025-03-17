@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.fileshare.service.send;
 
 import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationService;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.service.FileService;
