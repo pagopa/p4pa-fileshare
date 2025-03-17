@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationService;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
@@ -96,7 +97,7 @@ class SendFileFacadeServiceImplTest {
   }
 
   @Test
-  void givenAlreadyUploadedWhenThenFileAlreadyExistsException() {
+  void givenAlreadyUploadedWhenUploadSendFileThenSuccess() {
     MockMultipartFile file = new MockMultipartFile(
       "sendFile",
       "orginalFileName.txt",
@@ -147,6 +148,19 @@ class SendFileFacadeServiceImplTest {
       sendFileFacadeService.uploadSendFile(
         ORGANIZATION_ID, SEND_NOTIFICATION_ID, "WRONGDIGEST", multipartFile,
         userInfo, ACCESS_TOKEN
+      )
+    );
+  }
+
+  @Test
+  void givenInvalidFileWhenUploadSendFileThenIOException() throws IOException {
+    // Given
+    when(multipartFile.getInputStream()).thenThrow(new IOException("Test IO Exception"));
+
+    // Then
+    assertThrows(FileUploadException.class, () ->
+      sendFileFacadeService.uploadSendFile(
+        ORGANIZATION_ID, SEND_NOTIFICATION_ID, VALID_DIGEST, multipartFile, userInfo, ACCESS_TOKEN
       )
     );
   }
