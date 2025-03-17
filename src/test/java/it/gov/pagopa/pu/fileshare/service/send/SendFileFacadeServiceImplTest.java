@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationService;
+import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
@@ -16,7 +17,9 @@ import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.security.NoSuchAlgorithmException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -85,5 +88,24 @@ class SendFileFacadeServiceImplTest {
     verify(fileService).validateFile(multipartFile);
     verify(fileStorerService).saveToSharedFolder(ORGANIZATION_ID, multipartFile, SEND_FOLDER, expectedFileName);
     assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenInvalidFileDigestWhenUploadSendFileThenInvalidDigest()
+    throws IOException, NoSuchAlgorithmException {
+    // GIVEN
+    String content = "TEST FILE HASH P4PA SEND";
+    InputStream inputStream = new ByteArrayInputStream(content.getBytes(
+      StandardCharsets.UTF_8));
+    // WHEN
+    when(multipartFile.getInputStream()).thenReturn(inputStream);
+
+    // THEN
+    assertThrows(InvalidFileException.class, () ->
+      sendFileFacadeService.uploadSendFile(
+        ORGANIZATION_ID, SEND_NOTIFICATION_ID, "WRONGDIGEST", multipartFile,
+        userInfo, ACCESS_TOKEN
+      )
+    );
   }
 }
