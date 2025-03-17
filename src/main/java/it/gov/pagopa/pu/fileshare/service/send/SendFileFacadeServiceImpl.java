@@ -61,11 +61,10 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
       throw new FileUploadException(e.getMessage());
     }
 
-    if(checkIfAlreadyUploadedOrArchived(organizationId, sendFolder, fileName)) {
-      throw new FileAlreadyExistsException("File already uploaded or archived");
+    if(!checkIfAlreadyUploadedOrArchived(organizationId, sendFolder, fileName)) {
+      fileStorerService.saveToSharedFolder(organizationId, sendFile, sendFolder, fileName);
     }
 
-    fileStorerService.saveToSharedFolder(organizationId, sendFile, sendFolder, fileName);
     LoadFileRequest fileRequest = LoadFileRequest.builder().fileName(fileName).digest(digest).path(sendFolder).build();
     return notificationService.startNotification(sendNotificationId,organizationId, fileRequest, accessToken);
   }
