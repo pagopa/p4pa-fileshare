@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
-import it.gov.pagopa.pu.fileshare.controller.generated.SendFileApi;
+
+import it.gov.pagopa.pu.fileshare.controller.generated.SendFilesApi;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtils;
 import it.gov.pagopa.pu.fileshare.service.send.SendFileFacadeService;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
@@ -10,7 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 @RestController
-public class SendFilesController implements SendFileApi {
+public class SendFilesController implements SendFilesApi {
 
   private final SendFileFacadeService sendFileFacadeService;
 

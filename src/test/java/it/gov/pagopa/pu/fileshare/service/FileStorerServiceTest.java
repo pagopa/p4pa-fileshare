@@ -104,7 +104,7 @@ class FileStorerServiceTest {
 
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class)) {
 
-      String result = fileStorerService.saveToSharedFolder(organizationId, fileSpy, relativeFilePath, fileName);
+      String result = fileStorerService.saveToSharedFolder(organizationId, fileSpy, relativeFilePath, fileName).getRelativePath();
 
       Assertions.assertEquals(relativeFilePath, result);
       aesUtilsMockedStatic.verify(() -> AESUtils.encryptAndSave(FILE_ENCRYPT_PASSWORD,

@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.util;
 
+import java.security.MessageDigest;
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
 import javax.crypto.spec.PBEKeySpec;
@@ -99,14 +100,21 @@ public class AESUtils {
       new CipherInputStream(new BufferedInputStream(plainStream), cipher));
   }
 
-  /** It will read and store the provided inputStream as a ciphered file using AES GCM mode configured with the provided password.<BR />
-   * If the ciphered file already exists, it will throw {@link java.nio.file.FileAlreadyExistsException} */
-  public static void encryptAndSave(String password, InputStream plainStream, Path targetPath, String fileName)
-    throws IOException {
+  /**
+   * It will read and store the provided inputStream as a ciphered file using
+   * AES GCM mode configured with the provided password.<BR /> If the ciphered
+   * file already exists, it will throw
+   * {@link java.nio.file.FileAlreadyExistsException}
+   *
+   * @return file digest
+   */
+  public static byte[] encryptAndSave(String password, InputStream plainStream, Path targetPath, String fileName)
+    throws IOException, NoSuchAlgorithmException {
     Path targetCipherFile = targetPath.resolve(fileName + CIPHER_EXTENSION);
     try (InputStream is = plainStream;
          InputStream cipherIs = encrypt(password, is)) {
       Files.copy(cipherIs, targetCipherFile);
+      return FileUtils.calculateHash(is);
     }
   }
 

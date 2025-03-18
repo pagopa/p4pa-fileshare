@@ -96,7 +96,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(organizationBasePath);
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
-    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
+    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName).getRelativePath())
       .thenReturn(filePath);
     Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
         IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath))

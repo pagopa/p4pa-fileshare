@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.util;
 
+import java.security.NoSuchAlgorithmException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +72,7 @@ class AESUtilsTest {
   }
 
   @Test
-  void testFileThroughInputStream() throws IOException {
+  void testFileThroughInputStream() throws IOException, NoSuchAlgorithmException {
     // Given
     String plain = "PLAINTEXT";
     String psw = "PSW";
@@ -111,6 +112,8 @@ class AESUtilsTest {
         // Then
         Assertions.assertEquals(plain, new String(decrypted.readAllBytes(), StandardCharsets.UTF_8));
       }
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
     } finally {
       Files.deleteIfExists(expectedResultedFile);
     }

@@ -4,7 +4,7 @@ import static org.springframework.test.web.servlet.request.MockMvcRequestBuilder
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-import it.gov.pagopa.pu.fileshare.controller.generated.SendFileApi;
+import it.gov.pagopa.pu.fileshare.controller.generated.SendFilesApi;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.service.send.SendFileFacadeService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
@@ -21,7 +21,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
-@WebMvcTest(value = SendFileApi.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
+@WebMvcTest(value = SendFilesApi.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
   classes = JwtAuthenticationFilter.class))
 @AutoConfigureMockMvc(addFilters = false)
 class SendFilesControllerTest {

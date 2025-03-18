@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.util.AESUtils;
@@ -30,7 +31,7 @@ public class FileStorerService {
     this.fileEncryptPassword = fileEncryptPassword;
   }
 
-  public String saveToSharedFolder(Long organizationId, MultipartFile file, String relativePath, String fileName) {
+  public SaveFileResultDTO saveToSharedFolder(Long organizationId, MultipartFile file, String relativePath, String fileName) {
     if (file == null) {
       log.debug("File is mandatory");
       throw new FileUploadException("File is mandatory");
@@ -38,23 +39,22 @@ public class FileStorerService {
 
     fileName = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(fileName));
     FileService.validateFilename(fileName);
-
+    byte[] fileHash;
     Path relativeFileLocation = concatenatePaths(relativePath, fileName);
     Path organizationBasePath = buildOrganizationBasePath(organizationId);
     Path absolutePath = concatenatePaths(organizationBasePath.toString(), relativeFileLocation.toString());
-
     //create missing parent folder, if any
     try {
       if (!Files.exists(absolutePath.getParent())) {
         Files.createDirectories(absolutePath.getParent());
       }
-      AESUtils.encryptAndSave(fileEncryptPassword, file.getInputStream(), absolutePath.getParent(), absolutePath.getFileName().toString());
+      fileHash = AESUtils.encryptAndSave(fileEncryptPassword, file.getInputStream(), absolutePath.getParent(), absolutePath.getFileName().toString());
     } catch (Exception e) {
       throw new FileUploadException(
         "Error uploading file to shared folder %s".formatted(relativePath), e);
     }
     log.debug("File upload to shared folder {} completed", relativePath);
-    return relativePath;
+    return new SaveFileResultDTO(relativePath,fileHash);
   }
 
   /**
@@ -77,5 +77,15 @@ public class FileStorerService {
   public Path buildOrganizationBasePath(Long organizationId) {
     return concatenatePaths(foldersPathsConfig.getShared(), String.valueOf(organizationId));
   }
+
+  public boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String archivedSubFolder,
+    String ingestionFlowFilePath, String fileName) {
+    Path filePath = buildOrganizationBasePath(organizationId)
+      .resolve(ingestionFlowFilePath);
+    String fileNameCiphered = fileName + AESUtils.CIPHER_EXTENSION;
+    return Files.exists(FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered))
+      || Files.exists(FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered));
+  }
+
 
 }
