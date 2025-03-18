@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.util;
 
+import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import javax.crypto.*;
 import javax.crypto.spec.GCMParameterSpec;
@@ -111,10 +112,11 @@ public class AESUtils {
   public static byte[] encryptAndSave(String password, InputStream plainStream, Path targetPath, String fileName)
     throws IOException, NoSuchAlgorithmException {
     Path targetCipherFile = targetPath.resolve(fileName + CIPHER_EXTENSION);
-    try (InputStream is = plainStream;
+    MessageDigest digest = MessageDigest.getInstance("SHA-256");
+    try (DigestInputStream is = new DigestInputStream(plainStream, digest);
          InputStream cipherIs = encrypt(password, is)) {
       Files.copy(cipherIs, targetCipherFile);
-      return FileUtils.calculateHash(is);
+      return digest.digest();
     }
   }
 

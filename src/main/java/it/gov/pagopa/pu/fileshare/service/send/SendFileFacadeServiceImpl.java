@@ -1,15 +1,22 @@
 package it.gov.pagopa.pu.fileshare.service.send;
 
+import static it.gov.pagopa.pu.fileshare.service.FileStorerService.concatenatePaths;
+
 import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationService;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
-import it.gov.pagopa.pu.fileshare.util.FileUtils;
+import it.gov.pagopa.pu.fileshare.util.AESUtils;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LoadFileRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.util.Base64;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
@@ -49,16 +56,27 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
     String fileName = sendNotificationId+"_"+sendFile.getOriginalFilename();
 
     if(!fileStorerService.checkIfAlreadyUploadedOrArchived(organizationId,archivedSubFolder, sendFolder, fileName)) {
-      SaveFileResultDTO resultDTO = fileStorerService.saveToSharedFolder(organizationId, sendFile, sendFolder, fileName);
-      validateDigest(digest, resultDTO.getFileHash());
+      validateDigestAndSave(organizationId, sendFile, sendFolder, fileName, digest);
     }
 
     LoadFileRequest fileRequest = LoadFileRequest.builder().fileName(fileName).digest(digest).path(sendFolder).build();
     return notificationService.startNotification(sendNotificationId,organizationId, fileRequest, accessToken);
   }
 
-  private void validateDigest(String digest, byte[] hash){
-    if(!digest.equals(FileUtils.calculateBase64FileHash(hash)))
-      throw new InvalidFileException("Invalid digest");
+  private void validateDigestAndSave(Long organizationId, MultipartFile sendFile,
+    String sendFolder, String fileName, String digest) {
+    try {
+      SaveFileResultDTO resultDTO = fileStorerService.saveToSharedFolder(
+        organizationId, sendFile, sendFolder, fileName);
+      if (!digest.equals(Base64.getEncoder().encodeToString(resultDTO.getFileHash()))) {
+        Path relativeFileLocation = concatenatePaths(resultDTO.getRelativePath(), fileName + AESUtils.CIPHER_EXTENSION);
+        Path organizationBasePath = fileStorerService.buildOrganizationBasePath(organizationId);
+        Path absolutePath = concatenatePaths(organizationBasePath.toString(), relativeFileLocation.toString());
+        Files.deleteIfExists(absolutePath);
+        throw new InvalidFileException("Invalid digest");
+      }
+    } catch (IOException e){
+      throw new FileUploadException(e.getMessage());
+    }
   }
 }
