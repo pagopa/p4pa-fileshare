@@ -50,7 +50,7 @@ class SendFilesControllerTest {
         Mockito.eq(sendNotificationId), Mockito.eq(digest), Mockito.eq(file), Mockito.any(), Mockito.anyString()))
       .thenReturn(expectedResponse);
 
-    mockMvc.perform(multipart("/organization/{organizationId}/uploadsendfiles/{sendNotificationId}",organizationId, sendNotificationId)
+    mockMvc.perform(multipart("/organization/{organizationId}/send-files/{sendNotificationId}",organizationId, sendNotificationId)
         .file(file)
         .param("digest", digest)
         .contentType(MediaType.MULTIPART_FORM_DATA)
@@ -75,7 +75,7 @@ class SendFilesControllerTest {
         Mockito.eq(sendNotificationId), Mockito.eq(digest), Mockito.eq(file), Mockito.any(), Mockito.anyString()))
       .thenReturn(null);
 
-    mockMvc.perform(multipart("/organization/{organizationId}/uploadsendfiles/{sendNotificationId}",organizationId, sendNotificationId)
+    mockMvc.perform(multipart("/organization/{organizationId}/send-files/{sendNotificationId}",organizationId, sendNotificationId)
         .file(file)
         .param("digest", digest)
         .contentType(MediaType.MULTIPART_FORM_DATA)
