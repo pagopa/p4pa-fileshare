@@ -13,19 +13,19 @@
     "BearerAuth" : [ ]
   } ],
   "tags" : [ {
+    "name" : "send-files",
+    "description" : "the send-files API"
+  }, {
     "name" : "export-file",
     "description" : "the export-file API"
-  }, {
-    "name" : "send-file",
-    "description" : "the send-file API"
   }, {
     "name" : "ingestion-flow-file",
     "description" : "the ingestion-flow-file API"
   } ],
   "paths" : {
-    "/organization/{organizationId}/uploadsendfiles/{sendNotificationId}" : {
+    "/organization/{organizationId}/send-files/{sendNotificationId}" : {
       "post" : {
-        "tags" : [ "send-file" ],
+        "tags" : [ "send-files" ],
         "summary" : "uploadSendFile",
         "description" : "Service to store a send file",
         "operationId" : "uploadSendFile",

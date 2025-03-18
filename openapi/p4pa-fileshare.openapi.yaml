@@ -115,10 +115,10 @@ paths:
                 format: binary
         '404':
           description: Not Found
-  /organization/{organizationId}/uploadsendfiles/{sendNotificationId}:
+  /organization/{organizationId}/send-files/{sendNotificationId}:
     post:
       tags:
-        - send-file
+        - send-files
       summary: uploadSendFile
       description: Service to store a send file
       operationId: uploadSendFile
