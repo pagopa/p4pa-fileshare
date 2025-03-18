@@ -17,7 +17,6 @@ import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LoadFileRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
-import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Base64;
 import org.junit.jupiter.api.BeforeEach;
@@ -66,7 +65,7 @@ class SendFileFacadeServiceImplTest {
   }
 
   @Test
-  void givenValidRequestWhenUploadSendFileThenSuccess() throws IOException {
+  void givenValidRequestWhenUploadSendFileThenSuccess() {
     // Given
     StartNotificationResponse expectedResponse = new StartNotificationResponse();
     byte[] expectedFileHash = FILE_CONTENT.getBytes(); // This should match the valid hash
