@@ -1,8 +1,11 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
+import static org.mockito.Mockito.when;
+
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
+import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
@@ -22,7 +25,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
-import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
@@ -31,7 +33,6 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 @ExtendWith(MockitoExtension.class)
@@ -69,7 +70,6 @@ class IngestionFlowFileFacadeServiceImplTest {
     Mockito.verifyNoMoreInteractions(
       userAuthorizationServiceMock,
       fileServiceMock,
-      fileStorerServiceMock,
       foldersPathsConfigMock,
       ingestionFlowFileServiceMock,
       ingestionFlowFileDTOMapperMock);
@@ -79,10 +79,10 @@ class IngestionFlowFileFacadeServiceImplTest {
   void givenAuthorizedUserWhenUploadIngestionFlowFileThenOk() {
     String accessToken = "TOKEN";
     long organizationId = 1L;
-    Path organizationBasePath = Path.of("/organizationFolder");
     String receiptFilePath = "/receipt";
     String filePath = "/filepath";
     String fileName = "fileName.txt";
+    SaveFileResultDTO saveFileResult = new SaveFileResultDTO(filePath, "this is a test file".getBytes());
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test.zip",
@@ -92,12 +92,10 @@ class IngestionFlowFileFacadeServiceImplTest {
     Long expectedIngestionFlowFileId = 1L;
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
-      .thenReturn(organizationBasePath);
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
-    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName).getRelativePath())
-      .thenReturn(filePath);
+    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
+      .thenReturn(saveFileResult);
     Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
         IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath))
       .thenReturn(ingestionFlowFileRequestDTO);
@@ -118,7 +116,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     String accessToken = "TOKEN";
     UserInfo userInfo = TestUtils.getSampleUser();
     long organizationId = 1L;
-    Path organizationBasePath = Path.of("/organizationFolder");
+
     String receiptFilePath = "receipt";
     String fileName = "test.txt";
 
@@ -131,69 +129,17 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
-      .thenReturn(organizationBasePath);
+    when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(
+      organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
+      .thenReturn(true);
 
     // When
-    try (MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(Files.class)) {
-      filesMockedStatic.when(() -> Files.exists(
-          organizationBasePath
-            .resolve(receiptFilePath)
-            .resolve(fileName + ".cipher")))
-        .thenReturn(true);
+    Assertions.assertThrows(FileAlreadyExistsException.class, () -> ingestionFlowFileService
+      .uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
+        fileName, file, userInfo, accessToken));
 
-      Assertions.assertThrows(FileAlreadyExistsException.class, () -> ingestionFlowFileService
-        .uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
-          fileName, file, userInfo, accessToken));
-
-      Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, userInfo, accessToken);
-      Mockito.verify(fileServiceMock).validateFile(file);
-    }
-  }
-
-  @Test
-  void givenAlreadyArchivedWhenThenFileAlreadyExistsException() {
-    // Given
-    String accessToken = "TOKEN";
-    UserInfo userInfo = TestUtils.getSampleUser();
-    long organizationId = 1L;
-    Path organizationBasePath = Path.of("/organizationFolder");
-    String receiptFilePath = "receipt";
-    String fileName = "test.txt";
-
-    MockMultipartFile file = new MockMultipartFile(
-      "ingestionFlowFile",
-      "originalFileName.txt",
-      MediaType.TEXT_PLAIN_VALUE,
-      "this is a test file".getBytes()
-    );
-
-    Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
-      .thenReturn(receiptFilePath);
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
-      .thenReturn(organizationBasePath);
-
-    // When
-    try (MockedStatic<Files> filesMockedStatic = Mockito.mockStatic(Files.class)) {
-      filesMockedStatic.when(() -> Files.exists(
-          organizationBasePath
-            .resolve(receiptFilePath)
-            .resolve(fileName + ".cipher")))
-        .thenReturn(false);
-      filesMockedStatic.when(() -> Files.exists(
-          organizationBasePath
-            .resolve(receiptFilePath)
-            .resolve(ARCHIVED_SUB_FOLDER)
-            .resolve(fileName + ".cipher")))
-        .thenReturn(true);
-
-      Assertions.assertThrows(FileAlreadyExistsException.class, () -> ingestionFlowFileService
-        .uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
-          fileName, file, userInfo, accessToken));
-
-      Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, userInfo, accessToken);
-      Mockito.verify(fileServiceMock).validateFile(file);
-    }
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, userInfo, accessToken);
+    Mockito.verify(fileServiceMock).validateFile(file);
   }
 
   @Test
