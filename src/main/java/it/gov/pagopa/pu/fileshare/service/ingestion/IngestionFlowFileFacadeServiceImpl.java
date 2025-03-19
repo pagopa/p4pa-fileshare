@@ -13,7 +13,6 @@ import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
-import it.gov.pagopa.pu.fileshare.util.AESUtils;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import lombok.extern.slf4j.Slf4j;
@@ -24,7 +23,6 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile.StatusEnum.COMPLETED;
@@ -68,12 +66,12 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     String ingestionFlowFilePath = foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType);
 
-    if(checkIfAlreadyUploadedOrArchived(organizationId, ingestionFlowFilePath, fileName)) {
+    if(fileStorerService.checkIfAlreadyUploadedOrArchived(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName)) {
       throw new FileAlreadyExistsException("File already uploaded or archived");
     }
 
     String filePath = fileStorerService.saveToSharedFolder(organizationId, ingestionFlowFile,
-      ingestionFlowFilePath, fileName);
+      ingestionFlowFilePath, fileName).getRelativePath();
 
     return ingestionFlowFileService.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFile,
@@ -119,13 +117,4 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     }
     return filePath;
   }
-
-  private boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String ingestionFlowFilePath, String fileName) {
-    Path filePath = fileStorerService.buildOrganizationBasePath(organizationId)
-      .resolve(ingestionFlowFilePath);
-    String fileNameCiphered = fileName + AESUtils.CIPHER_EXTENSION;
-    return Files.exists(FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered))
-      || Files.exists(FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered));
-  }
-
 }

@@ -65,6 +65,9 @@ logging:
     PERFORMANCE_LOG.API_REQUEST: "\${LOG_LEVEL_PERFORMANCE_LOG_API_REQUEST:\${logging.level.PERFORMANCE_LOG}}"
     PERFORMANCE_LOG.REST_INVOKE: "\${LOG_LEVEL_PERFORMANCE_LOG_REST_INVOKE:\${logging.level.PERFORMANCE_LOG}}"
 
+springdoc:
+  writer-with-default-pretty-printer: true
+
 folders:
   shared: "\${SHARED_FOLDER_ROOT:/shared}"
   tmp: "\${TMP_FOLDER:/tmp}"
@@ -81,6 +84,7 @@ folders:
     TREASURY_XLS: "data/treasury/xls"
     TREASURY_POSTE: "data/treasury/poste"
     DP_INSTALLMENTS: "data/installment"
+  send-file-folder: "data/send"
 
 rest:
   defaults:

@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.fileshare.util;
 
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
@@ -71,7 +73,7 @@ class AESUtilsTest {
   }
 
   @Test
-  void testFileThroughInputStream() throws IOException {
+  void testFileThroughInputStream() throws IOException, NoSuchAlgorithmException {
     // Given
     String plain = "PLAINTEXT";
     String psw = "PSW";
@@ -111,8 +113,37 @@ class AESUtilsTest {
         // Then
         Assertions.assertEquals(plain, new String(decrypted.readAllBytes(), StandardCharsets.UTF_8));
       }
+    } catch (NoSuchAlgorithmException e) {
+      throw new RuntimeException(e);
     } finally {
       Files.deleteIfExists(expectedResultedFile);
     }
+  }
+
+  @Test
+  void testDigestThroughEncryptAndSave() throws IOException, NoSuchAlgorithmException {
+    // Act
+    String plain = "PLAINTEXT";
+    String psw = "PSW";
+    Path targetPath = Path.of("build", "tmp");
+    String fileName = "cipherFile2.txt";
+
+    Path encryptedFile = targetPath.resolve(fileName + AESUtils.CIPHER_EXTENSION);
+    Files.deleteIfExists(encryptedFile);
+
+    byte[] resultDigest = AESUtils.encryptAndSave(
+      psw,
+      new ByteArrayInputStream(plain.getBytes(StandardCharsets.UTF_8)),
+      targetPath,
+      fileName
+    );
+
+    MessageDigest expectedDigest = MessageDigest.getInstance("SHA-256");
+    byte[] expectedHash = expectedDigest.digest(plain.getBytes());
+
+    Assertions.assertTrue(Files.exists(encryptedFile));
+    Assertions.assertTrue(Files.size(encryptedFile) > 0);
+    Assertions.assertEquals(32, resultDigest.length);
+    Assertions.assertArrayEquals(expectedHash, resultDigest);
   }
 }

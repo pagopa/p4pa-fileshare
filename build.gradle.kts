@@ -131,11 +131,15 @@ springBoot {
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateFILESHARE") {
   group = "openapi"
   description = "description"
+
   generatorName.set("spring")
   inputSpec.set("$rootDir/openapi/p4pa-fileshare.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
   apiPackage.set("it.gov.pagopa.pu.fileshare.controller.generated")
   modelPackage.set("it.gov.pagopa.pu.fileshare.dto.generated")
+  typeMappings.set(mapOf(
+    "StartNotificationResponse" to "it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse"
+  ))
   configOptions.set(mapOf(
     "dateLibrary" to "java8",
     "requestMappingMode" to "api_interface",
@@ -145,7 +149,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "useBeanValidation" to "true",
     "generateConstructorWithAllArgs" to "true",
     "generatedConstructorWithRequiredArgs" to "true",
-    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)",
+    "serializationLibrary" to "jackson"
   ))
 }
 
