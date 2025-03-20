@@ -59,7 +59,7 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
       validateDigestAndSave(organizationId, sendFile, sendFolder, fileName, digest);
     }
 
-    LoadFileRequest fileRequest = LoadFileRequest.builder().fileName(fileName).digest(digest).path(sendFolder).build();
+    LoadFileRequest fileRequest = LoadFileRequest.builder().fileName(sendFile.getOriginalFilename()).digest(digest).path(sendFolder).build();
     return notificationService.startNotification(sendNotificationId,organizationId, fileRequest, accessToken);
   }
 
