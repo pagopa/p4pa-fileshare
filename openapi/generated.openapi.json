@@ -124,16 +124,14 @@
           "in" : "query",
           "required" : true,
           "schema" : {
-            "type" : "string",
-            "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "DP_INSTALLMENTS" ]
+            "$ref" : "#/components/schemas/IngestionFlowFileType"
           }
         }, {
           "name" : "fileOrigin",
           "in" : "query",
           "required" : true,
           "schema" : {
-            "type" : "string",
-            "enum" : [ "PORTAL", "SIL", "PAGOPA" ]
+            "$ref" : "#/components/schemas/FileOrigin"
           }
         }, {
           "name" : "fileName",
@@ -290,12 +288,15 @@
           }
         }
       },
+      "CodeEnum" : {
+        "type" : "string",
+        "enum" : [ "INVALID_FILE", "FILE_UPLOAD_ERROR", "NOT_FOUND", "CONFLICT", "BAD_REQUEST", "UNAUTHORIZED", "GENERIC_ERROR" ]
+      },
       "FileshareErrorDTO" : {
         "type" : "object",
         "properties" : {
           "code" : {
-            "type" : "string",
-            "enum" : [ "INVALID_FILE", "FILE_UPLOAD_ERROR", "NOT_FOUND", "CONFLICT", "BAD_REQUEST", "UNAUTHORIZED", "GENERIC_ERROR" ]
+            "$ref" : "#/components/schemas/CodeEnum"
           },
           "message" : {
             "type" : "string"
@@ -312,6 +313,14 @@
           }
         },
         "required" : [ "ingestionFlowFileId" ]
+      },
+      "IngestionFlowFileType" : {
+        "type" : "string",
+        "enum" : [ "RECEIPT", "RECEIPT_PAGOPA", "PAYMENTS_REPORTING", "PAYMENTS_REPORTING_PAGOPA", "TREASURY_OPI", "TREASURY_CSV", "TREASURY_XLS", "TREASURY_POSTE", "DP_INSTALLMENTS" ]
+      },
+      "FileOrigin" : {
+        "type" : "string",
+        "enum" : [ "PORTAL", "SIL", "PAGOPA" ]
       }
     },
     "securitySchemes" : {
