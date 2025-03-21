@@ -25,8 +25,8 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile.StatusEnum.COMPLETED;
-import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile.StatusEnum.ERROR;
+import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus.COMPLETED;
+import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus.ERROR;
 
 @Slf4j
 @Service

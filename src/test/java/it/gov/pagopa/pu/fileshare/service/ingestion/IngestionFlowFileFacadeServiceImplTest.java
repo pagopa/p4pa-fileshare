@@ -1,7 +1,5 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
-import static org.mockito.Mockito.when;
-
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
@@ -19,6 +17,7 @@ import it.gov.pagopa.pu.fileshare.util.TestUtils;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -34,6 +33,8 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileFacadeServiceImplTest {
@@ -168,7 +169,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     if(!isAdmin){
       ingestionFlowFile.setOperatorExternalId(user.getMappedExternalUserId());
     }
-    ingestionFlowFile.setStatus(IngestionFlowFile.StatusEnum.COMPLETED);
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.COMPLETED);
 
     InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
 
@@ -199,7 +200,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
     ingestionFlowFile.setOrganizationId(-1L);
-    ingestionFlowFile.setStatus(IngestionFlowFile.StatusEnum.COMPLETED);
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.COMPLETED);
 
     Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
 
@@ -219,7 +220,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
     ingestionFlowFile.setOrganizationId(1L);
     ingestionFlowFile.setOperatorExternalId("OTHERUSER");
-    ingestionFlowFile.setStatus(IngestionFlowFile.StatusEnum.COMPLETED);
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.COMPLETED);
 
     Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
 
@@ -259,7 +260,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     ingestionFlowFile.setOrganizationId(organizationId);
     ingestionFlowFile.setFileName(fileName);
     ingestionFlowFile.setFilePathName(filePathName);
-    ingestionFlowFile.setStatus(IngestionFlowFile.StatusEnum.PROCESSING);
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
 
     InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
 

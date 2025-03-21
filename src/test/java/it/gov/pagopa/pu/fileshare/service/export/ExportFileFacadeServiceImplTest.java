@@ -9,10 +9,7 @@ import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
-import java.io.ByteArrayInputStream;
-import java.io.InputStream;
-import java.nio.file.Path;
-import java.util.List;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFileStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +20,11 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
+
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.Path;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class ExportFileFacadeServiceImplTest {
@@ -73,7 +75,7 @@ class ExportFileFacadeServiceImplTest {
     exportFile.setOrganizationId(organizationId);
     exportFile.setFileName(fileName);
     exportFile.setFilePathName(filePathName);
-    exportFile.setStatus(ExportFile.StatusEnum.COMPLETED);
+    exportFile.setStatus(ExportFileStatus.COMPLETED);
     exportFile.setOperatorExternalId("TEST");
 
     InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
@@ -114,7 +116,7 @@ class ExportFileFacadeServiceImplTest {
     exportFile.setOrganizationId(-1L);
     exportFile.setFileName(fileName);
     exportFile.setFilePathName(filePathName);
-    exportFile.setStatus(ExportFile.StatusEnum.COMPLETED);
+    exportFile.setStatus(ExportFileStatus.COMPLETED);
     exportFile.setOperatorExternalId("TEST");
 
     Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
@@ -146,7 +148,7 @@ class ExportFileFacadeServiceImplTest {
     exportFile.setOrganizationId(organizationId);
     exportFile.setFileName(fileName);
     exportFile.setFilePathName(filePathName);
-    exportFile.setStatus(ExportFile.StatusEnum.COMPLETED);
+    exportFile.setStatus(ExportFileStatus.COMPLETED);
     exportFile.setOperatorExternalId("TEST");
 
     Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
@@ -180,7 +182,7 @@ class ExportFileFacadeServiceImplTest {
     exportFile.setOrganizationId(organizationId);
     exportFile.setFileName(fileName);
     exportFile.setFilePathName(filePathName);
-    exportFile.setStatus(ExportFile.StatusEnum.PROCESSING);
+    exportFile.setStatus(ExportFileStatus.PROCESSING);
     exportFile.setOperatorExternalId("TEST");
 
     InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
@@ -233,7 +235,7 @@ class ExportFileFacadeServiceImplTest {
 
     ExportFile exportFile = new ExportFile();
     exportFile.setOrganizationId(organizationId);
-    exportFile.setStatus(ExportFile.StatusEnum.REQUESTED);
+    exportFile.setStatus(ExportFileStatus.REQUESTED);
     exportFile.setOperatorExternalId("TEST");
 
     Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
