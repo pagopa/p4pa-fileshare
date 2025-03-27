@@ -1,24 +1,18 @@
 package it.gov.pagopa.pu.fileshare.service.send;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.ArgumentMatchers.eq;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationService;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
+import it.gov.pagopa.pu.fileshare.exception.custom.SendNotificationOrganizationMissMatchException;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LoadFileRequest;
+import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
-import java.nio.file.Paths;
-import java.util.Base64;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,6 +23,15 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.nio.file.Paths;
+import java.util.Base64;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class SendFileFacadeServiceImplTest {
@@ -53,6 +56,7 @@ class SendFileFacadeServiceImplTest {
   private static final String ARCHIVED_SUBFOLDER = "archived";
   private static final Long ORGANIZATION_ID = 1L;
   private static final String SEND_NOTIFICATION_ID = "notification123";
+  private static final String SEND_NOTIFICATION_ID_FOLDER = SEND_FOLDER + "/" + SEND_NOTIFICATION_ID;
   private static final String FILE_NAME = "test.txt";
   private static final String ACCESS_TOKEN = "token123";
   private static final String VALID_DIGEST = "9e9LsYp4qQ4bjyGI4Mp/jmBN2jKehKTTaonMr1AJEPU=";
@@ -73,13 +77,18 @@ class SendFileFacadeServiceImplTest {
 
     // When
     when(multipartFile.getOriginalFilename()).thenReturn(FILE_NAME);
-    when(fileStorerService.saveToSharedFolder(ORGANIZATION_ID, multipartFile, SEND_FOLDER, FINAL_FILE_NAME))
+    when(fileStorerService.saveToSharedFolder(ORGANIZATION_ID, multipartFile, SEND_NOTIFICATION_ID_FOLDER, FINAL_FILE_NAME))
       .thenReturn(saveFileResult);
 
     String validDigest = Base64.getEncoder().encodeToString(expectedFileHash);
 
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(ORGANIZATION_ID);
+    when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
+      .thenReturn(sendNotificationDTO);
+
     // The valid digest used in the uploadSendFile method call
-    when(notificationService.startNotification(eq(SEND_NOTIFICATION_ID), eq(ORGANIZATION_ID), any(
+    when(notificationService.startNotification(eq(SEND_NOTIFICATION_ID), any(
       LoadFileRequest.class), eq(ACCESS_TOKEN)))
       .thenReturn(expectedResponse);
 
@@ -90,8 +99,22 @@ class SendFileFacadeServiceImplTest {
     // Then
     verify(userAuthorizationService).checkUserAuthorization(ORGANIZATION_ID, userInfo, ACCESS_TOKEN);
     verify(fileService).validateFile(multipartFile);
-    verify(fileStorerService).saveToSharedFolder(ORGANIZATION_ID, multipartFile, SEND_FOLDER, FINAL_FILE_NAME);
+    verify(fileStorerService).saveToSharedFolder(ORGANIZATION_ID, multipartFile, SEND_NOTIFICATION_ID_FOLDER, FINAL_FILE_NAME);
     assertEquals(expectedResponse, result);
+  }
+
+  @Test
+  void givenNotRelatedToOrganizationRequestedSendNotificationIdWhenUploadSendFileThenThrowSendNotificationOrganizationMissMatchException() {
+    // Given
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(-1L);
+    when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
+      .thenReturn(sendNotificationDTO);
+
+    // When, Then
+    Assertions.assertThrows(SendNotificationOrganizationMissMatchException.class, () -> sendFileFacadeService.uploadSendFile(
+      ORGANIZATION_ID, SEND_NOTIFICATION_ID, null, multipartFile, userInfo, ACCESS_TOKEN
+    ));
   }
 
   @Test
@@ -105,11 +128,16 @@ class SendFileFacadeServiceImplTest {
 
     StartNotificationResponse expectedResponse = new StartNotificationResponse();
 
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(ORGANIZATION_ID);
+    when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
+      .thenReturn(sendNotificationDTO);
+
     when(fileStorerService.checkIfAlreadyUploadedOrArchived(
-      ORGANIZATION_ID, ARCHIVED_SUBFOLDER, SEND_FOLDER, FINAL_FILE_NAME))
+      ORGANIZATION_ID, ARCHIVED_SUBFOLDER, SEND_NOTIFICATION_ID_FOLDER, FINAL_FILE_NAME))
       .thenReturn(true);
 
-    when(notificationService.startNotification(eq(SEND_NOTIFICATION_ID), eq(ORGANIZATION_ID), any(
+    when(notificationService.startNotification(eq(SEND_NOTIFICATION_ID), any(
       LoadFileRequest.class), eq(ACCESS_TOKEN)))
       .thenReturn(expectedResponse);
 
@@ -119,14 +147,14 @@ class SendFileFacadeServiceImplTest {
 
     verify(userAuthorizationService).checkUserAuthorization(ORGANIZATION_ID, userInfo, ACCESS_TOKEN);
     verify(fileService).validateFile(file);
-    verify(fileStorerService, never()).saveToSharedFolder(ORGANIZATION_ID, file, SEND_FOLDER, FINAL_FILE_NAME);
+    verify(fileStorerService, never()).saveToSharedFolder(ORGANIZATION_ID, file, SEND_NOTIFICATION_ID_FOLDER, FINAL_FILE_NAME);
     assertEquals(expectedResponse, result);
 
   }
 
   @Test
   void givenInvalidFileDigestWhenUploadSendFileThenInvalidDigest() {
-    // GIVEN
+    // Given
     MockMultipartFile file = new MockMultipartFile(
       "sendFile",
       FILE_NAME,
@@ -138,19 +166,23 @@ class SendFileFacadeServiceImplTest {
     saveFileResultDTO.setFileHash("wrongHash".getBytes());
     saveFileResultDTO.setRelativePath("path");
 
-    // WHEN
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(ORGANIZATION_ID);
+    when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
+      .thenReturn(sendNotificationDTO);
+
     when(fileStorerService.checkIfAlreadyUploadedOrArchived(
-      ORGANIZATION_ID, ARCHIVED_SUBFOLDER, SEND_FOLDER, FINAL_FILE_NAME))
+      ORGANIZATION_ID, ARCHIVED_SUBFOLDER, SEND_NOTIFICATION_ID_FOLDER, FINAL_FILE_NAME))
       .thenReturn(false);
 
     when(fileStorerService.saveToSharedFolder(
-      ORGANIZATION_ID, file, SEND_FOLDER, FINAL_FILE_NAME))
+      ORGANIZATION_ID, file, SEND_NOTIFICATION_ID_FOLDER, FINAL_FILE_NAME))
       .thenReturn(saveFileResultDTO);
 
     when(fileStorerService.buildOrganizationBasePath(ORGANIZATION_ID))
       .thenReturn(Paths.get("basePath"));
 
-    // THEN
+    // When, Then
     assertThrows(InvalidFileException.class, () ->
       sendFileFacadeService.uploadSendFile(
         ORGANIZATION_ID, SEND_NOTIFICATION_ID, VALID_DIGEST, file,
@@ -161,13 +193,18 @@ class SendFileFacadeServiceImplTest {
 
   @Test
   void givenInvalidFileWhenUploadSendFileThenFileUploadException() {
-    // When
+    // Given
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(ORGANIZATION_ID);
+    when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
+      .thenReturn(sendNotificationDTO);
+
     when(multipartFile.getOriginalFilename()).thenReturn(FILE_NAME);
     when(fileStorerService.checkIfAlreadyUploadedOrArchived(
-      ORGANIZATION_ID, ARCHIVED_SUBFOLDER, SEND_FOLDER, FINAL_FILE_NAME))
+      ORGANIZATION_ID, ARCHIVED_SUBFOLDER, SEND_NOTIFICATION_ID_FOLDER, FINAL_FILE_NAME))
       .thenReturn(false);
     when(fileStorerService.saveToSharedFolder(
-      ORGANIZATION_ID, multipartFile, SEND_FOLDER, FINAL_FILE_NAME))
+      ORGANIZATION_ID, multipartFile, SEND_NOTIFICATION_ID_FOLDER, FINAL_FILE_NAME))
       .thenThrow(new FileUploadException("Error saving file"));
 
     // Act & Assert

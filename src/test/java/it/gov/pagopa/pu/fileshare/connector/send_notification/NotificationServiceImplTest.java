@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.fileshare.connector.send_notification;
 
 import it.gov.pagopa.pu.fileshare.connector.send_notification.client.NotificationClient;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LoadFileRequest;
+import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,18 +24,40 @@ class NotificationServiceImplTest {
   }
 
   @Test
-  void whenStartNotificationThenInvokeClient(){
-    LoadFileRequest loadFileRequest = new LoadFileRequest();
+  void whenGetSendNotificationThenInvokeClient(){
+    // Given
     String accessToken = "access_token";
-    Long organizationId = 1L;
     String sendNotificationId = "sendNotificationId";
-    StartNotificationResponse expectedResponse = new StartNotificationResponse();
-    Mockito.when(notificationClientMock.startNotification(sendNotificationId,organizationId,loadFileRequest,accessToken)).thenReturn(
+    SendNotificationDTO expectedResponse = new SendNotificationDTO();
+
+    Mockito.when(notificationClientMock.getSendNotification(sendNotificationId,accessToken)).thenReturn(
       expectedResponse);
 
-    StartNotificationResponse response = notificationService.startNotification(
-      sendNotificationId,organizationId,loadFileRequest, accessToken);
+    // When
+    SendNotificationDTO response = notificationService.getSendNotification(
+      sendNotificationId, accessToken);
 
+    // Then
     Assertions.assertSame(expectedResponse,response);
   }
+
+  @Test
+  void whenStartNotificationThenInvokeClient(){
+    // Given
+    LoadFileRequest loadFileRequest = new LoadFileRequest();
+    String accessToken = "access_token";
+    String sendNotificationId = "sendNotificationId";
+    StartNotificationResponse expectedResponse = new StartNotificationResponse();
+
+    Mockito.when(notificationClientMock.startNotification(sendNotificationId,loadFileRequest,accessToken)).thenReturn(
+      expectedResponse);
+
+    // When
+    StartNotificationResponse response = notificationService.startNotification(
+      sendNotificationId,loadFileRequest, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedResponse,response);
+  }
+
 }
