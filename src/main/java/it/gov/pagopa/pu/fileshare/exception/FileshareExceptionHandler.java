@@ -3,11 +3,7 @@ package it.gov.pagopa.pu.fileshare.exception;
 import com.fasterxml.jackson.databind.JsonMappingException;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
-import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
+import it.gov.pagopa.pu.fileshare.exception.custom.*;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ValidationException;
@@ -36,6 +32,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class FileshareExceptionHandler {
+
+  @ExceptionHandler({SendNotificationOrganizationMissMatchException.class})
+  public ResponseEntity<FileshareErrorDTO> handleSendNotificationOrganizationMissMatchException(RuntimeException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
+  }
 
   @ExceptionHandler({InvalidFileException.class})
   public ResponseEntity<FileshareErrorDTO> handleInvalidFileError(RuntimeException ex, HttpServletRequest request) {

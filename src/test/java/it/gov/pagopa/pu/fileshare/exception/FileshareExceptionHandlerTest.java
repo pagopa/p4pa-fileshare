@@ -4,11 +4,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.fileshare.config.json.JsonConfig;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
-import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
+import it.gov.pagopa.pu.fileshare.exception.custom.*;
 import jakarta.servlet.ServletException;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.Valid;
@@ -103,6 +99,16 @@ class FileshareExceptionHandlerTest {
     }
 
     return mockMvc.perform(requestBuilder);
+  }
+
+  @Test
+  void handleSendNotificationOrganizationMissMatchException() throws Exception {
+    doThrow(new SendNotificationOrganizationMissMatchException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isNotFound())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.NOT_FOUND.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
   }
 
   @Test
