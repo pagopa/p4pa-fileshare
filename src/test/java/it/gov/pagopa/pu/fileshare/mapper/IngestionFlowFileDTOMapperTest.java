@@ -35,7 +35,7 @@ class IngestionFlowFileDTOMapperTest {
     assertEquals(filePath, result.getFilePathName());
     assertEquals(file.getOriginalFilename(), result.getFileName());
     assertEquals(file.getSize(), result.getFileSize());
-    assertEquals(IngestionFlowFileRequestDTO.FlowFileTypeEnum.RECEIPT, result.getFlowFileType());
+    assertEquals(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT, result.getIngestionFlowFileType());
     assertEquals(FileOrigin.PAGOPA.toString(), result.getFileOrigin());
   }
 }

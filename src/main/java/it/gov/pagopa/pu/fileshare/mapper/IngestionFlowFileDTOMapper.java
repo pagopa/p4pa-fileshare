@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.fileshare.mapper;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO.FlowFileTypeEnum;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -18,7 +18,7 @@ public class IngestionFlowFileDTOMapper {
     ingestionFlowFileRequestDTO.setFilePathName(filePath);
     ingestionFlowFileRequestDTO.setFileName(StringUtils.defaultString(ingestionFlowFile.getOriginalFilename()));
     ingestionFlowFileRequestDTO.setFileSize(ingestionFlowFile.getSize());
-    ingestionFlowFileRequestDTO.flowFileType(FlowFileTypeEnum.valueOf(ingestionFlowFileType.toString()));
+    ingestionFlowFileRequestDTO.setIngestionFlowFileType(IngestionFlowFileTypeEnum.valueOf(ingestionFlowFileType.toString()));
     ingestionFlowFileRequestDTO.fileOrigin(fileOrigin.toString());
 
     return ingestionFlowFileRequestDTO;
