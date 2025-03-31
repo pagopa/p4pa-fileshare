@@ -1,0 +1,217 @@
+openapi: 3.0.1
+info:
+  title: p4pa-fileshare
+  description: Api and Models
+  version: "1.0.0"
+paths:
+  /organization/{organizationId}/ingestionflowfiles:
+    post:
+      tags:
+        - ingestion-flow-file
+      summary: uploadIngestionFlowFile
+      description: Service to store an ingestion flow file
+      operationId: uploadIngestionFlowFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: ingestionFlowFileType
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/IngestionFlowFileType"
+        - name: fileOrigin
+          in: query
+          required: true
+          schema:
+            $ref: "#/components/schemas/FileOrigin"
+        - name: fileName
+          in: query
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          'multipart/form-data':
+            schema:
+              required:
+                - ingestionFlowFile
+              type: object
+              properties:
+                ingestionFlowFile:
+                  type: string
+                  format: binary
+      responses:
+        '201':
+          description: Created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UploadIngestionFlowFileResponseDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileshareErrorDTO'
+  /organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}:
+    get:
+      tags:
+        - ingestion-flow-file
+      summary: downloadIngestionFlowFile
+      description: Service to retrieve an ingestion flow file
+      operationId: downloadIngestionFlowFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: ingestionFlowFileId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+  /organization/{organizationId}/exportfiles/{exportFileId}:
+    get:
+      tags:
+        - export-file
+      summary: downloadExportFile
+      description: Service to retrieve an export file
+      operationId: downloadExportFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: exportFileId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not Found
+  /organization/{organizationId}/send-files/{sendNotificationId}:
+    post:
+      tags:
+        - send-files
+      summary: uploadSendFile
+      description: Service to store a send file
+      operationId: uploadSendFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: sendNotificationId
+          in: path
+          required: true
+          schema:
+            type: string
+      requestBody:
+        content:
+          'multipart/form-data':
+            schema:
+              required:
+                - digest
+                - sendFile
+              type: object
+              properties:
+                digest:
+                  type: string
+                sendFile:
+                  type: string
+                  format: binary
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: 'StartNotificationResponse'
+        '202':
+          description: Accepted and waiting for all files
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileshareErrorDTO'
+security:
+  - BearerAuth: []
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+  schemas:
+    IngestionFlowFileType:
+      type: string
+      enum:
+        - RECEIPT
+        - RECEIPT_PAGOPA
+        - PAYMENTS_REPORTING
+        - PAYMENTS_REPORTING_PAGOPA
+        - TREASURY_OPI
+        - TREASURY_CSV
+        - TREASURY_XLS
+        - TREASURY_POSTE
+        - DP_INSTALLMENTS
+    FileshareErrorDTO:
+      type: object
+      required:
+        - code
+        - message
+      properties:
+        code:
+          type: string
+          enum:
+            - INVALID_FILE
+            - FILE_UPLOAD_ERROR
+            - NOT_FOUND
+            - CONFLICT
+            - BAD_REQUEST
+            - UNAUTHORIZED
+            - GENERIC_ERROR
+        message:
+          type: string
+    FileOrigin:
+      type: string
+      enum:
+        - PORTAL
+        - SIL
+        - PAGOPA
+    UploadIngestionFlowFileResponseDTO:
+      type: object
+      required:
+        - ingestionFlowFileId
+      properties:
+        ingestionFlowFileId:
+          type: integer
+          format: int64
