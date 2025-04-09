@@ -6,7 +6,6 @@ import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
@@ -23,6 +22,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
@@ -34,10 +35,10 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
 
-import static org.mockito.Mockito.when;
-
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileFacadeServiceImplTest {
+
+  private static final String ARCHIVED_SUB_FOLDER = "Archived";
 
   @Mock
   private UserAuthorizationService userAuthorizationServiceMock;
@@ -51,19 +52,22 @@ class IngestionFlowFileFacadeServiceImplTest {
   private IngestionFlowFileService ingestionFlowFileServiceMock;
   @Mock
   private IngestionFlowFileDTOMapper ingestionFlowFileDTOMapperMock;
+  @Mock
+  private DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerServiceMock;
+
   private IngestionFlowFileFacadeServiceImpl ingestionFlowFileService;
-  private static final String ARCHIVED_SUB_FOLDER = "Archived";
 
   @BeforeEach
   void setUp() {
     ingestionFlowFileService = new IngestionFlowFileFacadeServiceImpl(
+      ARCHIVED_SUB_FOLDER,
       userAuthorizationServiceMock,
       fileServiceMock,
       fileStorerServiceMock,
       foldersPathsConfigMock,
       ingestionFlowFileServiceMock,
       ingestionFlowFileDTOMapperMock,
-      ARCHIVED_SUB_FOLDER);
+      duplicateIngestionFlowFileRequestHandlerServiceMock);
   }
 
   @AfterEach
@@ -71,13 +75,16 @@ class IngestionFlowFileFacadeServiceImplTest {
     Mockito.verifyNoMoreInteractions(
       userAuthorizationServiceMock,
       fileServiceMock,
+      fileStorerServiceMock,
       foldersPathsConfigMock,
       ingestionFlowFileServiceMock,
-      ingestionFlowFileDTOMapperMock);
+      ingestionFlowFileDTOMapperMock,
+      duplicateIngestionFlowFileRequestHandlerServiceMock);
   }
 
-  @Test
-  void givenAuthorizedUserWhenUploadIngestionFlowFileThenOk() {
+  @ParameterizedTest
+  @ValueSource(booleans = {true, false})
+  void givenAuthorizedUserWhenUploadIngestionFlowFileThenOk(boolean alreadyUploaded) {
     String accessToken = "TOKEN";
     long organizationId = 1L;
     String receiptFilePath = "/receipt";
@@ -95,6 +102,8 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
+    Mockito.when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
+        .thenReturn(alreadyUploaded);
     Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
     Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
@@ -109,38 +118,10 @@ class IngestionFlowFileFacadeServiceImplTest {
     Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
     Mockito.verify(fileServiceMock).validateFile(file);
-  }
-
-  @Test
-  void givenAlreadyUploadedWhenThenFileAlreadyExistsException() {
-    // Given
-    String accessToken = "TOKEN";
-    UserInfo userInfo = TestUtils.getSampleUser();
-    long organizationId = 1L;
-
-    String receiptFilePath = "receipt";
-    String fileName = "test.txt";
-
-    MockMultipartFile file = new MockMultipartFile(
-      "ingestionFlowFile",
-      "orginalFileName.txt",
-      MediaType.TEXT_PLAIN_VALUE,
-      "this is a test file".getBytes()
-    );
-
-    Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
-      .thenReturn(receiptFilePath);
-    when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(
-      organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
-      .thenReturn(true);
-
-    // When
-    Assertions.assertThrows(FileAlreadyExistsException.class, () -> ingestionFlowFileService
-      .uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
-        fileName, file, userInfo, accessToken));
-
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, userInfo, accessToken);
-    Mockito.verify(fileServiceMock).validateFile(file);
+    if(alreadyUploaded){
+      Mockito.verify(duplicateIngestionFlowFileRequestHandlerServiceMock)
+        .handleDuplicateFile(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName, accessToken);
+    }
   }
 
   @Test

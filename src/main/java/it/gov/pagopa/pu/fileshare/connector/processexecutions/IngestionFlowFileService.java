@@ -6,4 +6,6 @@ import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileReq
 public interface IngestionFlowFileService {
   Long createIngestionFlowFile(IngestionFlowFileRequestDTO ingestionFlowFileDTO, String accessToken);
   IngestionFlowFile getIngestionFlowFile(Long ingestionFlowFileId, String accessToken);
+  IngestionFlowFile findByOrganizationIdAndFilePathNameAndFileName(Long organizationId, String filePathName, String fileName, String accessToken);
+  Integer updateFileNames(Long ingestionFlowFileId, String fileName, String discardFileName, String accessToken);
 }
