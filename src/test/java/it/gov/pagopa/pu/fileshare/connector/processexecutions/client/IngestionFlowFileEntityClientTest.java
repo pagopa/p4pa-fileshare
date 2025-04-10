@@ -20,7 +20,7 @@ import org.springframework.web.client.HttpClientErrorException;
 import java.net.URI;
 
 @ExtendWith(MockitoExtension.class)
-class IngestionFlowFileClientTest {
+class IngestionFlowFileEntityClientTest {
 
   private final String accessToken = "ACCESSTOKEN";
 
@@ -31,11 +31,11 @@ class IngestionFlowFileClientTest {
   @Mock
   private IngestionFlowFileEntityControllerApi ingestionFlowFileEntityControllerApiMock;
 
-  private IngestionFlowFileClient client;
+  private IngestionFlowFileEntityClient client;
 
   @BeforeEach
   void init(){
-    client = new IngestionFlowFileClient(processExecutionsApisHolderMock);
+    client = new IngestionFlowFileEntityClient(processExecutionsApisHolderMock);
   }
 
   @AfterEach

@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions;
 
-import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.ExportFileClient;
+import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.ExportFileEntityClient;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
@@ -15,7 +15,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class ExportFileServiceTest {
 
   @Mock
-  private ExportFileClient clientMock;
+  private ExportFileEntityClient clientMock;
 
   private ExportFileService service;
 

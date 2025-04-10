@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions;
 
-import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileClient;
+import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileEntityClient;
+import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileEntityExtendedClient;
+import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileSearchClient;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.junit.jupiter.api.AfterEach;
@@ -16,18 +18,25 @@ import org.mockito.junit.jupiter.MockitoExtension;
 class IngestionFlowFileServiceTest {
 
   @Mock
-  private IngestionFlowFileClient clientMock;
+  private IngestionFlowFileEntityClient entityClientMock;
+  @Mock
+  private IngestionFlowFileEntityExtendedClient entityExtendedClientMock;
+  @Mock
+  private IngestionFlowFileSearchClient searchClientMock;
 
   private IngestionFlowFileService service;
 
   @BeforeEach
   void init(){
-    service = new IngestionFlowFileServiceImpl(clientMock);
+    service = new IngestionFlowFileServiceImpl(entityClientMock, entityExtendedClientMock, searchClientMock);
   }
 
   @AfterEach
   void verifyNoMoreInteractions(){
-    Mockito.verifyNoMoreInteractions(clientMock);
+    Mockito.verifyNoMoreInteractions(
+      entityClientMock,
+      entityExtendedClientMock,
+      searchClientMock);
   }
 
   @Test
@@ -37,7 +46,7 @@ class IngestionFlowFileServiceTest {
     String accessToken = "ACCESSTOKEN";
     IngestionFlowFile expectedResult = new IngestionFlowFile();
 
-    Mockito.when(clientMock.getIngestionFlowFile(Mockito.same(organizationId), Mockito.same(accessToken)))
+    Mockito.when(entityClientMock.getIngestionFlowFile(Mockito.same(organizationId), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When
@@ -54,11 +63,51 @@ class IngestionFlowFileServiceTest {
     String accessToken = "ACCESSTOKEN";
     Long expectedResult = 2L;
 
-    Mockito.when(clientMock.createIngestionFlowFile(Mockito.same(requestDTO), Mockito.same(accessToken)))
+    Mockito.when(entityClientMock.createIngestionFlowFile(Mockito.same(requestDTO), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When
     Long result = service.createIngestionFlowFile(requestDTO, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedResult, result);
+  }
+
+  @Test
+  void whenFindByOrganizationIdAndFilePathNameAndFileNameThenInvokeClient(){
+    // Given
+    Long organizationId = 1L;
+    String filePathName = "FILE_PATH_NAME";
+    String fileName = "FILE_NAME";
+
+    String accessToken = "ACCESSTOKEN";
+    IngestionFlowFile expectedResult = new IngestionFlowFile();
+
+    Mockito.when(searchClientMock.findByOrganizationIdAndFilePathNameAndFileName(Mockito.same(organizationId), Mockito.same(filePathName), Mockito.same(fileName), Mockito.same(accessToken)))
+      .thenReturn(expectedResult);
+
+    // When
+    IngestionFlowFile result = service.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedResult, result);
+  }
+
+  @Test
+  void whenUpdateFileNamesThenInvokeClient(){
+    // Given
+    Long ingestionFlowFileId = 1L;
+    String fileName = "FILE_NAME";
+    String discardFileName = "DISCARD_FILE_NAME";
+
+    String accessToken = "ACCESSTOKEN";
+    Integer expectedResult = 0;
+
+    Mockito.when(entityExtendedClientMock.updateFileNames(Mockito.same(ingestionFlowFileId), Mockito.same(fileName), Mockito.same(discardFileName), Mockito.same(accessToken)))
+      .thenReturn(expectedResult);
+
+    // When
+    Integer result = service.updateFileNames(ingestionFlowFileId, fileName, discardFileName, accessToken);
 
     // Then
     Assertions.assertSame(expectedResult, result);
