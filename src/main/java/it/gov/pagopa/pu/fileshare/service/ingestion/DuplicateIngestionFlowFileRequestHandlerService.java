@@ -32,10 +32,12 @@ public class DuplicateIngestionFlowFileRequestHandlerService {
       if (IngestionFlowFileStatus.ERROR.equals(ingestionFlowFile.getStatus())) {
         String fileNameSuffix = "_ERROR_" + ingestionFlowFile.getIngestionFlowFileId();
         newFileName = archiveNotCorrectedHandledFile(organizationId, archivedSubFolder, filePathName, fileName, fileNameSuffix);
+
         String newDiscardFileName = ingestionFlowFile.getDiscardFileName();
         if (StringUtils.isNotEmpty(newDiscardFileName)) {
           newDiscardFileName = archiveNotCorrectedHandledFile(organizationId, archivedSubFolder, filePathName, newDiscardFileName, fileNameSuffix);
         }
+
         ingestionFlowFileService.updateFileNames(ingestionFlowFile.getIngestionFlowFileId(), newFileName, newDiscardFileName, accessToken);
       } else {
         throw new FileAlreadyExistsException("File already uploaded or archived");
@@ -48,28 +50,38 @@ public class DuplicateIngestionFlowFileRequestHandlerService {
 
   private String archiveNotCorrectedHandledFile(Long organizationId, String archivedSubFolder, String filePathName, String fileName, String fileNameSuffix) {
     Path filePath = fileStorerService.getUploadedOrArchivedPath(organizationId, archivedSubFolder, filePathName, fileName);
-    String newFileName = fileName + fileNameSuffix;
+    String newFileName = fileName.replaceFirst("(\\..*)$", fileNameSuffix + "$1"); // preserve original extension
+
     if (filePath != null) {
-      Path parentFolder = filePath.getParent();
-      if(!parentFolder.getFileName().toString().equals(archivedSubFolder)){
-        parentFolder = parentFolder.resolve(archivedSubFolder);
-        try {
-          Files.createDirectories(parentFolder);
-        } catch (IOException e) {
-          throw new IllegalStateException("Cannot create archive subfolder " + parentFolder + ": " + e.getMessage(), e);
-        }
-      }
-      Path renamedPath = parentFolder.resolve(filePath.getFileName().toString().replace(fileName, newFileName));
-      try {
-        Files.move(filePath, renamedPath);
-        log.info("Renamed file {} into {}", filePath, renamedPath);
-      } catch (IOException e) {
-        throw new IllegalStateException("Cannot rename file " + filePath + " into " + renamedPath + ": " + e.getMessage(), e);
-      }
+      Path archiveFolderPath = getArchiveFolderPath(archivedSubFolder, filePath);
+      Path renamedPath = archiveFolderPath.resolve(filePath.getFileName().toString().replace(fileName, newFileName));
+      renameFile(filePath, renamedPath);
     } else {
       log.info("Cannot rename file! It doesn't exists! organizationId {}, filePathName {}, fileName {}",
         organizationId, filePathName, fileName);
     }
     return newFileName;
+  }
+
+  private Path getArchiveFolderPath(String archivedSubFolder, Path filePath) {
+    Path parentFolder = filePath.getParent();
+    if(!parentFolder.getFileName().toString().equals(archivedSubFolder)){
+      parentFolder = parentFolder.resolve(archivedSubFolder);
+      try {
+        Files.createDirectories(parentFolder);
+      } catch (IOException e) {
+        throw new IllegalStateException("Cannot create archive subfolder " + parentFolder + ": " + e.getMessage(), e);
+      }
+    }
+    return parentFolder;
+  }
+
+  private static void renameFile(Path filePath, Path renamedPath) {
+    try {
+      Files.move(filePath, renamedPath);
+      log.info("Renamed file {} into {}", filePath, renamedPath);
+    } catch (IOException e) {
+      throw new IllegalStateException("Cannot rename file " + filePath + " into " + renamedPath + ": " + e.getMessage(), e);
+    }
   }
 }
