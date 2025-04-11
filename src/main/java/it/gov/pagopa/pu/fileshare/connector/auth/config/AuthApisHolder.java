@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.auth.config;
 
-import it.gov.pagopa.pu.fileshare.config.RestTemplateConfig;
+import it.gov.pagopa.pu.fileshare.config.rest.RestTemplateConfig;
 import it.gov.pagopa.pu.p4paauth.controller.ApiClient;
 import it.gov.pagopa.pu.p4paauth.controller.BaseApi;
 import it.gov.pagopa.pu.p4paauth.controller.generated.AuthnApi;

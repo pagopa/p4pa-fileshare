@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.fileshare.config;
+package it.gov.pagopa.pu.fileshare.config.rest;
 
 import it.gov.pagopa.pu.fileshare.performancelogger.RestInvokePerformanceLogger;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtils;

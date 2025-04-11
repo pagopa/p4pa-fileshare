@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.organization.config;
 
-import it.gov.pagopa.pu.fileshare.config.RestTemplateConfig;
+import it.gov.pagopa.pu.fileshare.config.rest.RestTemplateConfig;
 import it.gov.pagopa.pu.p4paorganization.controller.ApiClient;
 import it.gov.pagopa.pu.p4paorganization.controller.BaseApi;
 import it.gov.pagopa.pu.p4paorganization.controller.generated.OrganizationEntityControllerApi;
