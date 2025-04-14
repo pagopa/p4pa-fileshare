@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions.config;
 
 import it.gov.pagopa.pu.fileshare.connector.BaseApiHolderTest;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -56,6 +57,26 @@ class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
       accessToken ->
         processExecutionsApisHolder.getIngestionFlowFileEntityControllerApi(accessToken)
           .crudGetIngestionflowfile("123"),
+      new ParameterizedTypeReference<>() {},
+      processExecutionsApisHolder::unload);
+  }
+
+  @Test
+  void whenGetIngestionFlowFileEntityExtendedControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken ->
+        processExecutionsApisHolder.getIngestionFlowFileEntityExtendedControllerApi(accessToken)
+          .updateStatus(1L, IngestionFlowFileStatus.ERROR, IngestionFlowFileStatus.ERROR, 0L, 0L, "", null),
+      new ParameterizedTypeReference<>() {},
+      processExecutionsApisHolder::unload);
+  }
+
+  @Test
+  void whenGetIngestionFlowFileSearchControllerApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken ->
+        processExecutionsApisHolder.getIngestionFlowFileSearchControllerApi(accessToken)
+          .crudIngestionFlowFilesFindByOrganizationIdAndFilePathNameAndFileName(1L, "filePath", "fileName"),
       new ParameterizedTypeReference<>() {},
       processExecutionsApisHolder::unload);
   }

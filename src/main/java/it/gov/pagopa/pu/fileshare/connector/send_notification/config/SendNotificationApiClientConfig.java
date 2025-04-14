@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.send_notification.config;
 
-import it.gov.pagopa.pu.fileshare.config.ApiClientConfig;
+import it.gov.pagopa.pu.fileshare.config.rest.ApiClientConfig;
 import lombok.NoArgsConstructor;
 import lombok.experimental.SuperBuilder;
 import org.springframework.boot.context.properties.ConfigurationProperties;

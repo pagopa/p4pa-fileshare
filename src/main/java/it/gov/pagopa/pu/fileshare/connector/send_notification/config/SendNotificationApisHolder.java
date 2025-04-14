@@ -1,6 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.send_notification.config;
 
-import it.gov.pagopa.pu.fileshare.config.RestTemplateConfig;
+import it.gov.pagopa.pu.fileshare.config.rest.RestTemplateConfig;
 import it.gov.pagopa.pu.sendnotification.controller.ApiClient;
 import it.gov.pagopa.pu.sendnotification.controller.BaseApi;
 import it.gov.pagopa.pu.sendnotification.controller.generated.NotificationApi;

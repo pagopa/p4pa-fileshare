@@ -15,7 +15,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
 
 @ExtendWith(MockitoExtension.class)
-class ExportFileClientTest {
+class ExportFileEntityClientTest {
 
   private final String accessToken = "ACCESSTOKEN";
 
@@ -24,11 +24,11 @@ class ExportFileClientTest {
   @Mock
   private ExportFileEntityControllerApi exportFileEntityControllerApiMock;
 
-  private ExportFileClient client;
+  private ExportFileEntityClient client;
 
   @BeforeEach
   void init(){
-    client = new ExportFileClient(processExecutionsApisHolderMock);
+    client = new ExportFileEntityClient(processExecutionsApisHolderMock);
   }
 
   @AfterEach

@@ -54,7 +54,7 @@ public class FileStorerService {
         "Error uploading file to shared folder %s".formatted(relativePath), e);
     }
     log.debug("File upload to shared folder {} completed", relativePath);
-    return new SaveFileResultDTO(relativePath,fileHash);
+    return new SaveFileResultDTO(relativePath, fileHash);
   }
 
   /**
@@ -78,14 +78,25 @@ public class FileStorerService {
     return concatenatePaths(foldersPathsConfig.getShared(), String.valueOf(organizationId));
   }
 
-  public boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String archivedSubFolder,
-    String ingestionFlowFilePath, String fileName) {
+  public boolean checkIfAlreadyUploadedOrArchived(Long organizationId, String archivedSubFolder, String ingestionFlowFilePath, String fileName) {
+    return getUploadedOrArchivedPath(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName) != null;
+  }
+
+  public Path getUploadedOrArchivedPath(Long organizationId, String archivedSubFolder, String ingestionFlowFilePath, String fileName) {
     Path filePath = buildOrganizationBasePath(organizationId)
       .resolve(ingestionFlowFilePath);
     String fileNameCiphered = fileName + AESUtils.CIPHER_EXTENSION;
-    return Files.exists(FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered))
-      || Files.exists(FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered));
+    Path originalPath = FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered);
+    if (Files.exists(originalPath)) {
+      return originalPath;
+    } else {
+      Path archivedPath = FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered);
+      if (Files.exists(archivedPath)) {
+        return archivedPath;
+      } else {
+        return null;
+      }
+    }
   }
-
 
 }

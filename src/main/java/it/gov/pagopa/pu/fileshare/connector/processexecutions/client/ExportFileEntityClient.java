@@ -8,10 +8,11 @@ import org.springframework.web.client.HttpClientErrorException;
 
 @Slf4j
 @Service
-public class ExportFileClient {
+public class ExportFileEntityClient {
+
   private final ProcessExecutionsApisHolder processExecutionsApisHolder;
 
-  public ExportFileClient(
+  public ExportFileEntityClient(
     ProcessExecutionsApisHolder processExecutionsApisHolder) {
     this.processExecutionsApisHolder = processExecutionsApisHolder;
   }
@@ -19,7 +20,8 @@ public class ExportFileClient {
   public ExportFile getExportFile(Long exportFileId, String accessToken) {
     try {
       log.debug("Fetching export file with ID [{}]", exportFileId);
-      return processExecutionsApisHolder.getExportFileEntityControllerApi(accessToken).crudGetExportfile(String.valueOf(exportFileId));
+      return processExecutionsApisHolder.getExportFileEntityControllerApi(accessToken)
+        .crudGetExportfile(String.valueOf(exportFileId));
     } catch (HttpClientErrorException.NotFound e) {
       log.info("Cannot find ExportFile with ID [{}]", exportFileId);
       return null;

@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.fileshare.config;
+package it.gov.pagopa.pu.fileshare.config.rest;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;

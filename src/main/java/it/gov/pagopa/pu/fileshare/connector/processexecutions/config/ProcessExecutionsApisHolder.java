@@ -1,11 +1,9 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions.config;
 
-import it.gov.pagopa.pu.fileshare.config.RestTemplateConfig;
+import it.gov.pagopa.pu.fileshare.config.rest.RestTemplateConfig;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.ApiClient;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.BaseApi;
-import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.ExportFileEntityControllerApi;
-import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileControllerApi;
-import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
+import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.*;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.web.client.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
@@ -16,7 +14,10 @@ public class ProcessExecutionsApisHolder {
 
   private final IngestionFlowFileControllerApi ingestionFlowFileControllerApi;
   private final IngestionFlowFileEntityControllerApi ingestionFlowFileEntityControllerApi;
+  private final IngestionFlowFileEntityExtendedControllerApi ingestionFlowFileEntityExtendedControllerApi;
+  private final IngestionFlowFileSearchControllerApi ingestionFlowFileSearchControllerApi;
   private final ExportFileEntityControllerApi exportFileEntityControllerApi;
+
   private final ThreadLocal<String> bearerTokenHolder = new ThreadLocal<>();
 
   public ProcessExecutionsApisHolder(
@@ -33,12 +34,11 @@ public class ProcessExecutionsApisHolder {
       restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("PROCESS-EXECUTIONS"));
     }
 
-    this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(
-      apiClient);
-    this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(
-      apiClient);
-    this.exportFileEntityControllerApi = new ExportFileEntityControllerApi(
-      apiClient);
+    this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(apiClient);
+    this.ingestionFlowFileEntityControllerApi = new IngestionFlowFileEntityControllerApi(apiClient);
+    this.ingestionFlowFileEntityExtendedControllerApi = new IngestionFlowFileEntityExtendedControllerApi(apiClient);
+    this.ingestionFlowFileSearchControllerApi = new IngestionFlowFileSearchControllerApi(apiClient);
+    this.exportFileEntityControllerApi = new ExportFileEntityControllerApi(apiClient);
   }
 
   @PreDestroy
@@ -58,6 +58,16 @@ public class ProcessExecutionsApisHolder {
   public IngestionFlowFileEntityControllerApi getIngestionFlowFileEntityControllerApi(
     String accessToken) {
     return getApi(accessToken, ingestionFlowFileEntityControllerApi);
+  }
+
+  public IngestionFlowFileEntityExtendedControllerApi getIngestionFlowFileEntityExtendedControllerApi(
+    String accessToken) {
+    return getApi(accessToken, ingestionFlowFileEntityExtendedControllerApi);
+  }
+
+  public IngestionFlowFileSearchControllerApi getIngestionFlowFileSearchControllerApi(
+    String accessToken) {
+    return getApi(accessToken, ingestionFlowFileSearchControllerApi);
   }
 
   public ExportFileEntityControllerApi getExportFileEntityControllerApi(

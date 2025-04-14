@@ -12,10 +12,11 @@ import java.util.Objects;
 
 @Slf4j
 @Service
-public class IngestionFlowFileClient {
+public class IngestionFlowFileEntityClient {
+
   private final ProcessExecutionsApisHolder processExecutionsApisHolder;
 
-  public IngestionFlowFileClient(
+  public IngestionFlowFileEntityClient(
     ProcessExecutionsApisHolder processExecutionsApisHolder) {
     this.processExecutionsApisHolder = processExecutionsApisHolder;
   }
@@ -30,9 +31,10 @@ public class IngestionFlowFileClient {
   public IngestionFlowFile getIngestionFlowFile(Long ingestionFlowFileId, String accessToken) {
     try {
       log.debug("Fetching ingestion flow file with ID [{}]", ingestionFlowFileId);
-      return processExecutionsApisHolder.getIngestionFlowFileEntityControllerApi(accessToken).crudGetIngestionflowfile(String.valueOf(ingestionFlowFileId));
+      return processExecutionsApisHolder.getIngestionFlowFileEntityControllerApi(accessToken)
+        .crudGetIngestionflowfile(String.valueOf(ingestionFlowFileId));
     } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find IngestionFlowFile with ID [{}]", ingestionFlowFileId, e);
+      log.info("Cannot find IngestionFlowFile with ID [{}]", ingestionFlowFileId);
       return null;
     }
   }

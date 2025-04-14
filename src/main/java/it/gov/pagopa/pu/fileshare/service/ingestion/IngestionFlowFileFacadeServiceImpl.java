@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileS
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
@@ -38,15 +37,18 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   private final IngestionFlowFileService ingestionFlowFileService;
   private final IngestionFlowFileDTOMapper ingestionFlowFileDTOMapper;
   private final String archivedSubFolder;
+  private final DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerService;
 
   public IngestionFlowFileFacadeServiceImpl(
+    @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder,
+
     UserAuthorizationService userAuthorizationService,
     FileService fileService,
     FileStorerService fileStorerService,
     FoldersPathsConfig foldersPathsConfig,
     IngestionFlowFileService ingestionFlowFileService,
     IngestionFlowFileDTOMapper ingestionFlowFileDTOMapper,
-    @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder
+    DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerService
   ) {
     this.userAuthorizationService = userAuthorizationService;
     this.fileService = fileService;
@@ -55,6 +57,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     this.ingestionFlowFileService = ingestionFlowFileService;
     this.ingestionFlowFileDTOMapper = ingestionFlowFileDTOMapper;
     this.archivedSubFolder = archivedSubFolder;
+    this.duplicateIngestionFlowFileRequestHandlerService = duplicateIngestionFlowFileRequestHandlerService;
   }
 
   @Override
@@ -67,7 +70,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     String ingestionFlowFilePath = foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType);
 
     if(fileStorerService.checkIfAlreadyUploadedOrArchived(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName)) {
-      throw new FileAlreadyExistsException("File already uploaded or archived");
+      duplicateIngestionFlowFileRequestHandlerService.handleDuplicateFile(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName, accessToken);
     }
 
     String filePath = fileStorerService.saveToSharedFolder(organizationId, ingestionFlowFile,
