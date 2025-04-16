@@ -1,5 +1,8 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
+import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus.COMPLETED;
+import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus.ERROR;
+
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
@@ -14,18 +17,14 @@ import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import java.io.InputStream;
+import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
-
-import java.io.InputStream;
-import java.nio.file.Path;
-
-import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus.COMPLETED;
-import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus.ERROR;
 
 @Slf4j
 @Service
@@ -37,10 +36,12 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   private final IngestionFlowFileService ingestionFlowFileService;
   private final IngestionFlowFileDTOMapper ingestionFlowFileDTOMapper;
   private final String archivedSubFolder;
+  private final String errorsSubFolder;
   private final DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerService;
 
   public IngestionFlowFileFacadeServiceImpl(
     @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder,
+    @Value("${folders.process-target-sub-folders.errors}") String errorsSubFolder,
 
     UserAuthorizationService userAuthorizationService,
     FileService fileService,
@@ -57,6 +58,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     this.ingestionFlowFileService = ingestionFlowFileService;
     this.ingestionFlowFileDTOMapper = ingestionFlowFileDTOMapper;
     this.archivedSubFolder = archivedSubFolder;
+    this.errorsSubFolder = errorsSubFolder;
     this.duplicateIngestionFlowFileRequestHandlerService = duplicateIngestionFlowFileRequestHandlerService;
   }
 
@@ -109,6 +111,33 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
   }
 
+  @Override
+  public FileResourceDTO downloadIngestionFlowErrorsFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
+    userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
+
+    IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
+
+    if (ingestionFlowFile == null) {
+      throw new FileNotFoundException("Ingestion flow file with id %s was not found".formatted(ingestionFlowFileId));
+    }
+
+    if(!organizationId.equals(ingestionFlowFile.getOrganizationId())){
+      throw new AuthorizationDeniedException("Access Denied");
+    }
+
+    if (!AuthorizationService.isAdminRole(organizationId, user) &&
+      !user.getMappedExternalUserId().equals(ingestionFlowFile.getOperatorExternalId())) {
+      throw new UnauthorizedFileDownloadException(
+        "User is not authorized to download ingestion flow file with ID " + ingestionFlowFileId);
+    }
+
+    Path filePath = getErrorsFilePath(ingestionFlowFile);
+
+    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, ingestionFlowFile.getDiscardFileName());
+
+    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getDiscardFileName());
+  }
+
   private Path getFilePath(IngestionFlowFile ingestionFlowFile) {
     Path organizationBasePath = fileStorerService.buildOrganizationBasePath(ingestionFlowFile.getOrganizationId());
 
@@ -119,5 +148,18 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
         .resolve(archivedSubFolder);
     }
     return filePath;
+  }
+
+  private Path getErrorsFilePath(IngestionFlowFile ingestionFlowFile) {
+    if (ingestionFlowFile.getDiscardFileName() == null) {
+      throw new FileNotFoundException("Ingestion flow file with id %s has no errors file".formatted(ingestionFlowFile.getIngestionFlowFileId()));
+    }
+
+    Path organizationBasePath = fileStorerService.buildOrganizationBasePath(ingestionFlowFile.getOrganizationId());
+
+    return organizationBasePath
+      .resolve(ingestionFlowFile.getFilePathName())
+      .resolve(errorsSubFolder)
+      .resolve(ingestionFlowFile.getDiscardFileName());
   }
 }

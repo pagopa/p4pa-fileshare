@@ -33,12 +33,30 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
     return ResponseEntity.ok(new UploadIngestionFlowFileResponseDTO(ingestionFlowFileId));
   }
 
-
   @Override
   public ResponseEntity<Resource> downloadIngestionFlowFile(Long organizationId, Long ingestionFlowFileId) {
     FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
 
     Resource fileResource = new InputStreamResource(fileResourceDTO.getResourceStream());
+
+    HttpHeaders headers = new HttpHeaders();
+    headers.setContentDisposition(ContentDisposition.attachment()
+      .filename(fileResourceDTO.getFileName())
+      .build());
+
+    return ResponseEntity.ok()
+      .contentType(MediaType.APPLICATION_OCTET_STREAM)
+      .headers(headers)
+      .body(fileResource);
+  }
+
+  @Override
+  public ResponseEntity<Resource> downloadIngestionFlowErrorsFile(Long organizationId, Long ingestionFlowFileId) {
+    FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService.downloadIngestionFlowErrorsFile(
+      organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
+
+    Resource fileResource = new InputStreamResource(
+      fileResourceDTO.getResourceStream());
 
     HttpHeaders headers = new HttpHeaders();
     headers.setContentDisposition(ContentDisposition.attachment()
