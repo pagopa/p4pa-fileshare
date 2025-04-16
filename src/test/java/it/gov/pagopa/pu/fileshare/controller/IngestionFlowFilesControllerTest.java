@@ -1,5 +1,11 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
@@ -21,11 +27,6 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import org.springframework.web.server.ResponseStatusException;
 
 @WebMvcTest(value = IngestionFlowFileApi.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
@@ -218,6 +219,52 @@ class IngestionFlowFilesControllerTest {
       .andExpect(status().isNotFound());
 
     Mockito.verify(serviceMock).downloadIngestionFlowFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+      Mockito.any(), Mockito.anyString());
+  }
+
+  @Test
+  void givenCorrectRequestWhenDownloadIngestionFlowErrorsFileThenReturnFile() throws Exception {
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 123L;
+    String fileName = "errorsTest.txt";
+    String fileContent = "this is a test file";
+
+    FileResourceDTO fileResourceDTO = new FileResourceDTO();
+    fileResourceDTO.setFileName(fileName);
+    fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
+
+    Mockito.when(serviceMock.downloadIngestionFlowErrorsFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+        Mockito.any(), Mockito.anyString()))
+      .thenReturn(fileResourceDTO);
+
+    TestUtils.addSampleUserIntoSecurityContext();
+
+    mockMvc.perform(get("/organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}/errors", organizationId, ingestionFlowFileId)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM))
+      .andExpect(status().isOk())
+      .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
+      .andExpect(content().string(fileContent));
+
+    Mockito.verify(serviceMock).downloadIngestionFlowErrorsFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+      Mockito.any(), Mockito.anyString());
+  }
+
+  @Test
+  void givenNonExistentFileWhenDownloadIngestionFlowErrorsFileThenReturnNotFound() throws Exception {
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 123L;
+
+    Mockito.when(serviceMock.downloadIngestionFlowErrorsFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+        Mockito.any(), Mockito.anyString()))
+      .thenThrow(new ResponseStatusException(HttpStatus.NOT_FOUND, "File not found"));
+
+    TestUtils.addSampleUserIntoSecurityContext();
+
+    mockMvc.perform(get("/organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}/errors", organizationId, ingestionFlowFileId)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM))
+      .andExpect(status().isNotFound());
+
+    Mockito.verify(serviceMock).downloadIngestionFlowErrorsFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
       Mockito.any(), Mockito.anyString());
   }
 

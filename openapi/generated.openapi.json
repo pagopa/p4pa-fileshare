@@ -225,6 +225,58 @@
         } ]
       }
     },
+    "/organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}/errors" : {
+      "get" : {
+        "tags" : [ "ingestion-flow-file" ],
+        "summary" : "downloadIngestionFlowErrorsFile",
+        "description" : "Service to retrieve an ingestion flow error file",
+        "operationId" : "downloadIngestionFlowErrorsFile",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "ingestionFlowFileId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
     "/organization/{organizationId}/exportfiles/{exportFileId}" : {
       "get" : {
         "tags" : [ "export-file" ],
