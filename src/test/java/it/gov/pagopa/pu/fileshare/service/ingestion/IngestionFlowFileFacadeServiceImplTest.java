@@ -39,6 +39,7 @@ import java.nio.file.Path;
 class IngestionFlowFileFacadeServiceImplTest {
 
   private static final String ARCHIVED_SUB_FOLDER = "Archived";
+  private static final String ERRORS_SUB_FOLDER = "Error";
 
   @Mock
   private UserAuthorizationService userAuthorizationServiceMock;
@@ -61,6 +62,7 @@ class IngestionFlowFileFacadeServiceImplTest {
   void setUp() {
     ingestionFlowFileService = new IngestionFlowFileFacadeServiceImpl(
       ARCHIVED_SUB_FOLDER,
+      ERRORS_SUB_FOLDER,
       userAuthorizationServiceMock,
       fileServiceMock,
       fileStorerServiceMock,
@@ -172,6 +174,55 @@ class IngestionFlowFileFacadeServiceImplTest {
   }
 
   @Test
+  void givenAuthorizedUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource() {
+    givenAuthorizedUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource(false);
+  }
+  @Test
+  void givenAuthorizedAdminUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource() {
+    givenAuthorizedUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource(true);
+  }
+  void givenAuthorizedUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource(boolean isAdmin) {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+    Path organizationBasePath = Path.of("/organizationFolder");
+    String filePathName = "examplePath";
+    String fileName = "testFile.zip";
+    String discardFileName = "errorFile.zip";
+    Path fullFilePath = organizationBasePath.resolve(filePathName).resolve(ERRORS_SUB_FOLDER).resolve(discardFileName);
+
+    UserInfo user = isAdmin? TestUtils.getSampleAdminUser() : TestUtils.getSampleUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setOrganizationId(organizationId);
+    ingestionFlowFile.setFileName(fileName);
+    ingestionFlowFile.setFilePathName(filePathName);
+    ingestionFlowFile.setDiscardFileName(discardFileName);
+    if(!isAdmin){
+      ingestionFlowFile.setOperatorExternalId(user.getMappedExternalUserId());
+    }
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.COMPLETED);
+
+    InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
+
+    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
+      .thenReturn(organizationBasePath);
+
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
+
+    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, discardFileName)).thenReturn(decryptedInputStream);
+
+    FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken);
+
+    Assertions.assertNotNull(result);
+    Assertions.assertEquals(discardFileName, result.getFileName());
+
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    Mockito.verify(ingestionFlowFileServiceMock).getIngestionFlowFile(ingestionFlowFileId, accessToken);
+    Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, discardFileName);
+  }
+
+  @Test
   void givenUnauthorizedOrganizationWhenDownloadIngestionFlowFileThenThrowAuthorizationDeniedException() {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
@@ -186,6 +237,25 @@ class IngestionFlowFileFacadeServiceImplTest {
     Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
 
     Assertions.assertThrows(AuthorizationDeniedException.class, () -> ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken));
+
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+  }
+
+  @Test
+  void givenUnauthorizedOrganizationWhenDownloadIngestionFlowErrorsFileThenThrowAuthorizationDeniedException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+
+    UserInfo user = TestUtils.getSampleAdminUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setOrganizationId(-1L);
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.COMPLETED);
+
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
+
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken));
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
@@ -211,6 +281,26 @@ class IngestionFlowFileFacadeServiceImplTest {
   }
 
   @Test
+  void givenUnauthorizedUserWhenDownloadIngestionFlowErrorsFileThenThrowUnauthorizedFileDownloadException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+
+    UserInfo user = TestUtils.getSampleUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setOrganizationId(1L);
+    ingestionFlowFile.setOperatorExternalId("OTHERUSER");
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.COMPLETED);
+
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
+
+    Assertions.assertThrows(UnauthorizedFileDownloadException.class, () -> ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken));
+
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+  }
+
+  @Test
   void givenIngestionFlowFileNotFoundWhenDownloadIngestionFlowFileThenThrowFileNotFoundException() {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
@@ -221,6 +311,41 @@ class IngestionFlowFileFacadeServiceImplTest {
     Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(null);
 
     Assertions.assertThrows(FileNotFoundException.class, () -> ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken));
+
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+  }
+
+  @Test
+  void givenIngestionFlowFileNotFoundWhenDownloadIngestionFlowErrorsFileThenThrowFileNotFoundException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+
+    UserInfo user = TestUtils.getSampleUser();
+
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(null);
+
+    Assertions.assertThrows(FileNotFoundException.class, () -> ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken));
+
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+  }
+
+  @Test
+  void givenIngestionFlowDiscardFileNullWhenDownloadIngestionFlowErrorsFileThenThrowFileNotFoundException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+
+    UserInfo user = TestUtils.getSampleAdminUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setOrganizationId(1L);
+    ingestionFlowFile.setOperatorExternalId("OTHERUSER");
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.COMPLETED);
+
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
+
+    Assertions.assertThrows(FileNotFoundException.class, () -> ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken));
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
