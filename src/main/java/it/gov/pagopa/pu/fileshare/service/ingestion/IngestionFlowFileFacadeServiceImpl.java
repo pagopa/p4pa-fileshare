@@ -1,8 +1,5 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
-import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus.COMPLETED;
-import static it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus.ERROR;
-
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
@@ -17,14 +14,15 @@ import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import java.io.InputStream;
-import java.nio.file.Path;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+
+import java.io.InputStream;
+import java.nio.file.Path;
 
 @Slf4j
 @Service
@@ -139,15 +137,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   }
 
   private Path getFilePath(IngestionFlowFile ingestionFlowFile) {
-    Path organizationBasePath = fileStorerService.buildOrganizationBasePath(ingestionFlowFile.getOrganizationId());
-
-    Path filePath = organizationBasePath
-      .resolve(ingestionFlowFile.getFilePathName());
-    if (ingestionFlowFile.getStatus() == COMPLETED || ingestionFlowFile.getStatus() == ERROR) {
-      filePath = filePath
-        .resolve(archivedSubFolder);
-    }
-    return filePath;
+    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName());
   }
 
   private Path getErrorsFilePath(IngestionFlowFile ingestionFlowFile) {
@@ -155,11 +145,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       throw new FileNotFoundException("Ingestion flow file with id %s has no errors file".formatted(ingestionFlowFile.getIngestionFlowFileId()));
     }
 
-    Path organizationBasePath = fileStorerService.buildOrganizationBasePath(ingestionFlowFile.getOrganizationId());
-
-    return organizationBasePath
-      .resolve(ingestionFlowFile.getFilePathName())
-      .resolve(errorsSubFolder)
-      .resolve(ingestionFlowFile.getDiscardFileName());
+    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName());
   }
 }

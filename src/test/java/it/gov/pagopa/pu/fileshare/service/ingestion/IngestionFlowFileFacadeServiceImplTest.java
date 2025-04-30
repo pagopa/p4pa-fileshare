@@ -156,12 +156,12 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
 
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
-      .thenReturn(organizationBasePath);
-
-    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
-
-    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(ingestionFlowFile);
+    Mockito.when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, filePathName, fileName))
+      .thenReturn(fullFilePath);
+    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName))
+      .thenReturn(decryptedInputStream);
 
     FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken);
 
@@ -169,8 +169,6 @@ class IngestionFlowFileFacadeServiceImplTest {
     Assertions.assertEquals(fileName, result.getFileName());
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    Mockito.verify(ingestionFlowFileServiceMock).getIngestionFlowFile(ingestionFlowFileId, accessToken);
-    Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
   }
 
   @Test
@@ -205,12 +203,12 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
 
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
-      .thenReturn(organizationBasePath);
-
-    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
-
-    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, discardFileName)).thenReturn(decryptedInputStream);
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(ingestionFlowFile);
+    Mockito.when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ERRORS_SUB_FOLDER, filePathName, discardFileName))
+      .thenReturn(fullFilePath);
+    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, discardFileName))
+      .thenReturn(decryptedInputStream);
 
     FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken);
 
@@ -218,8 +216,6 @@ class IngestionFlowFileFacadeServiceImplTest {
     Assertions.assertEquals(discardFileName, result.getFileName());
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    Mockito.verify(ingestionFlowFileServiceMock).getIngestionFlowFile(ingestionFlowFileId, accessToken);
-    Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, discardFileName);
   }
 
   @Test
@@ -370,15 +366,17 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
 
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationBasePath);
-    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(ingestionFlowFile);
-    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(ingestionFlowFile);
+    Mockito.when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, filePathName, fileName))
+      .thenReturn(fullFilePath);
+    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName))
+      .thenReturn(decryptedInputStream);
 
     FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken);
 
     Assertions.assertNotNull(result);
     Assertions.assertEquals(fileName, result.getFileName());
-    Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
