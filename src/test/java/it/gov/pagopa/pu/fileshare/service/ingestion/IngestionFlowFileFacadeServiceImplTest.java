@@ -159,7 +159,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(ingestionFlowFile);
     Mockito.when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, filePathName, fileName))
-      .thenReturn(fullFilePath);
+      .thenReturn(fullFilePath.resolve(fileName));
     Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName))
       .thenReturn(decryptedInputStream);
 
@@ -206,7 +206,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(ingestionFlowFile);
     Mockito.when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ERRORS_SUB_FOLDER, filePathName, discardFileName))
-      .thenReturn(fullFilePath);
+      .thenReturn(fullFilePath.resolve(discardFileName));
     Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, discardFileName))
       .thenReturn(decryptedInputStream);
 
@@ -369,7 +369,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(ingestionFlowFile);
     Mockito.when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, filePathName, fileName))
-      .thenReturn(fullFilePath);
+      .thenReturn(fullFilePath.resolve(fileName));
     Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName))
       .thenReturn(decryptedInputStream);
 

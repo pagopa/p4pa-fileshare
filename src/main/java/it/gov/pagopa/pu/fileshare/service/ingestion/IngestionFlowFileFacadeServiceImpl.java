@@ -137,7 +137,8 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   }
 
   private Path getFilePath(IngestionFlowFile ingestionFlowFile) {
-    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName());
+    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName())
+      .getParent();
   }
 
   private Path getErrorsFilePath(IngestionFlowFile ingestionFlowFile) {
@@ -145,6 +146,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       throw new FileNotFoundException("Ingestion flow file with id %s has no errors file".formatted(ingestionFlowFile.getIngestionFlowFileId()));
     }
 
-    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName());
+    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName())
+      .getParent();
   }
 }
