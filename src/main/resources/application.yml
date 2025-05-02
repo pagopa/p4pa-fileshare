@@ -22,6 +22,9 @@ management:
   tracing:
     baggage.remote-fields:
       - X-user-id
+  observations:
+    http.server:
+        filter.order: -100
   endpoints:
     jmx:
       exposure.include: "*"
