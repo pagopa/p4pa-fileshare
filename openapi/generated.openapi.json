@@ -335,7 +335,10 @@
       "StartNotificationResponse" : {
         "type" : "object",
         "properties" : {
-          "workFlowId" : {
+          "workflowId" : {
+            "type" : "string"
+          },
+          "runId" : {
             "type" : "string"
           }
         }
