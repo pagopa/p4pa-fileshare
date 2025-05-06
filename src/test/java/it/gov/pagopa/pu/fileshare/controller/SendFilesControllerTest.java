@@ -44,7 +44,7 @@ class SendFilesControllerTest {
     );
     TestUtils.addSampleUserIntoSecurityContext();
 
-    StartNotificationResponse expectedResponse = StartNotificationResponse.builder().workFlowId("ID").build();
+    StartNotificationResponse expectedResponse = new StartNotificationResponse("ID", "RUNID");
 
     Mockito.when(serviceMock.uploadSendFile(Mockito.eq(organizationId),
         Mockito.eq(sendNotificationId), Mockito.eq(digest), Mockito.eq(file), Mockito.any(), Mockito.anyString()))
@@ -55,7 +55,7 @@ class SendFilesControllerTest {
         .param("digest", digest)
         .contentType(MediaType.MULTIPART_FORM_DATA)
       ).andExpect(status().isOk())
-      .andExpect(content().json("{\"workFlowId\":ID}"));
+      .andExpect(content().json("{\"workflowId\":\"ID\",\"runId\":\"RUNID\"}"));
   }
 
   @Test
