@@ -14,6 +14,7 @@ import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -23,6 +24,9 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
+
+import static it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType.DP_INSTALLMENTS;
 
 @Slf4j
 @Service
@@ -73,12 +77,20 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       duplicateIngestionFlowFileRequestHandlerService.handleDuplicateFile(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName, accessToken);
     }
 
+    String fileVersion = null;
+    if (ingestionFlowFileType.equals(DP_INSTALLMENTS)) {
+      List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
+        IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);
+
+      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName);
+    }
+
     String filePath = fileStorerService.saveToSharedFolder(organizationId, ingestionFlowFile,
       ingestionFlowFilePath, fileName).getRelativePath();
 
     return ingestionFlowFileService.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFile,
-        ingestionFlowFileType, fileOrigin, organizationId, filePath)
+        ingestionFlowFileType, fileOrigin, organizationId, filePath, fileVersion)
       , accessToken);
   }
 

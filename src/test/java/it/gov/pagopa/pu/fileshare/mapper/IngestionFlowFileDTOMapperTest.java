@@ -20,6 +20,7 @@ class IngestionFlowFileDTOMapperTest {
   void whenMapToIngestionFlowFileDTOThenOK(){
     String filePath = "/path";
     Long organizationId = 123L;
+    String fileVersion = "1_1";
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
       "test.txt",
@@ -28,7 +29,7 @@ class IngestionFlowFileDTOMapperTest {
     );
 
     IngestionFlowFileRequestDTO result = mapper.mapToIngestionFlowFileDTO(file,
-      IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId,filePath);
+      IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, fileVersion);
 
     Assertions.assertNotNull(result);
     assertEquals(organizationId, result.getOrganizationId());
@@ -37,5 +38,6 @@ class IngestionFlowFileDTOMapperTest {
     assertEquals(file.getSize(), result.getFileSize());
     assertEquals(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT, result.getIngestionFlowFileType());
     assertEquals(FileOrigin.PAGOPA.toString(), result.getFileOrigin());
+    assertEquals(fileVersion, result.getFileVersion());
   }
 }

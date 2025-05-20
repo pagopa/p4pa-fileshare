@@ -7,6 +7,8 @@ import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
 
@@ -38,5 +40,10 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
   @Override
   public Integer updateFileNames(Long ingestionFlowFileId, String fileName, String discardFileName, String accessToken) {
     return entityExtendedClient.updateFileNames(ingestionFlowFileId, fileName, discardFileName, accessToken);
+  }
+
+  @Override
+  public List<String> getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum ingestionFlowFileType, String accessToken) {
+    return entityClient.getIngestionFlowFileVersion(ingestionFlowFileType, accessToken);
   }
 }
