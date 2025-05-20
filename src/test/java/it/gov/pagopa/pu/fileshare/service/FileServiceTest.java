@@ -9,6 +9,11 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
   private FileService fileService;
@@ -55,5 +60,24 @@ class FileServiceTest {
     }catch(InvalidFileException e){
       //do nothing
     }
+  }
+
+  @Test
+  void whenValidateVersionFromIngestionFlowFilenameThenOk(){
+    String fileName = "fileName1_1.txt";
+    List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
+
+    String version = fileService.validateVersionFromIngestionFlowFilename(versionList, fileName);
+
+    assertEquals("1.1", version);
+  }
+
+  @Test
+  void givenInvalidFilenameWhenValidateVersionFromIngestionFlowFilenameThenInvalidFileException(){
+    String fileName = "fileName.txt";
+    List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
+
+    assertThrows(InvalidFileException.class, () ->
+      fileService.validateVersionFromIngestionFlowFilename(versionList, fileName));
   }
 }
