@@ -4,7 +4,6 @@ import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.util.AESUtils;
-import java.nio.file.Files;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -20,6 +19,7 @@ import org.springframework.mock.web.MockMultipartFile;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.nio.file.Files;
 import java.nio.file.Path;
 
 @ExtendWith(MockitoExtension.class)
@@ -44,7 +44,7 @@ class FileStorerServiceTest {
 
   @Test
   void givenInvalidFileWhenSaveToSharedFolderThenFileUploadException() {
-    Assertions.assertThrows(FileUploadException.class, () ->
+    Assertions.assertThrows(InvalidFileException.class, () ->
         fileStorerService.saveToSharedFolder(0L, null, "", ""));
   }
 

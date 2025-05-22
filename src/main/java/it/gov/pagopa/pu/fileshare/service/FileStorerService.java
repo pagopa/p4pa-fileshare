@@ -34,7 +34,7 @@ public class FileStorerService {
   public SaveFileResultDTO saveToSharedFolder(Long organizationId, MultipartFile file, String relativePath, String fileName) {
     if (file == null) {
       log.debug("File is mandatory");
-      throw new FileUploadException("File is mandatory");
+      throw new InvalidFileException("File is mandatory");
     }
 
     fileName = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(fileName));

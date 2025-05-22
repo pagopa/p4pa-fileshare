@@ -8,6 +8,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.HttpClientErrorException;
 
+import java.util.List;
 import java.util.Objects;
 
 @Slf4j
@@ -37,6 +38,11 @@ public class IngestionFlowFileEntityClient {
       log.info("Cannot find IngestionFlowFile with ID [{}]", ingestionFlowFileId);
       return null;
     }
+  }
+
+  public List<String> getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum ingestionFlowFileType, String accessToken){
+    return processExecutionsApisHolder.getIngestionFlowFileControllerApi(accessToken)
+      .getIngestionFlowFileVersion(ingestionFlowFileType.getValue());
   }
 
 }

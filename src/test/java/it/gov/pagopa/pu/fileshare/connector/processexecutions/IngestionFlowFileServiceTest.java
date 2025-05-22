@@ -14,6 +14,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
+import java.util.List;
+
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileServiceTest {
 
@@ -111,5 +113,21 @@ class IngestionFlowFileServiceTest {
 
     // Then
     Assertions.assertSame(expectedResult, result);
+  }
+
+  @Test
+  void whenGetIngestionFlowFileVersionThenInvokeClient(){
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
+
+    Mockito.when(entityClientMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
+      .thenReturn(versionList);
+
+    // When
+    List<String> result = service.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);
+
+    // Then
+    Assertions.assertSame(versionList, result);
   }
 }

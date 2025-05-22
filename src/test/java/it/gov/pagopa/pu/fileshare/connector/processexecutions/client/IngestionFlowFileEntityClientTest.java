@@ -18,6 +18,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.client.HttpClientErrorException;
 
 import java.net.URI;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileEntityClientTest {
@@ -94,4 +95,17 @@ class IngestionFlowFileEntityClientTest {
     Assertions.assertNull(result);
   }
 
+  @Test
+  void whenGetIngestionFlowFileVersionThenOK() {
+    List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
+
+    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
+      .thenReturn(ingestionFlowFileControllerApiMock);
+    Mockito.when(ingestionFlowFileControllerApiMock.getIngestionFlowFileVersion(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.getValue()))
+      .thenReturn(versionList);
+
+    List<String> result = client.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);
+
+    Assertions.assertSame(versionList, result);
+  }
 }

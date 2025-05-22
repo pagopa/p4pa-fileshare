@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
+import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
@@ -34,6 +35,9 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileFacadeServiceImplTest {
@@ -73,7 +77,7 @@ class IngestionFlowFileFacadeServiceImplTest {
   }
 
   @AfterEach
-  void verifyNoMoreInteractions(){
+  void verifyNoMoreInteractions() {
     Mockito.verifyNoMoreInteractions(
       userAuthorizationServiceMock,
       fileServiceMock,
@@ -105,11 +109,11 @@ class IngestionFlowFileFacadeServiceImplTest {
     Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
     Mockito.when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
-        .thenReturn(alreadyUploaded);
+      .thenReturn(alreadyUploaded);
     Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
     Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
-        IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath))
+        IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, null))
       .thenReturn(ingestionFlowFileRequestDTO);
     Mockito.when(ingestionFlowFileServiceMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
       .thenReturn(expectedIngestionFlowFileId);
@@ -120,20 +124,98 @@ class IngestionFlowFileFacadeServiceImplTest {
     Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
     Mockito.verify(fileServiceMock).validateFile(file);
-    if(alreadyUploaded){
+    if (alreadyUploaded) {
       Mockito.verify(duplicateIngestionFlowFileRequestHandlerServiceMock)
         .handleDuplicateFile(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName, accessToken);
     }
   }
 
   @Test
+  void givenFileTypeDPINSTALLMENTSWhenUploadIngestionFlowFileThenOk() {
+    String accessToken = "TOKEN";
+    long organizationId = 1L;
+    String receiptFilePath = "/dp-installment";
+    String filePath = "/filepath";
+    String fileName = "fileName1_1.txt";
+    String fileVersion = "1.1";
+    SaveFileResultDTO saveFileResult = new SaveFileResultDTO(filePath, "this is a test file".getBytes());
+    MockMultipartFile file = new MockMultipartFile(
+      "ingestionFlowFile",
+      "test.zip",
+      MediaType.TEXT_PLAIN_VALUE,
+      "this is a test file".getBytes()
+    );
+    Long expectedIngestionFlowFileId = 1L;
+    List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
+    IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
+
+    Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.DP_INSTALLMENTS))
+      .thenReturn(receiptFilePath);
+    Mockito.when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
+      .thenReturn(false);
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
+      .thenReturn(versionList);
+    Mockito.when(fileServiceMock.validateVersionFromIngestionFlowFilename(versionList, fileName))
+      .thenReturn(fileVersion);
+    Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
+      .thenReturn(saveFileResult);
+    Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
+        IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, organizationId, filePath, fileVersion))
+      .thenReturn(ingestionFlowFileRequestDTO);
+    Mockito.when(ingestionFlowFileServiceMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
+      .thenReturn(expectedIngestionFlowFileId);
+
+    Long result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA,
+      fileName, file, TestUtils.getSampleUser(), accessToken);
+
+    Assertions.assertSame(expectedIngestionFlowFileId, result);
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
+    Mockito.verify(fileServiceMock).validateFile(file);
+
+  }
+
+  @Test
+  void givenFileTypeDPINSTALLMENTSWithFileNameWithoutValidVersionWhenUploadIngestionFlowFileThenThrowInvalidFileException() {
+    String accessToken = "TOKEN";
+    long organizationId = 1L;
+    String receiptFilePath = "/dp-installment";
+    String fileName = "fileName.txt";
+    MockMultipartFile file = new MockMultipartFile(
+      "ingestionFlowFile",
+      "test.zip",
+      MediaType.TEXT_PLAIN_VALUE,
+      "this is a test file".getBytes()
+    );
+    List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
+
+    Mockito.when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.DP_INSTALLMENTS))
+      .thenReturn(receiptFilePath);
+    Mockito.when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
+      .thenReturn(false);
+    Mockito.when(ingestionFlowFileServiceMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
+      .thenReturn(List.of("1.0", "1.1", "1.3", "1.4", "2.0"));
+    Mockito.doThrow(new InvalidFileException("Invalid file version"))
+      .when(fileServiceMock).validateVersionFromIngestionFlowFilename(versionList, fileName);
+
+    try {
+      ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, fileName, file, TestUtils.getSampleUser(), accessToken);
+    }catch (InvalidFileException e){
+      assertEquals("Invalid file version", e.getMessage());
+    }
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
+    Mockito.verify(fileServiceMock).validateFile(file);
+  }
+
+  @Test
   void givenAuthorizedUserWhenDownloadIngestionFlowFileThenReturnFileResource() {
     givenAuthorizedUserWhenDownloadIngestionFlowFileThenReturnFileResource(false);
   }
+
   @Test
   void givenAuthorizedAdminUserWhenDownloadIngestionFlowFileThenReturnFileResource() {
     givenAuthorizedUserWhenDownloadIngestionFlowFileThenReturnFileResource(true);
   }
+
   void givenAuthorizedUserWhenDownloadIngestionFlowFileThenReturnFileResource(boolean isAdmin) {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
@@ -143,13 +225,13 @@ class IngestionFlowFileFacadeServiceImplTest {
     String fileName = "testFile.zip";
     Path fullFilePath = organizationBasePath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
 
-    UserInfo user = isAdmin? TestUtils.getSampleAdminUser() : TestUtils.getSampleUser();
+    UserInfo user = isAdmin ? TestUtils.getSampleAdminUser() : TestUtils.getSampleUser();
 
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
     ingestionFlowFile.setOrganizationId(organizationId);
     ingestionFlowFile.setFileName(fileName);
     ingestionFlowFile.setFilePathName(filePathName);
-    if(!isAdmin){
+    if (!isAdmin) {
       ingestionFlowFile.setOperatorExternalId(user.getMappedExternalUserId());
     }
     ingestionFlowFile.setStatus(IngestionFlowFileStatus.COMPLETED);
@@ -166,7 +248,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken);
 
     Assertions.assertNotNull(result);
-    Assertions.assertEquals(fileName, result.getFileName());
+    assertEquals(fileName, result.getFileName());
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
@@ -175,10 +257,12 @@ class IngestionFlowFileFacadeServiceImplTest {
   void givenAuthorizedUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource() {
     givenAuthorizedUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource(false);
   }
+
   @Test
   void givenAuthorizedAdminUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource() {
     givenAuthorizedUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource(true);
   }
+
   void givenAuthorizedUserWhenDownloadIngestionFlowErrorsFileThenReturnFileResource(boolean isAdmin) {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
@@ -189,14 +273,14 @@ class IngestionFlowFileFacadeServiceImplTest {
     String discardFileName = "errorFile.zip";
     Path fullFilePath = organizationBasePath.resolve(filePathName).resolve(ERRORS_SUB_FOLDER).resolve(discardFileName);
 
-    UserInfo user = isAdmin? TestUtils.getSampleAdminUser() : TestUtils.getSampleUser();
+    UserInfo user = isAdmin ? TestUtils.getSampleAdminUser() : TestUtils.getSampleUser();
 
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
     ingestionFlowFile.setOrganizationId(organizationId);
     ingestionFlowFile.setFileName(fileName);
     ingestionFlowFile.setFilePathName(filePathName);
     ingestionFlowFile.setDiscardFileName(discardFileName);
-    if(!isAdmin){
+    if (!isAdmin) {
       ingestionFlowFile.setOperatorExternalId(user.getMappedExternalUserId());
     }
     ingestionFlowFile.setStatus(IngestionFlowFileStatus.COMPLETED);
@@ -213,7 +297,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken);
 
     Assertions.assertNotNull(result);
-    Assertions.assertEquals(discardFileName, result.getFileName());
+    assertEquals(discardFileName, result.getFileName());
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
@@ -376,7 +460,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken);
 
     Assertions.assertNotNull(result);
-    Assertions.assertEquals(fileName, result.getFileName());
+    assertEquals(fileName, result.getFileName());
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
