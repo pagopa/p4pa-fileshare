@@ -11,9 +11,10 @@ import org.springframework.web.multipart.MultipartFile;
 @Component
 public class IngestionFlowFileDTOMapper {
   public IngestionFlowFileRequestDTO mapToIngestionFlowFileDTO(
-    MultipartFile ingestionFlowFile, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, Long organizationId, String filePath, String fileVersion) {
+    Long ingestionFlowFileId, MultipartFile ingestionFlowFile, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, Long organizationId, String filePath, String fileVersion) {
 
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
+    ingestionFlowFileRequestDTO.setIngestionFlowFileId(ingestionFlowFileId);
     ingestionFlowFileRequestDTO.setOrganizationId(organizationId);
     ingestionFlowFileRequestDTO.setFilePathName(filePath);
     ingestionFlowFileRequestDTO.setFileName(StringUtils.defaultString(ingestionFlowFile.getOriginalFilename()));
