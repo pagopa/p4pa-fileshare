@@ -67,6 +67,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   @Override
   public Long uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
                                       FileOrigin fileOrigin, String fileName, MultipartFile ingestionFlowFile,
+                                      Long ingestionFlowFileId,
                                       UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     fileService.validateFile(ingestionFlowFile);
@@ -89,7 +90,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       ingestionFlowFilePath, fileName).getRelativePath();
 
     return ingestionFlowFileService.createIngestionFlowFile(
-      ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFile,
+      ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFileId, ingestionFlowFile,
         ingestionFlowFileType, fileOrigin, organizationId, filePath, fileVersion)
       , accessToken);
   }

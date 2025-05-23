@@ -8,7 +8,8 @@ import org.springframework.web.multipart.MultipartFile;
 
 public interface IngestionFlowFileFacadeService {
   Long uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
-                               FileOrigin fileOrigin, String fileName, MultipartFile ingestionFlowFile,
+                               FileOrigin fileOrigin, String fileName,
+                               MultipartFile ingestionFlowFile, Long ingestionFlowFileId,
                                UserInfo user, String accessToken);
 
   FileResourceDTO downloadIngestionFlowFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken);

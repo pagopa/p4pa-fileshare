@@ -91,6 +91,7 @@ class IngestionFlowFileFacadeServiceImplTest {
   @ParameterizedTest
   @ValueSource(booleans = {true, false})
   void givenAuthorizedUserWhenUploadIngestionFlowFileThenOk(boolean alreadyUploaded) {
+    long ingestionFlowFileId = 1L;
     String accessToken = "TOKEN";
     long organizationId = 1L;
     String receiptFilePath = "/receipt";
@@ -112,14 +113,14 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(alreadyUploaded);
     Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
-    Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
+    Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(ingestionFlowFileId, file,
         IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, null))
       .thenReturn(ingestionFlowFileRequestDTO);
     Mockito.when(ingestionFlowFileServiceMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
       .thenReturn(expectedIngestionFlowFileId);
 
     Long result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
-      fileName, file, TestUtils.getSampleUser(), accessToken);
+      fileName, file, ingestionFlowFileId, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
@@ -132,6 +133,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
   @Test
   void givenFileTypeDPINSTALLMENTSWhenUploadIngestionFlowFileThenOk() {
+    long ingestionFlowFileId = 1L;
     String accessToken = "TOKEN";
     long organizationId = 1L;
     String receiptFilePath = "/dp-installment";
@@ -159,14 +161,14 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(fileVersion);
     Mockito.when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
-    Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(file,
+    Mockito.when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(ingestionFlowFileId, file,
         IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, organizationId, filePath, fileVersion))
       .thenReturn(ingestionFlowFileRequestDTO);
     Mockito.when(ingestionFlowFileServiceMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
       .thenReturn(expectedIngestionFlowFileId);
 
     Long result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA,
-      fileName, file, TestUtils.getSampleUser(), accessToken);
+      fileName, file, ingestionFlowFileId, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
@@ -176,6 +178,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
   @Test
   void givenFileTypeDPINSTALLMENTSWithFileNameWithoutValidVersionWhenUploadIngestionFlowFileThenThrowInvalidFileException() {
+    long ingestionFlowFileId = 1L;
     String accessToken = "TOKEN";
     long organizationId = 1L;
     String receiptFilePath = "/dp-installment";
@@ -198,7 +201,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       .when(fileServiceMock).validateVersionFromIngestionFlowFilename(versionList, fileName);
 
     try {
-      ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, fileName, file, TestUtils.getSampleUser(), accessToken);
+      ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, fileName, file, ingestionFlowFileId, TestUtils.getSampleUser(), accessToken);
     }catch (InvalidFileException e){
       assertEquals("Invalid file version", e.getMessage());
     }
