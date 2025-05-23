@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface IngestionFlowFileFacadeService {
+  @SuppressWarnings("squid:S00107")
   Long uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
                                FileOrigin fileOrigin, String fileName,
                                MultipartFile ingestionFlowFile, Long ingestionFlowFileId,
