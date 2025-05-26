@@ -75,9 +75,10 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     if (ingestionFlowFileId != null) {
       IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
-      if (ingestionFlowFile == null || ingestionFlowFile.getStatus() != IngestionFlowFileStatus.WAITING_FILE) {
+      if (ingestionFlowFile == null || !IngestionFlowFileStatus.WAITING_FILE.equals(ingestionFlowFile.getStatus())) {
         throw new IngestionFlowFileNotFoundException(
-          "IngestionFlowFile with id %d and status WAITING_FILE not found".formatted(ingestionFlowFileId));
+          "IngestionFlowFile in WAITING_FILE status not found with id %d %s"
+            .formatted(ingestionFlowFileId, ingestionFlowFile == null ? "" : "- actual status is " + ingestionFlowFile.getStatus()));
       }
     }
 
