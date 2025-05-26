@@ -294,4 +294,14 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Invalid request content. fieldName: resolved message"));
   }
 
+  @Test
+  void handleIngestionFlowFileNotFoundException() throws Exception {
+    doThrow(new IngestionFlowFileNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isNotFound())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.NOT_FOUND.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
+
 }
