@@ -18,6 +18,7 @@ class IngestionFlowFileDTOMapperTest {
 
   @Test
   void whenMapToIngestionFlowFileDTOThenOK(){
+    Long ingestionFlowFileId = 1L;
     String filePath = "/path";
     Long organizationId = 123L;
     String fileVersion = "1_1";
@@ -28,10 +29,11 @@ class IngestionFlowFileDTOMapperTest {
       "this is a test file".getBytes()
     );
 
-    IngestionFlowFileRequestDTO result = mapper.mapToIngestionFlowFileDTO(file,
+    IngestionFlowFileRequestDTO result = mapper.mapToIngestionFlowFileDTO(ingestionFlowFileId, file,
       IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, fileVersion);
 
     Assertions.assertNotNull(result);
+    assertEquals(ingestionFlowFileId, result.getIngestionFlowFileId());
     assertEquals(organizationId, result.getOrganizationId());
     assertEquals(filePath, result.getFilePathName());
     assertEquals(file.getOriginalFilename(), result.getFileName());

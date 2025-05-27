@@ -33,6 +33,11 @@ paths:
           required: true
           schema:
             type: string
+        - name: ingestionFlowFileId
+          in: query
+          schema:
+            type: integer
+            format: int64
       requestBody:
         content:
           'multipart/form-data':

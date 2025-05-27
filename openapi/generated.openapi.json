@@ -140,6 +140,14 @@
           "schema" : {
             "type" : "string"
           }
+        }, {
+          "name" : "ingestionFlowFileId",
+          "in" : "query",
+          "required" : false,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
         } ],
         "requestBody" : {
           "content" : {
