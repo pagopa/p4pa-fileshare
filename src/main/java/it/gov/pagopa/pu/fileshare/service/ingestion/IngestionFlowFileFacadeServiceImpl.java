@@ -72,7 +72,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
                                       FileOrigin fileOrigin, String fileName, MultipartFile multipartFile,
                                       Long ingestionFlowFileId,
                                       UserInfo user, String accessToken) {
-    String actualFileName = Objects.requireNonNullElse(fileName, multipartFile.getOriginalFilename());
+    String overridingFileName = Objects.requireNonNullElse(fileName, multipartFile.getOriginalFilename());
 
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
 
@@ -91,8 +91,8 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     String ingestionFlowFilePath = foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType);
 
-    if(fileStorerService.checkIfAlreadyUploadedOrArchived(organizationId, archivedSubFolder, ingestionFlowFilePath, actualFileName)) {
-      duplicateIngestionFlowFileRequestHandlerService.handleDuplicateFile(organizationId, archivedSubFolder, ingestionFlowFilePath, actualFileName, accessToken);
+    if(fileStorerService.checkIfAlreadyUploadedOrArchived(organizationId, archivedSubFolder, ingestionFlowFilePath, overridingFileName)) {
+      duplicateIngestionFlowFileRequestHandlerService.handleDuplicateFile(organizationId, archivedSubFolder, ingestionFlowFilePath, overridingFileName, accessToken);
     }
 
     String fileVersion = null;
@@ -100,11 +100,11 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
         IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);
 
-      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, actualFileName);
+      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, overridingFileName);
     }
 
     String filePath = fileStorerService.saveToSharedFolder(organizationId, multipartFile,
-      ingestionFlowFilePath, actualFileName).getRelativePath();
+      ingestionFlowFilePath, overridingFileName).getRelativePath();
 
     return ingestionFlowFileService.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFileId, multipartFile,
