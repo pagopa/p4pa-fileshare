@@ -27,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 import static it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType.DP_INSTALLMENTS;
 
@@ -71,14 +72,18 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
                                       FileOrigin fileOrigin, String fileName, MultipartFile multipartFile,
                                       Long ingestionFlowFileId,
                                       UserInfo user, String accessToken) {
+    String actualFileName = Objects.requireNonNullElse(fileName, multipartFile.getOriginalFilename());
+
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
 
     if (ingestionFlowFileId != null) {
       IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
-      if (ingestionFlowFile == null || !IngestionFlowFileStatus.WAITING_FILE.equals(ingestionFlowFile.getStatus())) {
+      if (ingestionFlowFile == null ||
+        !IngestionFlowFileStatus.WAITING_FILE.equals(ingestionFlowFile.getStatus()) ||
+        !ingestionFlowFile.getFileOrigin().equals(String.valueOf(fileOrigin))) {
         throw new IngestionFlowFileNotFoundException(
-          "IngestionFlowFile in WAITING_FILE status not found with id %d %s"
-            .formatted(ingestionFlowFileId, ingestionFlowFile == null ? "" : "- actual status is " + ingestionFlowFile.getStatus()));
+          "IngestionFlowFile in WAITING_FILE status and matching origin not found with id %d%s"
+            .formatted(ingestionFlowFileId, ingestionFlowFile == null ? "" : " - actual status: " + ingestionFlowFile.getStatus() + ", origin: " + ingestionFlowFile.getFileOrigin()));
       }
     }
 
@@ -86,8 +91,8 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     String ingestionFlowFilePath = foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType);
 
-    if(fileStorerService.checkIfAlreadyUploadedOrArchived(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName)) {
-      duplicateIngestionFlowFileRequestHandlerService.handleDuplicateFile(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName, accessToken);
+    if(fileStorerService.checkIfAlreadyUploadedOrArchived(organizationId, archivedSubFolder, ingestionFlowFilePath, actualFileName)) {
+      duplicateIngestionFlowFileRequestHandlerService.handleDuplicateFile(organizationId, archivedSubFolder, ingestionFlowFilePath, actualFileName, accessToken);
     }
 
     String fileVersion = null;
@@ -95,11 +100,11 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
         IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);
 
-      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName);
+      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, actualFileName);
     }
 
     String filePath = fileStorerService.saveToSharedFolder(organizationId, multipartFile,
-      ingestionFlowFilePath, fileName).getRelativePath();
+      ingestionFlowFilePath, actualFileName).getRelativePath();
 
     return ingestionFlowFileService.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFileId, multipartFile,

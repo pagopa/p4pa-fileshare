@@ -474,7 +474,18 @@ class IngestionFlowFileFacadeServiceImplTest {
 
   @Test
   void givenUploadedIngestionFlowFileThenCheckCondition() {
-    givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(new IngestionFlowFile().status(IngestionFlowFileStatus.UPLOADED));
+    givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(
+      new IngestionFlowFile()
+        .status(IngestionFlowFileStatus.UPLOADED)
+        .fileOrigin(String.valueOf(FileOrigin.SIL)));
+  }
+
+  @Test
+  void givenWrongOriginIngestionFlowFileThenCheckCondition() {
+    givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(
+      new IngestionFlowFile()
+        .status(IngestionFlowFileStatus.WAITING_FILE)
+        .fileOrigin(String.valueOf(FileOrigin.PAGOPA)));
   }
 
   void givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(IngestionFlowFile ingestionFlowFile) {
