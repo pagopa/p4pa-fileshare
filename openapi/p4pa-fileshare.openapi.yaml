@@ -30,7 +30,6 @@ paths:
             $ref: "#/components/schemas/FileOrigin"
         - name: fileName
           in: query
-          required: true
           schema:
             type: string
         - name: ingestionFlowFileId

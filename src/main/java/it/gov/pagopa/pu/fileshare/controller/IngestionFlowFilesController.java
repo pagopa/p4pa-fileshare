@@ -26,7 +26,7 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
   }
 
   @Override
-  public ResponseEntity<UploadIngestionFlowFileResponseDTO> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, String fileName, MultipartFile ingestionFlowFile, Long ingestionFlowFileId) {
+  public ResponseEntity<UploadIngestionFlowFileResponseDTO> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, MultipartFile ingestionFlowFile, String fileName, Long ingestionFlowFileId) {
     Long retrievedIngestionFlowFileId = ingestionFlowFileFacadeService.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, fileOrigin, fileName, ingestionFlowFile, ingestionFlowFileId, SecurityUtils.getLoggedUser(),
       SecurityUtils.getAccessToken());
     return ResponseEntity.ok(new UploadIngestionFlowFileResponseDTO(retrievedIngestionFlowFileId));
@@ -48,7 +48,6 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
       .headers(headers)
       .body(fileResource);
   }
-
 
   @Override
   public ResponseEntity<Resource> downloadIngestionFlowErrorsFile(Long organizationId, Long ingestionFlowFileId) {
