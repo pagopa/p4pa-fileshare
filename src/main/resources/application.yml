@@ -87,6 +87,12 @@ folders:
     TREASURY_XLS: "data/treasury/xls"
     TREASURY_POSTE: "data/treasury/poste"
     DP_INSTALLMENTS: "data/installment"
+    ORGANIZATIONS: "data/organizations"
+    ORGANIZATIONS_SIL_SERVICE: "data/organizations/sil_service"
+    DEBT_POSITIONS_TYPE: "data/debt_positions/type"
+    DEBT_POSITIONS_TYPE_ORG: "data/debt_positions/type_org"
+    DEBT_POSITIONS_TYPE_ORG_OPERATORS: "data/debt_positions/type_org_operators"
+    ASSESSMENTS: "data/assessments"
   send-file-folder: "data/send"
 
 rest:
