@@ -30,9 +30,13 @@ paths:
             $ref: "#/components/schemas/FileOrigin"
         - name: fileName
           in: query
-          required: true
           schema:
             type: string
+        - name: ingestionFlowFileId
+          in: query
+          schema:
+            type: integer
+            format: int64
       requestBody:
         content:
           'multipart/form-data':

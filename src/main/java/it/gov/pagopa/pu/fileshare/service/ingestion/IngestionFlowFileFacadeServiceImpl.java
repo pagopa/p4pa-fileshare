@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
+import it.gov.pagopa.pu.fileshare.exception.custom.IngestionFlowFileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
@@ -15,6 +16,7 @@ import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.InputStreamResource;
@@ -25,6 +27,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Objects;
 
 import static it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType.DP_INSTALLMENTS;
 
@@ -66,10 +69,25 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
   @Override
   public Long uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
-                                      FileOrigin fileOrigin, String fileName, MultipartFile ingestionFlowFile,
+                                      FileOrigin fileOrigin, String overridingFileName, MultipartFile multipartFile,
+                                      Long ingestionFlowFileId,
                                       UserInfo user, String accessToken) {
+    String fileName = Objects.requireNonNullElse(overridingFileName, multipartFile.getOriginalFilename());
+
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
-    fileService.validateFile(ingestionFlowFile);
+
+    if (ingestionFlowFileId != null) {
+      IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
+      if (ingestionFlowFile == null ||
+        !IngestionFlowFileStatus.WAITING_FILE.equals(ingestionFlowFile.getStatus()) ||
+        !ingestionFlowFile.getFileOrigin().equals(String.valueOf(fileOrigin))) {
+        throw new IngestionFlowFileNotFoundException(
+          "IngestionFlowFile in WAITING_FILE status and matching origin not found with id %d%s"
+            .formatted(ingestionFlowFileId, ingestionFlowFile == null ? "" : " - actual status: " + ingestionFlowFile.getStatus() + ", origin: " + ingestionFlowFile.getFileOrigin()));
+      }
+    }
+
+    fileService.validateFile(multipartFile);
 
     String ingestionFlowFilePath = foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType);
 
@@ -85,11 +103,11 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName);
     }
 
-    String filePath = fileStorerService.saveToSharedFolder(organizationId, ingestionFlowFile,
+    String filePath = fileStorerService.saveToSharedFolder(organizationId, multipartFile,
       ingestionFlowFilePath, fileName).getRelativePath();
 
     return ingestionFlowFileService.createIngestionFlowFile(
-      ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFile,
+      ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFileId, multipartFile,
         ingestionFlowFileType, fileOrigin, organizationId, filePath, fileVersion)
       , accessToken);
   }
