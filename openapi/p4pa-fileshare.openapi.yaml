@@ -119,17 +119,7 @@ paths:
                 format: binary
         '404':
           description: Not Found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FileshareErrorDTO'
-        '500':
-          description: Server Error
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/FileshareErrorDTO'
-  /organization/{organizationId}/exportfiles/{ingestionFlowFileId}/notice:
+  /organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}/notice:
     get:
       tags:
         - ingestion-flow-file
@@ -158,6 +148,16 @@ paths:
                 type: 'SignedUrlResultDTO'
         '404':
           description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileshareErrorDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileshareErrorDTO'
   /organization/{organizationId}/exportfiles/{exportFileId}:
     get:
       tags:
