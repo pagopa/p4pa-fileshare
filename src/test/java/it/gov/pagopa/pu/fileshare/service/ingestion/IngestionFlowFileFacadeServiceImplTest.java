@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
+import it.gov.pagopa.pu.fileshare.connector.pagopapayments.PrintPaymentNoticeService;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
@@ -19,6 +20,7 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.pagopapayments.dto.generated.SignedUrlResultDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -61,6 +63,8 @@ class IngestionFlowFileFacadeServiceImplTest {
   private IngestionFlowFileDTOMapper ingestionFlowFileDTOMapperMock;
   @Mock
   private DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerServiceMock;
+  @Mock
+  private PrintPaymentNoticeService printPaymentNoticeServiceMock;
 
   private IngestionFlowFileFacadeServiceImpl ingestionFlowFileService;
 
@@ -75,7 +79,8 @@ class IngestionFlowFileFacadeServiceImplTest {
       foldersPathsConfigMock,
       ingestionFlowFileServiceMock,
       ingestionFlowFileDTOMapperMock,
-      duplicateIngestionFlowFileRequestHandlerServiceMock);
+      duplicateIngestionFlowFileRequestHandlerServiceMock,
+      printPaymentNoticeServiceMock);
   }
 
   @AfterEach
@@ -87,7 +92,8 @@ class IngestionFlowFileFacadeServiceImplTest {
       foldersPathsConfigMock,
       ingestionFlowFileServiceMock,
       ingestionFlowFileDTOMapperMock,
-      duplicateIngestionFlowFileRequestHandlerServiceMock);
+      duplicateIngestionFlowFileRequestHandlerServiceMock,
+      printPaymentNoticeServiceMock);
   }
 
   @ParameterizedTest
@@ -486,6 +492,34 @@ class IngestionFlowFileFacadeServiceImplTest {
       new IngestionFlowFile()
         .status(IngestionFlowFileStatus.WAITING_FILE)
         .fileOrigin(String.valueOf(FileOrigin.PAGOPA)));
+  }
+
+  @Test
+  void whenDownloadNoticeThenOk(){
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+
+    UserInfo user = TestUtils.getSampleAdminUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setIngestionFlowFileId(1L);
+    ingestionFlowFile.setOrganizationId(organizationId);
+    ingestionFlowFile.setPdfGeneratedId("pdfGeneratedId");
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
+
+    SignedUrlResultDTO signedUrlResultDTO = new SignedUrlResultDTO(null, List.of("notice"), "url");
+
+    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(ingestionFlowFile);
+
+    when(printPaymentNoticeServiceMock.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken))
+      .thenReturn(signedUrlResultDTO);
+
+    SignedUrlResultDTO result = ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken);
+
+    assertEquals(signedUrlResultDTO, result);
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   void givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(IngestionFlowFile ingestionFlowFile) {

@@ -7,6 +7,7 @@ import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.dto.generated.UploadIngestionFlowFileResponseDTO;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtils;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
+import it.gov.pagopa.pu.pagopapayments.dto.generated.SignedUrlResultDTO;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -68,4 +69,10 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
       .body(fileResource);
   }
 
+  @Override
+  public ResponseEntity<SignedUrlResultDTO> downloadNotice(Long organizationId, Long ingestionFlowFileId) {
+    SignedUrlResultDTO signedUrlResultDTO = ingestionFlowFileFacadeService
+      .downloadNotice(organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
+    return ResponseEntity.ok(signedUrlResultDTO);
+  }
 }

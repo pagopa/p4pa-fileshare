@@ -1,11 +1,7 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
@@ -13,7 +9,7 @@ import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
-import java.io.ByteArrayInputStream;
+import it.gov.pagopa.pu.pagopapayments.dto.generated.SignedUrlResultDTO;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,7 +23,16 @@ import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.web.server.ResponseStatusException;
+
+import java.io.ByteArrayInputStream;
+import java.util.List;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = IngestionFlowFileApi.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
   classes = JwtAuthenticationFilter.class))
@@ -35,6 +40,9 @@ import org.springframework.web.server.ResponseStatusException;
 class IngestionFlowFilesControllerTest {
   @Autowired
   private MockMvc mockMvc;
+
+  @Autowired
+  private ObjectMapper objectMapper;
 
   @MockitoBean
   private IngestionFlowFileFacadeService serviceMock;
@@ -275,4 +283,23 @@ class IngestionFlowFilesControllerTest {
       Mockito.any(), Mockito.anyString());
   }
 
+  @Test
+  void whenDownloadNoticeThenOk() throws Exception {
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 123L;
+    SignedUrlResultDTO signedUrlResultDTO = new SignedUrlResultDTO(null, List.of("notice"), "url");
+
+    Mockito.when(serviceMock.downloadNotice(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId), Mockito.any(), Mockito.anyString()))
+      .thenReturn(signedUrlResultDTO);
+
+    TestUtils.addSampleUserIntoSecurityContext();
+
+    MvcResult result = mockMvc.perform(get("/organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}/notice", organizationId, ingestionFlowFileId)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM))
+      .andExpect(status().isOk())
+      .andReturn();
+
+    SignedUrlResultDTO response = objectMapper.readValue(result.getResponse().getContentAsString(), new TypeReference<>() {});
+    assertEquals(signedUrlResultDTO, response);
+  }
 }
