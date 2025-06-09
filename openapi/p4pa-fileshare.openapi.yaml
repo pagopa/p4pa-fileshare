@@ -216,6 +216,7 @@ components:
         - TREASURY_CSV
         - TREASURY_XLS
         - TREASURY_POSTE
+        - TREASURY_MIGRATION
         - DP_INSTALLMENTS
         - ORGANIZATIONS
         - ORGANIZATIONS_SIL_SERVICE
