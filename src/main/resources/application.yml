@@ -93,6 +93,7 @@ folders:
     DEBT_POSITIONS_TYPE: "data/debt_positions/type"
     DEBT_POSITIONS_TYPE_ORG: "data/debt_positions/type_org"
     DEBT_POSITIONS_TYPE_ORG_OPERATORS: "data/debt_positions/type_org_operators"
+    TREASURY_CSV_COMPLETE: "data/treasury/csv_complete"
     ASSESSMENTS: "data/assessments"
   send-file-folder: "data/send"
 
