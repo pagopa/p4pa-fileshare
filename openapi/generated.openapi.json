@@ -260,9 +260,16 @@
           "200" : {
             "description" : "OK",
             "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              },
               "application/json" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/SignedUrlResultDTO"
+                  "type" : "string",
+                  "format" : "binary"
                 }
               }
             }
@@ -270,6 +277,11 @@
           "404" : {
             "description" : "Not Found",
             "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileshareErrorDTO"
+                }
+              },
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/FileshareErrorDTO"
@@ -280,6 +292,11 @@
           "500" : {
             "description" : "Server Error",
             "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "$ref" : "#/components/schemas/FileshareErrorDTO"
+                }
+              },
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/FileshareErrorDTO"
@@ -444,26 +461,6 @@
       "FileOrigin" : {
         "type" : "string",
         "enum" : [ "PORTAL", "SIL", "PAGOPA" ]
-      },
-      "SignedUrlResultDTO" : {
-        "type" : "object",
-        "properties" : {
-          "noticesInError" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          },
-          "processedNotices" : {
-            "type" : "array",
-            "items" : {
-              "type" : "string"
-            }
-          },
-          "signedUrl" : {
-            "type" : "string"
-          }
-        }
       }
     },
     "securitySchemes" : {
