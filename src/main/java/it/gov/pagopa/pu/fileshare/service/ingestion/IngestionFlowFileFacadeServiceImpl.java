@@ -21,9 +21,13 @@ import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileSta
 import it.gov.pagopa.pu.pagopapayments.dto.generated.SignedUrlResultDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
+import org.springframework.web.client.RestClientException;
+import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
@@ -95,7 +99,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     String ingestionFlowFilePath = foldersPathsConfig.getIngestionFlowFilePath(ingestionFlowFileType);
 
-    if(fileStorerService.checkIfAlreadyUploadedOrArchived(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName)) {
+    if (fileStorerService.checkIfAlreadyUploadedOrArchived(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName)) {
       duplicateIngestionFlowFileRequestHandlerService.handleDuplicateFile(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName, accessToken);
     }
 
@@ -139,11 +143,32 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   }
 
   @Override
-  public SignedUrlResultDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
+  public FileResourceDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
     IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
+    SignedUrlResultDTO signedUrlResultDTO = printPaymentNoticeService.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken);
 
-    return printPaymentNoticeService.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken);
+    if (signedUrlResultDTO.getSignedUrl() == null) {
+      throw new IllegalStateException(String.format("Signed URL not available for ingestionFlowFileId: %s", ingestionFlowFileId));
+    }
+
+    return downloadNotice(organizationId, ingestionFlowFileId, signedUrlResultDTO.getSignedUrl(), ingestionFlowFile);
   }
+
+  private static FileResourceDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, String signedUrl, IngestionFlowFile ingestionFlowFile) {
+    try {
+      RestTemplate restTemplate = new RestTemplate();
+      ResponseEntity<byte[]> response = restTemplate.getForEntity(signedUrl, byte[].class);
+      if (response.getBody() == null) {
+        throw new IllegalStateException(String.format("Downloaded file in the signed url: %s with ingestionFlowFileId: %s is empty", signedUrl, ingestionFlowFileId));
+      }
+      return new FileResourceDTO(new ByteArrayResource(response.getBody()), ingestionFlowFile.getFileName());
+
+    } catch (RestClientException e) {
+      log.error("Error downloading notice for organizationId {} and fileId {}", organizationId, ingestionFlowFileId, e);
+      throw e;
+    }
+  }
+
 
   private IngestionFlowFile authorizeDownload(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
@@ -154,7 +179,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       throw new FileNotFoundException("Ingestion flow file with id %s was not found".formatted(ingestionFlowFileId));
     }
 
-    if(!organizationId.equals(ingestionFlowFile.getOrganizationId())){
+    if (!organizationId.equals(ingestionFlowFile.getOrganizationId())) {
       throw new AuthorizationDeniedException("Access Denied");
     }
 
