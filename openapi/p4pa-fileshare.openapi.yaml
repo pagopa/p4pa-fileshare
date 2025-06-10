@@ -143,9 +143,10 @@ paths:
         '200':
           description: OK
           content:
-            application/json:
+            application/octet-stream:
               schema:
-                type: 'SignedUrlResultDTO'
+                type: string
+                format: binary
         '404':
           description: Not Found
           content:
