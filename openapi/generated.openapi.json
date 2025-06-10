@@ -265,12 +265,6 @@
                   "type" : "string",
                   "format" : "binary"
                 }
-              },
-              "application/json" : {
-                "schema" : {
-                  "type" : "string",
-                  "format" : "binary"
-                }
               }
             }
           },
@@ -279,12 +273,8 @@
             "content" : {
               "application/octet-stream" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/FileshareErrorDTO"
-                }
-              },
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/FileshareErrorDTO"
+                  "type" : "string",
+                  "format" : "binary"
                 }
               }
             }
@@ -294,12 +284,8 @@
             "content" : {
               "application/octet-stream" : {
                 "schema" : {
-                  "$ref" : "#/components/schemas/FileshareErrorDTO"
-                }
-              },
-              "application/json" : {
-                "schema" : {
-                  "$ref" : "#/components/schemas/FileshareErrorDTO"
+                  "type" : "string",
+                  "format" : "binary"
                 }
               }
             }
