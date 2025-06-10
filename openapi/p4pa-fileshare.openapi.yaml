@@ -119,6 +119,45 @@ paths:
                 format: binary
         '404':
           description: Not Found
+  /organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}/notice:
+    get:
+      tags:
+        - ingestion-flow-file
+      summary: downloadNotice
+      description: Service to retrieve a notice file
+      operationId: downloadNotice
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: ingestionFlowFileId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: 'SignedUrlResultDTO'
+        '404':
+          description: Not Found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileshareErrorDTO'
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileshareErrorDTO'
   /organization/{organizationId}/exportfiles/{exportFileId}:
     get:
       tags:
