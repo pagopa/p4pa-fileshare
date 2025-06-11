@@ -161,7 +161,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       if (response.getBody() == null) {
         throw new IllegalStateException(String.format("Downloaded file in the signed url: %s with ingestionFlowFileId: %s is empty", signedUrl, ingestionFlowFileId));
       }
-      return new FileResourceDTO(new ByteArrayResource(response.getBody()), ingestionFlowFile.getFileName());
+      return new FileResourceDTO(new ByteArrayResource(response.getBody()), ingestionFlowFile.getFileName().replace(".zip", "_notice.zip"));
 
     } catch (RestClientException e) {
       log.error("Error downloading notice for organizationId {} and fileId {}", organizationId, ingestionFlowFileId, e);

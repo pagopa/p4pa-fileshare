@@ -505,9 +505,9 @@ class IngestionFlowFileFacadeServiceImplTest {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long ingestionFlowFileId = 10L;
-    String fileName = "notice.pdf";
+    String fileName = "notice.zip";
     String pdfGeneratedId = "pdf123";
-    String signedUrl = "http://example.com/notice.pdf";
+    String signedUrl = "http://example.com/notice.zip";
     byte[] fileContent = "test content".getBytes();
 
     UserInfo user = TestUtils.getSampleAdminUser();
@@ -534,7 +534,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       FileResourceDTO result = ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken);
 
       assertNotNull(result);
-      assertEquals(fileName, result.getFileName());
+      assertEquals("notice_notice.zip", result.getFileName());
       assertArrayEquals(fileContent, result.getResourceStream().getContentAsByteArray());
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
     }
@@ -545,7 +545,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long ingestionFlowFileId = 10L;
-    String fileName = "notice.pdf";
+    String fileName = "notice.zip";
     String pdfGeneratedId = "pdf123";
 
     UserInfo user = TestUtils.getSampleAdminUser();
@@ -578,9 +578,9 @@ class IngestionFlowFileFacadeServiceImplTest {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long ingestionFlowFileId = 10L;
-    String fileName = "notice.pdf";
+    String fileName = "notice.zip";
     String pdfGeneratedId = "pdf123";
-    String signedUrl = "http://example.com/notice.pdf";
+    String signedUrl = "http://example.com/notice.zip";
 
     UserInfo user = TestUtils.getSampleAdminUser();
 
@@ -606,7 +606,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
         ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
-      assertEquals("Downloaded file in the signed url: http://example.com/notice.pdf with ingestionFlowFileId: 10 is empty", exception.getMessage());
+      assertEquals("Downloaded file in the signed url: http://example.com/notice.zip with ingestionFlowFileId: 10 is empty", exception.getMessage());
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
     }
   }
@@ -616,9 +616,9 @@ class IngestionFlowFileFacadeServiceImplTest {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long ingestionFlowFileId = 10L;
-    String fileName = "notice.pdf";
+    String fileName = "notice.zip";
     String pdfGeneratedId = "pdf123";
-    String signedUrl = "http://example.com/notice.pdf";
+    String signedUrl = "http://example.com/notice.zip";
 
     UserInfo user = TestUtils.getSampleAdminUser();
 
