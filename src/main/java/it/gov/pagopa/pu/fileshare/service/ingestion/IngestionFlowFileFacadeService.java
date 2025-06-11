@@ -16,4 +16,6 @@ public interface IngestionFlowFileFacadeService {
   FileResourceDTO downloadIngestionFlowFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken);
 
   FileResourceDTO downloadIngestionFlowErrorsFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken);
+
+  FileResourceDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken);
 }
