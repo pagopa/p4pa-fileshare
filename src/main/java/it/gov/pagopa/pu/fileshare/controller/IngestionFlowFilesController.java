@@ -36,17 +36,7 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
   public ResponseEntity<Resource> downloadIngestionFlowFile(Long organizationId, Long ingestionFlowFileId) {
     FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
 
-    Resource fileResource = new InputStreamResource(fileResourceDTO.getResourceStream());
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentDisposition(ContentDisposition.attachment()
-      .filename(fileResourceDTO.getFileName())
-      .build());
-
-    return ResponseEntity.ok()
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
-      .headers(headers)
-      .body(fileResource);
+    return buildResourceResponseEntity(fileResourceDTO);
   }
 
   @Override
@@ -54,6 +44,18 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
     FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService.downloadIngestionFlowErrorsFile(
       organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
 
+    return buildResourceResponseEntity(fileResourceDTO);
+  }
+
+  @Override
+  public ResponseEntity<Resource> downloadNotice(Long organizationId, Long ingestionFlowFileId) {
+    FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService
+      .downloadNotice(organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
+
+    return buildResourceResponseEntity(fileResourceDTO);
+  }
+
+  private ResponseEntity<Resource> buildResourceResponseEntity(FileResourceDTO fileResourceDTO) {
     Resource fileResource = new InputStreamResource(
       fileResourceDTO.getResourceStream());
 
@@ -67,5 +69,4 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
       .headers(headers)
       .body(fileResource);
   }
-
 }

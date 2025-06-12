@@ -1,8 +1,10 @@
+import org.gradle.kotlin.dsl.register
+import org.openapitools.generator.gradle.plugin.tasks.GenerateTask
 import java.util.*
 
 plugins {
   java
-  id("org.springframework.boot") version "3.4.5"
+  id("org.springframework.boot") version "3.5.0"
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
   id("org.sonarqube") version "6.1.0.5360"
@@ -32,10 +34,10 @@ repositories {
   mavenCentral()
 }
 
-val springDocOpenApiVersion = "2.8.6"
+val springDocOpenApiVersion = "2.8.9"
 val openApiToolsVersion = "0.2.6"
-val micrometerVersion = "1.4.6"
-val httpClientVersion = "5.4.4"
+val micrometerVersion = "1.5.1"
+val httpClientVersion = "5.5"
 
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter")
@@ -115,7 +117,8 @@ tasks.register("dependenciesBuild") {
     "openApiGenerateP4PAAUTH",
     "openApiGenerateORGANIZATION",
     "openApiGeneratePROCESSEXECUTION",
-    "openApiGenerateP4PASENDNOTIFICATION"
+    "openApiGenerateP4PASENDNOTIFICATION",
+    "openApiGeneratePAGOPAPAYMENTS"
   )
 }
 
@@ -140,7 +143,8 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
   apiPackage.set("it.gov.pagopa.pu.fileshare.controller.generated")
   modelPackage.set("it.gov.pagopa.pu.fileshare.dto.generated")
   typeMappings.set(mapOf(
-    "StartNotificationResponse" to "it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse"
+    "StartNotificationResponse" to "it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse",
+    "SignedUrlResultDTO" to "it.gov.pagopa.pu.pagopapayments.dto.generated.SignedUrlResultDTO"
   ))
   configOptions.set(mapOf(
     "dateLibrary" to "java8",
@@ -251,6 +255,36 @@ tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("ope
     "swaggerAnnotations" to "false",
     "openApiNullable" to "false",
     "dateLibrary" to "java8",
+    "useSpringBoot3" to "true",
+    "useJakartaEe" to "true",
+    "serializationLibrary" to "jackson",
+    "generateSupportingFiles" to "true",
+    "generateConstructorWithAllArgs" to "true",
+    "generatedConstructorWithRequiredArgs" to "true",
+    "additionalModelTypeAnnotations" to "@lombok.experimental.SuperBuilder(toBuilder = true)"
+  ))
+  library.set("resttemplate")
+}
+
+tasks.register<GenerateTask>("openApiGeneratePAGOPAPAYMENTS") {
+  group = "AutomaticallyGeneratedCode"
+  description = "openapi"
+
+  generatorName.set("java")
+  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-pagopa-payments/refs/heads/develop/openapi/p4pa-pagopa-payments.openapi.yaml")
+  outputDir.set("$projectDir/build/generated")
+  invokerPackage.set("it.gov.pagopa.pu.pagopapayments.generated")
+  apiPackage.set("it.gov.pagopa.pu.pagopapayments.client.generated")
+  modelPackage.set("it.gov.pagopa.pu.pagopapayments.dto.generated")
+  typeMappings.set(mapOf(
+    "DebtPositionDTO" to "String",
+    "NoticeGenerationMassiveResourceDTO" to "String",
+  ))
+  configOptions.set(mapOf(
+    "swaggerAnnotations" to "false",
+    "openApiNullable" to "false",
+    "dateLibrary" to "java8",
+    "serializableModel" to "true",
     "useSpringBoot3" to "true",
     "useJakartaEe" to "true",
     "serializationLibrary" to "jackson",
