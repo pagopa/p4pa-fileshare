@@ -151,6 +151,38 @@ paths:
           description: Not Found
         '500':
           description: Server Error
+  /organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}/iuv:
+    get:
+      tags:
+        - ingestion-flow-file
+      summary: downloadIUVFile
+      description: Service to retrieve a iuv file
+      operationId: downloadIuvFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: ingestionFlowFileId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not Found
+        '500':
+          description: Server Error
   /organization/{organizationId}/exportfiles/{exportFileId}:
     get:
       tags:

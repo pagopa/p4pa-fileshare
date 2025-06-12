@@ -154,6 +154,23 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     return downloadNotice(organizationId, ingestionFlowFileId, signedUrlResultDTO.getSignedUrl(), ingestionFlowFile);
   }
 
+  @Override
+  public FileResourceDTO downloadIuvFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
+    IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
+
+    if(!IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.equals(ingestionFlowFile.getIngestionFlowFileType())) {
+      throw new IllegalStateException(String.format("It's not possible to download IUV file for ingestionFlowFileId: %s. Expected type: %s, found: %s",
+        ingestionFlowFileId,
+        DP_INSTALLMENTS,
+        ingestionFlowFile.getIngestionFlowFileType()));
+    }
+    Path filePath = getIuvZipFilePath(ingestionFlowFile);
+
+    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, ingestionFlowFile.getFileName());
+
+    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), filePath.getFileName().toString());
+  }
+
   private static FileResourceDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, String signedUrl, IngestionFlowFile ingestionFlowFile) {
     try {
       RestTemplate restTemplate = new RestTemplate();
@@ -203,5 +220,11 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName())
       .getParent();
+  }
+
+  private Path getIuvZipFilePath(IngestionFlowFile ingestionFlowFile) {
+    String iuvFileName = ingestionFlowFile.getFileName().replace(".zip", "_iuv.zip");
+    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder,
+      ingestionFlowFile.getFilePathName(), iuvFileName);
   }
 }

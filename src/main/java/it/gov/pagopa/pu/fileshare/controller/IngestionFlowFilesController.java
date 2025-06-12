@@ -55,6 +55,14 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
     return buildResourceResponseEntity(fileResourceDTO);
   }
 
+  @Override
+  public ResponseEntity<Resource> downloadIuvFile(Long organizationId, Long ingestionFlowFileId) {
+    FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService
+      .downloadIuvFile(organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
+
+    return buildResourceResponseEntity(fileResourceDTO);
+  }
+
   private ResponseEntity<Resource> buildResourceResponseEntity(FileResourceDTO fileResourceDTO) {
     Resource fileResource = new InputStreamResource(
       fileResourceDTO.getResourceStream());

@@ -649,6 +649,73 @@ class IngestionFlowFileFacadeServiceImplTest {
     }
   }
 
+  @Test
+  void whenDownloadIuvFileThenOk() throws IOException {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+    String fileName = "file.zip";
+    Path organizationBasePath = Path.of("/organizationFolder");
+    String filePathName = "examplePath";
+    String iuvFileName = "file_iuv.zip";
+    Path fullFilePath = organizationBasePath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
+
+    UserInfo user = TestUtils.getSampleAdminUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setIngestionFlowFileId(1L);
+    ingestionFlowFile.setIngestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+    ingestionFlowFile.setOrganizationId(organizationId);
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
+    ingestionFlowFile.setFileName(fileName);
+    ingestionFlowFile.setFilePathName("examplePath");
+
+    InputStream decryptedInputStream = mock(ByteArrayInputStream.class);
+
+    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(ingestionFlowFile);
+
+    when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, ingestionFlowFile.getFilePathName(), iuvFileName))
+      .thenReturn(fullFilePath.resolve(iuvFileName));
+
+    when(fileStorerServiceMock.decryptFile(fullFilePath.resolve(iuvFileName), fileName))
+      .thenReturn(decryptedInputStream);
+
+    FileResourceDTO result = ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken);
+
+    assertNotNull(result);
+    assertEquals("file_iuv.zip", result.getFileName());
+    assertArrayEquals(decryptedInputStream.readAllBytes(), result.getResourceStream().getContentAsByteArray());
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+  }
+
+  @Test
+  void givenTypeNotDPInstallmentsWhenDownloadIuvFileThenThrowIllegalStateException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+    String fileName = "file.zip";
+
+    UserInfo user = TestUtils.getSampleAdminUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setIngestionFlowFileId(1L);
+    ingestionFlowFile.setIngestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.DEBT_POSITIONS_TYPE);
+    ingestionFlowFile.setOrganizationId(organizationId);
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
+    ingestionFlowFile.setFileName(fileName);
+    ingestionFlowFile.setFilePathName("examplePath");
+
+    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(ingestionFlowFile);
+
+    IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
+      ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken));
+
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    assertEquals("It's not possible to download IUV file for ingestionFlowFileId: 10. Expected type: DP_INSTALLMENTS, found: DEBT_POSITIONS_TYPE", exception.getMessage());
+  }
+
   void givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(IngestionFlowFile ingestionFlowFile) {
     Long ingestionFlowFileId = 1L;
     String accessToken = "TOKEN";
