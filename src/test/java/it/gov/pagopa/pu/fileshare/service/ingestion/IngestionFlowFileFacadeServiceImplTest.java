@@ -7,10 +7,7 @@ import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.IngestionFlowFileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
-import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
+import it.gov.pagopa.pu.fileshare.exception.custom.*;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
@@ -710,7 +707,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(ingestionFlowFile);
 
-    InvalidFileException exception = assertThrows(InvalidFileException.class, () ->
+    InvalidFileTypeException exception = assertThrows(InvalidFileTypeException.class, () ->
       ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken));
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);

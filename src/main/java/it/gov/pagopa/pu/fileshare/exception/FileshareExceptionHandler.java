@@ -35,13 +35,8 @@ import java.util.stream.Collectors;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class FileshareExceptionHandler {
 
-  @ExceptionHandler({IngestionFlowFileNotFoundException.class})
-  public ResponseEntity<FileshareErrorDTO> handleIngestionFlowFileNotFoundException(RuntimeException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
-  }
-
-  @ExceptionHandler({SendNotificationOrganizationMissMatchException.class})
-  public ResponseEntity<FileshareErrorDTO> handleSendNotificationOrganizationMissMatchException(RuntimeException ex, HttpServletRequest request) {
+  @ExceptionHandler({IngestionFlowFileNotFoundException.class, SendNotificationOrganizationMissMatchException.class, FileNotFoundException.class})
+  public ResponseEntity<FileshareErrorDTO> handleNotFoundException(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
   }
 
@@ -50,9 +45,9 @@ public class FileshareExceptionHandler {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, CodeEnum.INVALID_FILE);
   }
 
-  @ExceptionHandler({FileNotFoundException.class})
-  public ResponseEntity<FileshareErrorDTO> handleFileNotFoundError(RuntimeException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
+  @ExceptionHandler(InvalidFileTypeException.class)
+  public ResponseEntity<FileshareErrorDTO> handleInvalidFileTypeException(RuntimeException ex, HttpServletRequest request) {
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, CodeEnum.INVALID_FILE_TYPE);
   }
 
   @ExceptionHandler({UnauthorizedFileDownloadException.class, AuthorizationDeniedException.class})

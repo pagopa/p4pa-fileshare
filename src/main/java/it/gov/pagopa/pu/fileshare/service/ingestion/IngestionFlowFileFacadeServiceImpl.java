@@ -6,10 +6,7 @@ import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileS
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.IngestionFlowFileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
-import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
+import it.gov.pagopa.pu.fileshare.exception.custom.*;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileService;
@@ -160,7 +157,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
 
     if(!IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.equals(ingestionFlowFile.getIngestionFlowFileType())) {
-      throw new InvalidFileException(String.format("It's not possible to download IUV file for ingestionFlowFileId: %s. Expected type: %s, found: %s",
+      throw new InvalidFileTypeException(String.format("It's not possible to download IUV file for ingestionFlowFileId: %s. Expected type: %s, found: %s",
         ingestionFlowFileId,
         DP_INSTALLMENTS,
         ingestionFlowFile.getIngestionFlowFileType()));

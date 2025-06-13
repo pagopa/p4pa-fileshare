@@ -126,6 +126,16 @@ class FileshareExceptionHandlerTest {
   }
 
   @Test
+  void handleInvalidFileTypeException() throws Exception {
+    doThrow(new InvalidFileTypeException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isBadRequest())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.INVALID_FILE_TYPE.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
+
+  @Test
   void handleFlowFileNotFoundException() throws Exception {
     doThrow(new FileNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 

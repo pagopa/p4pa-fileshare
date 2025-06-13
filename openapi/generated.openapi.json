@@ -479,7 +479,7 @@
       },
       "CodeEnum" : {
         "type" : "string",
-        "enum" : [ "INVALID_FILE", "FILE_UPLOAD_ERROR", "NOT_FOUND", "CONFLICT", "BAD_REQUEST", "UNAUTHORIZED", "GENERIC_ERROR" ]
+        "enum" : [ "INVALID_FILE", "INVALID_FILE_TYPE", "FILE_UPLOAD_ERROR", "NOT_FOUND", "CONFLICT", "BAD_REQUEST", "UNAUTHORIZED", "GENERIC_ERROR" ]
       },
       "FileshareErrorDTO" : {
         "type" : "object",

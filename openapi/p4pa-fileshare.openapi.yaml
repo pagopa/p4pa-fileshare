@@ -298,6 +298,7 @@ components:
           type: string
           enum:
             - INVALID_FILE
+            - INVALID_FILE_TYPE
             - FILE_UPLOAD_ERROR
             - NOT_FOUND
             - CONFLICT
