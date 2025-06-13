@@ -710,7 +710,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(ingestionFlowFile);
 
-    IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
+    InvalidFileException exception = assertThrows(InvalidFileException.class, () ->
       ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken));
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
