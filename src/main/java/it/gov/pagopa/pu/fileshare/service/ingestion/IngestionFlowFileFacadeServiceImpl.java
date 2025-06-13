@@ -6,9 +6,7 @@ import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileS
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.IngestionFlowFileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
+import it.gov.pagopa.pu.fileshare.exception.custom.*;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileService;
@@ -154,6 +152,25 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     return downloadNotice(organizationId, ingestionFlowFileId, signedUrlResultDTO.getSignedUrl(), ingestionFlowFile);
   }
 
+  @Override
+  public FileResourceDTO downloadIuvFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
+    IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
+
+    if(!IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.equals(ingestionFlowFile.getIngestionFlowFileType())) {
+      throw new InvalidFileTypeException(String.format("It's not possible to download IUV file for ingestionFlowFileId: %s. Expected type: %s, found: %s",
+        ingestionFlowFileId,
+        DP_INSTALLMENTS,
+        ingestionFlowFile.getIngestionFlowFileType()));
+    }
+
+    String iuvFileName = ingestionFlowFile.getFileName().replace(".zip", "_iuv.zip");
+    Path filePath = getIuvZipFilePath(ingestionFlowFile, iuvFileName);
+
+    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, iuvFileName);
+
+    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), iuvFileName);
+  }
+
   private static FileResourceDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, String signedUrl, IngestionFlowFile ingestionFlowFile) {
     try {
       RestTemplate restTemplate = new RestTemplate();
@@ -168,7 +185,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       throw e;
     }
   }
-
 
   private IngestionFlowFile authorizeDownload(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
@@ -192,8 +208,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   }
 
   private Path getFilePath(IngestionFlowFile ingestionFlowFile) {
-    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName())
-      .getParent();
+    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName()).getParent();
   }
 
   private Path getErrorsFilePath(IngestionFlowFile ingestionFlowFile) {
@@ -203,5 +218,10 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName())
       .getParent();
+  }
+
+  private Path getIuvZipFilePath(IngestionFlowFile ingestionFlowFile, String iuvFileName) {
+    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder,
+      ingestionFlowFile.getFilePathName(), iuvFileName).getParent();
   }
 }

@@ -7,10 +7,7 @@ import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.IngestionFlowFileNotFoundException;
-import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
-import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
+import it.gov.pagopa.pu.fileshare.exception.custom.*;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
@@ -647,6 +644,74 @@ class IngestionFlowFileFacadeServiceImplTest {
       assertEquals("Error", exception.getMessage());
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
     }
+  }
+
+  @Test
+  void whenDownloadIuvFileThenOk() throws IOException {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+    String fileName = "file.zip";
+    String filePathName = "examplePath";
+    String iuvFileName = "file_iuv.zip";
+    Path organizationBasePath = Path.of("/organizationFolder");
+    Path archiveFolderPath = organizationBasePath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
+
+    UserInfo user = TestUtils.getSampleAdminUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setIngestionFlowFileId(1L);
+    ingestionFlowFile.setIngestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+    ingestionFlowFile.setOrganizationId(organizationId);
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
+    ingestionFlowFile.setFileName(fileName);
+    ingestionFlowFile.setFilePathName(filePathName);
+
+    byte[] fileContent = "test content".getBytes();
+    InputStream decryptedInputStream = new ByteArrayInputStream(fileContent);
+
+    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(ingestionFlowFile);
+
+    when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, filePathName, iuvFileName))
+      .thenReturn(archiveFolderPath.resolve(iuvFileName));
+
+    when(fileStorerServiceMock.decryptFile(archiveFolderPath, iuvFileName))
+      .thenReturn(decryptedInputStream);
+
+    FileResourceDTO result = ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken);
+
+    assertNotNull(result);
+    assertEquals(iuvFileName, result.getFileName());
+    assertArrayEquals(fileContent, result.getResourceStream().getContentAsByteArray());
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+  }
+
+  @Test
+  void givenTypeNotDPInstallmentsWhenDownloadIuvFileThenThrowIllegalStateException() {
+    String accessToken = "TOKEN";
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 10L;
+    String fileName = "file.zip";
+
+    UserInfo user = TestUtils.getSampleAdminUser();
+
+    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setIngestionFlowFileId(1L);
+    ingestionFlowFile.setIngestionFlowFileType(IngestionFlowFile.IngestionFlowFileTypeEnum.DEBT_POSITIONS_TYPE);
+    ingestionFlowFile.setOrganizationId(organizationId);
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
+    ingestionFlowFile.setFileName(fileName);
+    ingestionFlowFile.setFilePathName("examplePath");
+
+    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
+      .thenReturn(ingestionFlowFile);
+
+    InvalidFileTypeException exception = assertThrows(InvalidFileTypeException.class, () ->
+      ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken));
+
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    assertEquals("It's not possible to download IUV file for ingestionFlowFileId: 10. Expected type: DP_INSTALLMENTS, found: DEBT_POSITIONS_TYPE", exception.getMessage());
   }
 
   void givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(IngestionFlowFile ingestionFlowFile) {
