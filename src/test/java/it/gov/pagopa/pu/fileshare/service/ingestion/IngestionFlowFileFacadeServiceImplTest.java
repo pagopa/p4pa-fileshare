@@ -655,10 +655,10 @@ class IngestionFlowFileFacadeServiceImplTest {
     Long organizationId = 1L;
     Long ingestionFlowFileId = 10L;
     String fileName = "file.zip";
-    Path organizationBasePath = Path.of("/organizationFolder");
     String filePathName = "examplePath";
     String iuvFileName = "file_iuv.zip";
-    Path fullFilePath = organizationBasePath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
+    Path organizationBasePath = Path.of("/organizationFolder");
+    Path archiveFolderPath = organizationBasePath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
 
     UserInfo user = TestUtils.getSampleAdminUser();
 
@@ -668,24 +668,25 @@ class IngestionFlowFileFacadeServiceImplTest {
     ingestionFlowFile.setOrganizationId(organizationId);
     ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
     ingestionFlowFile.setFileName(fileName);
-    ingestionFlowFile.setFilePathName("examplePath");
+    ingestionFlowFile.setFilePathName(filePathName);
 
-    InputStream decryptedInputStream = mock(ByteArrayInputStream.class);
+    byte[] fileContent = "test content".getBytes();
+    InputStream decryptedInputStream = new ByteArrayInputStream(fileContent);
 
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(ingestionFlowFile);
 
-    when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, ingestionFlowFile.getFilePathName(), iuvFileName))
-      .thenReturn(fullFilePath.resolve(iuvFileName));
+    when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, filePathName, iuvFileName))
+      .thenReturn(archiveFolderPath.resolve(iuvFileName));
 
-    when(fileStorerServiceMock.decryptFile(fullFilePath.resolve(iuvFileName), fileName))
+    when(fileStorerServiceMock.decryptFile(archiveFolderPath, iuvFileName))
       .thenReturn(decryptedInputStream);
 
     FileResourceDTO result = ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken);
 
     assertNotNull(result);
-    assertEquals("file_iuv.zip", result.getFileName());
-    assertArrayEquals(decryptedInputStream.readAllBytes(), result.getResourceStream().getContentAsByteArray());
+    assertEquals(iuvFileName, result.getFileName());
+    assertArrayEquals(fileContent, result.getResourceStream().getContentAsByteArray());
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 

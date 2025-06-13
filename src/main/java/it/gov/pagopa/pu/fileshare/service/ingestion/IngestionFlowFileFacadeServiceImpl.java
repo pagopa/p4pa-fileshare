@@ -164,11 +164,13 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
         DP_INSTALLMENTS,
         ingestionFlowFile.getIngestionFlowFileType()));
     }
-    Path filePath = getIuvZipFilePath(ingestionFlowFile);
 
-    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, ingestionFlowFile.getFileName());
+    String iuvFileName = ingestionFlowFile.getFileName().replace(".zip", "_iuv.zip");
+    Path filePath = getIuvZipFilePath(ingestionFlowFile, iuvFileName);
 
-    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), filePath.getFileName().toString());
+    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, iuvFileName);
+
+    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), iuvFileName);
   }
 
   private static FileResourceDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, String signedUrl, IngestionFlowFile ingestionFlowFile) {
@@ -185,7 +187,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       throw e;
     }
   }
-
 
   private IngestionFlowFile authorizeDownload(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
@@ -209,8 +210,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   }
 
   private Path getFilePath(IngestionFlowFile ingestionFlowFile) {
-    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName())
-      .getParent();
+    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName()).getParent();
   }
 
   private Path getErrorsFilePath(IngestionFlowFile ingestionFlowFile) {
@@ -222,9 +222,8 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       .getParent();
   }
 
-  private Path getIuvZipFilePath(IngestionFlowFile ingestionFlowFile) {
-    String iuvFileName = ingestionFlowFile.getFileName().replace(".zip", "_iuv.zip");
+  private Path getIuvZipFilePath(IngestionFlowFile ingestionFlowFile, String iuvFileName) {
     return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder,
-      ingestionFlowFile.getFilePathName(), iuvFileName);
+      ingestionFlowFile.getFilePathName(), iuvFileName).getParent();
   }
 }
