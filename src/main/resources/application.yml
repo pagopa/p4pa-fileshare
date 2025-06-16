@@ -81,6 +81,7 @@ folders:
   ingestion-flow-file-type-paths:
     RECEIPT: "data/receipt"
     RECEIPT_PAGOPA: "data/receipt/pagopa"
+    PAYMENT_NOTIFICATION: "data/payment_notification"
     PAYMENTS_REPORTING: "data/payments_reporting"
     PAYMENTS_REPORTING_PAGOPA: "data/payments_reporting/pagopa"
     TREASURY_OPI: "data/treasury/opi"
