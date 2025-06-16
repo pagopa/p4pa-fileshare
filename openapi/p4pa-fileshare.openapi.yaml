@@ -289,6 +289,7 @@ components:
         - DEBT_POSITIONS_TYPE_ORG
         - DEBT_POSITIONS_TYPE_ORG_OPERATORS
         - ASSESSMENTS
+        - ASSESSMENTS_REGISTRY
     FileshareErrorDTO:
       type: object
       required:
