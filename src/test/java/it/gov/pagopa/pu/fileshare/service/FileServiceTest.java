@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 
 @ExtendWith(MockitoExtension.class)
 class FileServiceTest {
+  public static final List<String> VERSION_LIST = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
   private FileService fileService;
 
   @BeforeEach
@@ -64,20 +65,29 @@ class FileServiceTest {
 
   @Test
   void whenValidateVersionFromIngestionFlowFilenameThenOk(){
-    String fileName = "fileName1_1.txt";
-    List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
+    String fileName = "fileName2_0.txt";
 
-    String version = fileService.validateVersionFromIngestionFlowFilename(versionList, fileName);
+    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName);
 
-    assertEquals("1.1", version);
+    assertEquals("2.0", version);
+  }
+
+  @Test
+  void givenEngVersionWhenValidateVersionFromIngestionFlowFilenameThenOk(){
+    String fileName = "fileName2_0-eng.txt";
+
+    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName);
+
+    assertEquals("2.0-eng", version);
   }
 
   @Test
   void givenInvalidFilenameWhenValidateVersionFromIngestionFlowFilenameThenInvalidFileException(){
     String fileName = "fileName.txt";
-    List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
 
-    assertThrows(InvalidFileException.class, () ->
-      fileService.validateVersionFromIngestionFlowFilename(versionList, fileName));
+    InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
+      fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName));
+
+    assertEquals("File name must contain a valid version: [1_0, 1_1, 1_3, 1_4, 2_0]", ex.getMessage());
   }
 }
