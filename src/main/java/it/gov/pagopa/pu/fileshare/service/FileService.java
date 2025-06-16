@@ -42,7 +42,7 @@ public class FileService {
       })
       .findFirst()
       .orElseThrow(() -> new InvalidFileException(String.format("File name must contain a valid version: %s",
-        fileVersions.stream().map(v -> v.replace(".", "_")).toList())));
+        fileVersions.stream().map(version -> replaceCharVersion(version,".", "_")).toList())));
 
   }
 
