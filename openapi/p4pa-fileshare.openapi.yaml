@@ -274,6 +274,7 @@ components:
       enum:
         - RECEIPT
         - RECEIPT_PAGOPA
+        - PAYMENT_NOTIFICATION
         - PAYMENTS_REPORTING
         - PAYMENTS_REPORTING_PAGOPA
         - TREASURY_OPI
