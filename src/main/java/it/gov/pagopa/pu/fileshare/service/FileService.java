@@ -33,11 +33,11 @@ public class FileService {
     // This english version exists only for test purpose
     String engVersion = "2_0-eng";
     if (fileName.contains(engVersion)) {
-      return replaceVersion(engVersion, "_", ".");
+      return replaceCharVersion(engVersion, "_", ".");
     }
     return fileVersions.stream()
       .filter(fileVersion -> {
-        String version = replaceVersion(fileVersion, ".", "_");
+        String version = replaceCharVersion(fileVersion, ".", "_");
         return fileName.contains(version);
       })
       .findFirst()
@@ -46,7 +46,7 @@ public class FileService {
 
   }
 
-  private String replaceVersion(String fileVersion, String target, String replacement) {
+  private String replaceCharVersion(String fileVersion, String target, String replacement) {
     return fileVersion.replace(target, replacement);
   }
 }
