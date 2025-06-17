@@ -23,6 +23,10 @@ See [OpenAPI](openapi/generated.openapi.json), exposed through the following pat
 * `GET /organization/{organizationId}/exportfiles/{exportFileId}`: To download a previous requested export file;
 * `POST /organization/{organizationId}/send-files/{sendNotificationId}`: To upload SEND requested attachment.
 
+### 📌 Common HTTP status returned:
+* `401`: Invalid access token provided, thus a new login is required;
+* `403`: Trying to access a not authorized resource.
+
 ## 🔎 Monitoring
 See available actuator endpoints through the following path:
 * `/actuator`
