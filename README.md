@@ -48,18 +48,16 @@ See [log configured pattern](/src/main/resources/logback-spring.xml).
 * [p4pa-auth](https://github.com/pagopa/p4pa-auth):
   * To validate access token and retrieve user info;
 * [p4pa-organization](https://github.com/pagopa/p4pa-organization):
-  * 
-
-## 🗃️ Entities handled
-* `debt_position_type`
-* `debt_position_type_org`
-* `debt_position_type_org_operators`
-* `iuv_sequence_number`
-* `debt_position`
-* `payment_option`
-* `installment`
-* `transfer`
-* `receipt`
+  * To validate organization status;
+* [p4pa-pagopa-payments](https://github.com/pagopa/p4pa-pagopa-payments):
+  * To download single notices;
+* [p4pa-process-executions](https://github.com/pagopa/p4pa-process-executions):
+  * To start file ingestion processing;
+  * To retrieve ingestion file info;
+  * To retrieve export info;
+* [p4pa-send-notification](https://github.com/pagopa/p4pa-send-notification):
+  * To validate SEND file (sha);
+  * To start SEND notification process.
 
 ## 🔧 Configuration
 
@@ -68,9 +66,11 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 ### 📌 Relevant configurations
 
 #### 🌐 Application Server
-| ENV         | DESCRIPTION                       | DEFAULT |
-|-------------|-----------------------------------|---------|
-| SERVER_PORT | Application server listening port | 8080    |
+| ENV                        | DESCRIPTION                       | DEFAULT |
+|----------------------------|-----------------------------------|---------|
+| SERVER_PORT                | Application server listening port | 8080    |
+| MULTIPART_MAX_FILE_SIZE    | Max file size                     | 50MB    |
+| MULTIPART_MAX_REQUEST_SIZE | Max request size                  | 50MB    |
 
 #### ✏️ Logging
 | ENV                                   | DESCRIPTION                                                                                                                                                                     | DEFAULT |
@@ -87,34 +87,10 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 #### 🔁 Integrations
 
 ##### 🗄️ Resources
-| ENV                        | DESCRIPTION                                                                           | DEFAULT                                                                                                                      |
-|----------------------------|---------------------------------------------------------------------------------------|------------------------------------------------------------------------------------------------------------------------------|
-| REDIS_HOST                 | Redis server host                                                                     | localhost                                                                                                                    |
-| REDIS_PORT                 | Redis server port                                                                     | 6380                                                                                                                         |
-| REDIS_PASSWORD             | Redis password                                                                        |                                                                                                                              |
-| SHOW_SQL                   | To print SQL statements                                                               | false                                                                                                                        |
-| DEBT_POSITIONS_DB_URL      | PostgreSQL connection string (to use in order to customize the entire string)         | jdbc:postgresql://${CLASSIFICATION_DB_HOST}:${CLASSIFICATION_DB_PORT}/${CLASSIFICATION_DB_NAME}?currentSchema=debt_positions |
-| DEBT_POSITIONS_DB_HOST     | PostgreSQL Host                                                                       | localhost                                                                                                                    |
-| DEBT_POSITIONS_DB_PORT     | PostgreSQL port                                                                       | 5432                                                                                                                         |
-| DEBT_POSITIONS_DB_NAME     | PostgreSQL Database name                                                              | payhub                                                                                                                       |
-| DEBT_POSITIONS_DB_USER     | PostgreSQL username                                                                   |                                                                                                                              |
-| DEBT_POSITIONS_DB_PASSWORD | PostgreSQL password                                                                   |                                                                                                                              |
-| CITIZENDB_URL              | Citizen PostgreSQL connection string (to use in order to customize the entire string) | jdbc:postgresql://${CITIZENDB_HOST}:${CITIZENDB_PORT}/citizen                                                                |
-| CITIZENDB_HOST             | Citizen PostgreSQL Host                                                               | localhost                                                                                                                    |
-| CITIZENDB_PORT             | Citizen PostgreSQL port                                                               | 5432                                                                                                                         |
-| CITIZENDB_NAME             | Citizen PostgreSQL Database name                                                      | payhub                                                                                                                       |
-| CITIZENDB_USER             | Citizen PostgreSQL username                                                           |                                                                                                                              |
-| CITIZENDB_PASSWORD         | Citizen PostgreSQL password                                                           |                                                                                                                              |
-
-##### 📋 [Caching](https://pagopa.atlassian.net/wiki/spaces/SPAC/pages/1542128077/Caching)
-| ENV                        | DESCRIPTION                                 | DEFAULT |
-|----------------------------|---------------------------------------------|---------|
-| CACHE_PII_SIZE             | PII cache size                              | 1000    |
-| CACHE_PII_MINUTES          | PII cache retention (minutes)               | 60      |
-| CACHE_ORGANIZATION_SIZE    | Organization data cache size                | 100     |
-| CACHE_ORGANIZATION_MINUTES | Organization data cache retention (minutes) | 60      |
-| CACHE_TAXONOMY_SIZE        | Taxonomy data cache size                    | 100     |
-| CACHE_TAXONOMY_MINUTES     | Taxonomy data cache retention (minutes)     | 60      |
+| ENV                | DESCRIPTION                                           | DEFAULT |
+|--------------------|-------------------------------------------------------|---------|
+| SHARED_FOLDER_ROOT | Absolute path towards shared folder on file system    | /shared |
+| TMP_FOLDER         | Absolute path towards temporary folder on file system | /tmp    |
 
 ##### 🔗 REST
 | ENV                                               | DESCRIPTION                               | DEFAULT |
@@ -126,62 +102,29 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | DEFAULT_REST_TIMEOUT_READ_MILLIS                  | Default read timeout (milliseconds)       | 120000  |
 
 ##### 🧩 Microservices
-| ENV                                  | DESCRIPTION                                                                       | DEFAULT |
-|--------------------------------------|-----------------------------------------------------------------------------------|---------|
-| ORGANIZATION_BASE_URL                | Organization microservice URL                                                     |         |
-| ORGANIZATION_MAX_ATTEMPTS            | Organization API max attempts                                                     | 3       |
-| ORGANIZATION_WAIT_TIME_MILLIS        | Organization retry waiting time (milliseconds)                                    | 500     |
-| ORGANIZATION_PRINT_BODY_WHEN_ERROR   | To print body when an error occurs                                                | true    |
-| WORKFLOW_HUB_BASE_URL                | WorkflowHub microservice URL                                                      |         |
-| WORKFLOW_HUB_MAX_ATTEMPTS            | WorkflowHub API max attempts                                                      | 3       |
-| WORKFLOW_HUB_WAIT_TIME_MILLIS        | WorkflowHub retry waiting time (milliseconds)                                     | 500     |
-| WORKFLOW_HUB_PRINT_BODY_WHEN_ERROR   | To print body when an error occurs                                                | true    |
-| WORKFLOW_AWAIT_MAX_WAITING_MINUTES   | Max time to wait for synchronization workflow termination (minutes)               | 5       |
-| WORKFLOW_AWAIT_RETRY_DELAYS_MS       | Time between checks to verify synchronization workflow termination (milliseconds) | 1000    |
-| CLASSIFICATION_BASE_URL              | Classification microservice URL                                                   |         |
-| CLASSIFICATION_MAX_ATTEMPTS          | Classification API max attempts                                                   | 3       |
-| CLASSIFICATION_WAIT_TIME_MILLIS      | Classification retry waiting time (milliseconds)                                  | 500     |
-| CLASSIFICATION_PRINT_BODY_WHEN_ERROR | To print body when an error occurs                                                | true    |
-
-##### 🌀 KAFKA
-| ENV                                              | DESCRIPTION                                                        | DEFAULT                    |
-|--------------------------------------------------|--------------------------------------------------------------------|----------------------------|
-| KAFKA_BINDER_BROKER                              | Comma separated list of brokers to which the Kafka binder connects |                            |
-| KAFKA_CONFIG_HEARTBEAT_INTERVAL_MS               | Hearth beat interval (milliseconds)                                | 3000                       |
-| KAFKA_CONFIG_SESSION_TIMEOUT_MS                  | Session timeout (milliseconds)                                     | 30000                      |
-| KAFKA_CONFIG_REQUEST_TIMEOUT_MS                  | Request timeout (milliseconds)                                     | 60000                      |
-| KAFKA_CONFIG_METADATA_MAX_AGE                    | Metadata max age (milliseconds)                                    | 180000                     |
-| KAFKA_CONFIG_SASL_MECHANISM                      | SASL mechanism                                                     |                            |
-| KAFKA_CONFIG_SECURITY_PROTOCOL                   | Security protocol                                                  |                            |
-| KAFKA_CONFIG_MAX_REQUEST_SIZE                    | Max request size                                                   | 1000000                    |
-
-###### 📤 KAFKA PRODUCERS
-| ENV                                              | DESCRIPTION                                                        | DEFAULT                    |
-|--------------------------------------------------|--------------------------------------------------------------------|----------------------------|
-| KAFKA_TOPIC_PAYMENTS                             | Topic where to publish payment event                               | p4pa-payhub-payments-evh   |
-| KAFKA_PAYMENTS_PRODUCER_SASL_JAAS_CONFIG         | JAAS Config string used to perform authentication                  |                            |
-| KAFKA_PAYMENTS_PRODUCER_CONNECTION_MAX_IDLE_TIME | Max producer idle time (milliseconds)                              | 180000                     |
-| KAFKA_PAYMENTS_PRODUCER_RETRY_MS                 | Producer retry waiting time (milliseconds)                         | \${KAFKA_RETRY_MS:10000}   |
-| KAFKA_PAYMENTS_PRODUCER_LINGER_MS                | Producer linger time (milliseconds)                                | \${KAFKA_LINGER_MS:2}      |
-| KAFKA_PAYMENTS_PRODUCER_BATCH_SIZE               | Producer batch size                                                | \${KAFKA_BATCH_SIZE:16384} |
-
-#### 💼 Business logic
-| ENV                                        | DESCRIPTION                                                          | DEFAULT                            |
-|--------------------------------------------|----------------------------------------------------------------------|------------------------------------|
-| DATA_EXPORT_MAX_TOTAL_ELEMENTS             | Maximum number of elements that could be exported                    | 100000                             |
-| DATA_EXPORT_MAX_MONTHS_INTERVAL            | Maximum number of months that could be exported                      | 6                                  |                                          
-| INSTALLMENT_PAID_VIEW_MAX_TOTAL_ELEMENTS   | Paid Installments: Maximum number of elements that could be exported | ${DATA_EXPORT_MAX_TOTAL_ELEMENTS}  |
-| INSTALLMENT_PAID_VIEW_MAX_MONTHS_INTERVAL  | Paid Installments: Maximum number of months that could be exported   | ${DATA_EXPORT_MAX_MONTHS_INTERVAL} |
-| RECEIPT_ARCHIVING_VIEW_MAX_TOTAL_ELEMENTS  | Receipt archiving: Maximum number of elements that could be exported | ${DATA_EXPORT_MAX_TOTAL_ELEMENTS}  |
-| RECEIPT_ARCHIVING_VIEW_MAX_MONTHS_INTERVAL | Receipt archiving: Maximum number of months that could be exported   | ${DATA_EXPORT_MAX_MONTHS_INTERVAL} |
-| FEATURE_ORGANIZATION_PIVA_CHECK            | To enable Organization tax code check                                | true                               |
+| ENV                                      | DESCRIPTION                                         | DEFAULT |
+|------------------------------------------|-----------------------------------------------------|---------|
+| AUTH_BASE_URL                            | Auth microservice URL                               |         |
+| AUTH_MAX_ATTEMPTS                        | Auth API max attempts                               | 3       |
+| AUTH_WAIT_TIME_MILLIS                    | Auth retry waiting time (milliseconds)              | 500     |
+| AUTH_PRINT_BODY_WHEN_ERROR               | To print body when an error occurs                  | true    |
+| ORGANIZATION_BASE_URL                    | Organization microservice URL                       |         |
+| ORGANIZATION_MAX_ATTEMPTS                | Organization API max attempts                       | 3       |
+| ORGANIZATION_WAIT_TIME_MILLIS            | Organization retry waiting time (milliseconds)      | 500     |
+| ORGANIZATION_PRINT_BODY_WHEN_ERROR       | To print body when an error occurs                  | true    |
+| PROCESS_EXECUTIONS_BASE_URL              | ProcessExecutions microservice URL                  |         |
+| PROCESS_EXECUTIONS_MAX_ATTEMPTS          | ProcessExecutions API max attempts                  | 3       |
+| PROCESS_EXECUTIONS_WAIT_TIME_MILLIS      | ProcessExecutions retry waiting time (milliseconds) | 500     |
+| PROCESS_EXECUTIONS_PRINT_BODY_WHEN_ERROR | To print body when an error occurs                  | true    |
+| SEND_NOTIFICATION_BASE_URL               | SendNotification microservice URL                   |         |
+| SEND_NOTIFICATION_MAX_ATTEMPTS           | SendNotification API max attempts                   | 3       |
+| SEND_NOTIFICATION_WAIT_TIME_MILLIS       | SendNotification retry waiting time (milliseconds)  | 500     |
+| SEND_NOTIFICATION_PRINT_BODY_WHEN_ERROR  | To print body when an error occurs                  | true    |
 
 #### 🔑 keys
-| ENV                          | DESCRIPTION                                         | DEFAULT |
-|------------------------------|-----------------------------------------------------|---------|
-| JWT_TOKEN_PUBLIC_KEY         | p4pa-auth JWT public key                            |         |
-| DATA_CIPHER_HASH_PEPPER      | Base64 encoded key (256 bit) used to calculate hash |         |
-| DATA_CIPHER_ENCRYPT_PASSWORD | Base64 encoded key (256 bit) used to encrypt data   |         |
+| ENV                   | DESCRIPTION                                               | DEFAULT |
+|-----------------------|-----------------------------------------------------------|---------|
+| FILE_ENCRYPT_PASSWORD | Base64 encoded key (256 bit) used to encrypt/decrypt file |         |
 
 ## 🛠️ Getting Started
 
