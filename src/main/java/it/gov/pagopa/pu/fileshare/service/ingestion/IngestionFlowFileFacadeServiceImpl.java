@@ -180,8 +180,8 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       CloseableHttpClient httpClient = HttpClients.custom()
         .disableRedirectHandling()
         .build();
-
       HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
+
       RestTemplate restTemplate = new RestTemplate(factory);
       URI uri = URI.create(signedUrl);
       ResponseEntity<byte[]> response = restTemplate.getForEntity(uri, byte[].class);

@@ -31,6 +31,7 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.web.client.RestClientException;
@@ -39,6 +40,7 @@ import org.springframework.web.client.RestTemplate;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -524,10 +526,12 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(printPaymentNoticeServiceMock.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken))
       .thenReturn(signedUrlResultDTO);
 
-    try (MockedConstruction<RestTemplate> ignored = Mockito.mockConstruction(RestTemplate.class,
-      (mock, context) -> when(mock.getForEntity(signedUrl, byte[].class))
-        .thenReturn(ResponseEntity.ok(fileContent)))) {
-
+    try (
+      MockedConstruction<HttpComponentsClientHttpRequestFactory> ignoredFactory = Mockito.mockConstruction(HttpComponentsClientHttpRequestFactory.class);
+      MockedConstruction<RestTemplate> ignoredRestTemplate = Mockito.mockConstruction(RestTemplate.class,
+        (mock, context) -> when(mock.getForEntity(URI.create(signedUrl), byte[].class))
+          .thenReturn(ResponseEntity.ok(fileContent)))
+    ) {
       FileResourceDTO result = ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken);
 
       assertNotNull(result);
@@ -596,10 +600,12 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(printPaymentNoticeServiceMock.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken))
       .thenReturn(signedUrlResultDTO);
 
-    try (MockedConstruction<RestTemplate> ignored = Mockito.mockConstruction(RestTemplate.class,
-      (mock, context) -> when(mock.getForEntity(signedUrl, byte[].class))
-        .thenReturn(ResponseEntity.ok(null)))) {
-
+    try (
+      MockedConstruction<HttpComponentsClientHttpRequestFactory> ignoredFactory = Mockito.mockConstruction(HttpComponentsClientHttpRequestFactory.class);
+      MockedConstruction<RestTemplate> ignoredRestTemplate = Mockito.mockConstruction(RestTemplate.class,
+        (mock, context) -> when(mock.getForEntity(URI.create(signedUrl), byte[].class))
+          .thenReturn(ResponseEntity.ok(null)))
+    ) {
       IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
         ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
@@ -634,10 +640,12 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(printPaymentNoticeServiceMock.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken))
       .thenReturn(signedUrlResultDTO);
 
-    try (MockedConstruction<RestTemplate> ignored = Mockito.mockConstruction(RestTemplate.class,
-      (mock, context) -> when(mock.getForEntity(signedUrl, byte[].class))
-        .thenThrow(new RestClientException("Error")))) {
-
+    try (
+      MockedConstruction<HttpComponentsClientHttpRequestFactory> ignoredFactory = Mockito.mockConstruction(HttpComponentsClientHttpRequestFactory.class);
+      MockedConstruction<RestTemplate> ignoredRestTemplate = Mockito.mockConstruction(RestTemplate.class,
+        (mock, context) -> when(mock.getForEntity(URI.create(signedUrl), byte[].class))
+          .thenThrow(new RestClientException("Error")))
+    ) {
       RestClientException exception = assertThrows(RestClientException.class, () ->
         ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
