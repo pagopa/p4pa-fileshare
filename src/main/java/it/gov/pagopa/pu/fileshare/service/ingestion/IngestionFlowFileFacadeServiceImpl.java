@@ -18,10 +18,13 @@ import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileReq
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
 import it.gov.pagopa.pu.pagopapayments.dto.generated.SignedUrlResultDTO;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
+import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -29,6 +32,7 @@ import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
@@ -173,8 +177,14 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
   private static FileResourceDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, String signedUrl, IngestionFlowFile ingestionFlowFile) {
     try {
-      RestTemplate restTemplate = new RestTemplate();
-      ResponseEntity<byte[]> response = restTemplate.getForEntity(signedUrl, byte[].class);
+      CloseableHttpClient httpClient = HttpClients.custom()
+        .disableRedirectHandling()
+        .build();
+      HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
+
+      RestTemplate restTemplate = new RestTemplate(factory);
+      URI uri = URI.create(signedUrl);
+      ResponseEntity<byte[]> response = restTemplate.getForEntity(uri, byte[].class);
       if (response.getBody() == null) {
         throw new IllegalStateException(String.format("Downloaded file in the signed url: %s with ingestionFlowFileId: %s is empty", signedUrl, ingestionFlowFileId));
       }
