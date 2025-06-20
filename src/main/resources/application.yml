@@ -126,6 +126,11 @@ rest:
     max-attempts: "\${SEND_NOTIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${SEND_NOTIFICATION_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${SEND_NOTIFICATION_PRINT_BODY_WHEN_ERROR:true}"
+  pagopa-payments:
+    base-url: "\${PAGOPA_PAYMENTS_BASE_URL:}"
+    max-attempts: "\${PAGOPA_PAYMENTS_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${PAGOPA_PAYMENTS_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${PAGOPA_PAYMENTS_PRINT_BODY_WHEN_ERROR:true}"
 
 app:
   fileEncryptPassword: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"
