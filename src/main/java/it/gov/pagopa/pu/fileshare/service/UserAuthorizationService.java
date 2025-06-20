@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.fileshare.service;
 import it.gov.pagopa.pu.fileshare.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paorganization.dto.generated.Organization;
+import it.gov.pagopa.pu.p4paorganization.dto.generated.OrganizationStatus;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
@@ -19,11 +20,12 @@ public class UserAuthorizationService {
 
   public void checkUserAuthorization(Long organizationId, UserInfo user, String accessToken) {
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken);
-    boolean isAuthorized = user.getOrganizations().stream()
+    boolean isAuthorized = OrganizationStatus.ACTIVE.equals(organization.getStatus()) &&
+      user.getOrganizations().stream()
       .anyMatch(o -> o.getOrganizationIpaCode().equals(organization.getIpaCode())
         && !CollectionUtils.isEmpty(o.getRoles()));
     if(!isAuthorized){
-      log.debug("Unauthorized user. [organizationId:{}]", organizationId);
+      log.debug("Unauthorized user. [organizationId:{}, organizationStatus:{}]", organizationId, organization.getStatus());
       throw new AuthorizationDeniedException("Access Denied");
     }
   }

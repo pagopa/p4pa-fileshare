@@ -151,6 +151,38 @@ paths:
           description: Not Found
         '500':
           description: Server Error
+  /organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}/iuv:
+    get:
+      tags:
+        - ingestion-flow-file
+      summary: downloadIUVFile
+      description: Service to retrieve a iuv file
+      operationId: downloadIuvFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: ingestionFlowFileId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not Found
+        '500':
+          description: Server Error
   /organization/{organizationId}/exportfiles/{exportFileId}:
     get:
       tags:
@@ -242,6 +274,7 @@ components:
       enum:
         - RECEIPT
         - RECEIPT_PAGOPA
+        - PAYMENT_NOTIFICATION
         - PAYMENTS_REPORTING
         - PAYMENTS_REPORTING_PAGOPA
         - TREASURY_OPI
@@ -256,6 +289,7 @@ components:
         - DEBT_POSITIONS_TYPE_ORG
         - DEBT_POSITIONS_TYPE_ORG_OPERATORS
         - ASSESSMENTS
+        - ASSESSMENTS_REGISTRY
     FileshareErrorDTO:
       type: object
       required:
@@ -266,6 +300,7 @@ components:
           type: string
           enum:
             - INVALID_FILE
+            - INVALID_FILE_TYPE
             - FILE_UPLOAD_ERROR
             - NOT_FOUND
             - CONFLICT

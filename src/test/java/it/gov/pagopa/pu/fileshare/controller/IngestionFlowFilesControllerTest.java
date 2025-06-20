@@ -296,4 +296,27 @@ class IngestionFlowFilesControllerTest {
       .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
       .andExpect(content().string(fileContent));
   }
+
+  @Test
+  void whenDownloadIuvFileThenOk() throws Exception {
+    Long organizationId = 1L;
+    Long ingestionFlowFileId = 123L;
+    String fileName = "notice.txt";
+    String fileContent = "this is a test file";
+
+    FileResourceDTO fileResourceDTO = new FileResourceDTO();
+    fileResourceDTO.setFileName(fileName);
+    fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
+
+    Mockito.when(serviceMock.downloadIuvFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId), Mockito.any(), Mockito.anyString()))
+      .thenReturn(fileResourceDTO);
+
+    TestUtils.addSampleUserIntoSecurityContext();
+
+    mockMvc.perform(get("/organization/{organizationId}/ingestionflowfiles/{ingestionFlowFileId}/iuv", organizationId, ingestionFlowFileId)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM))
+      .andExpect(status().isOk())
+      .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
+      .andExpect(content().string(fileContent));
+  }
 }

@@ -4,7 +4,8 @@ import it.gov.pagopa.pu.fileshare.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paorganization.dto.generated.Organization;
-import org.assertj.core.api.Assertions;
+import it.gov.pagopa.pu.p4paorganization.dto.generated.OrganizationStatus;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -33,6 +34,7 @@ class UserAuthorizationServiceTest {
   void givenAuthorizedUserWhenUploadIngestionFlowFileThenOk(){
     Organization org = new Organization();
     org.setIpaCode("ORG2");
+    org.setStatus(OrganizationStatus.ACTIVE);
     Organization spyOrg = Mockito.spy(org);
     Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
       .thenReturn(spyOrg);
@@ -46,6 +48,7 @@ class UserAuthorizationServiceTest {
   void givenNoRolesWhenUploadIngestionFlowFileThenAuthorizationDeniedException(){
     Organization org = new Organization();
     org.setIpaCode("ipaCode");
+    org.setStatus(OrganizationStatus.ACTIVE);
     Organization spyOrg = Mockito.spy(org);
     Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
       .thenReturn(spyOrg);
@@ -65,6 +68,7 @@ class UserAuthorizationServiceTest {
   void givenNoMatchingIpaCodeWhenUploadIngestionFlowFileThenAuthorizationDeniedException(){
     Organization org = new Organization();
     org.setIpaCode("ipaCode");
+    org.setStatus(OrganizationStatus.ACTIVE);
     Organization spyOrg = Mockito.spy(org);
     Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
       .thenReturn(spyOrg);
@@ -75,5 +79,20 @@ class UserAuthorizationServiceTest {
     }catch(AuthorizationDeniedException e){
       Mockito.verify(spyOrg, Mockito.times(2)).getIpaCode();
     }
+  }
+
+  @Test
+  void givenNotActiveOrgWhenUploadIngestionFlowFileThenAuthorizationDeniedException(){
+    Organization org = new Organization();
+    org.setIpaCode("ipaCode");
+    org.setStatus(OrganizationStatus.DRAFT);
+    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+      .thenReturn(org);
+
+    UserInfo user = TestUtils.getSampleUser();
+
+    AuthorizationDeniedException result = Assertions.assertThrows(AuthorizationDeniedException.class, () -> userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken));
+
+    Assertions.assertEquals("Access Denied", result.getMessage());
   }
 }
