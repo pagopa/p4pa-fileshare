@@ -1,4 +1,4 @@
-package it.gov.pagopa.pu.fileshare.connector.organization.config;
+package it.gov.pagopa.pu.fileshare.connector.debtpositions.config;
 
 import it.gov.pagopa.pu.fileshare.connector.BaseApiHolderTest;
 import org.junit.jupiter.api.AfterEach;
@@ -13,20 +13,20 @@ import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
 @ExtendWith(MockitoExtension.class)
-class OrganizationApiHolderTest extends BaseApiHolderTest {
+class DebtPositionsApiHolderTest extends BaseApiHolderTest {
   @Mock
   private RestTemplateBuilder restTemplateBuilderMock;
 
-  private OrganizationApisHolder organizationApisHolder;
+  private DebtPositionsApisHolder apisHolder;
 
   @BeforeEach
   void setUp() {
     Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
     Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-    OrganizationApiClientConfig clientConfig = OrganizationApiClientConfig.builder()
+    DebtPositionsApiClientConfig clientConfig = DebtPositionsApiClientConfig.builder()
       .baseUrl("http://example.com")
       .build();
-    organizationApisHolder = new OrganizationApisHolder(clientConfig, restTemplateBuilderMock);
+    apisHolder = new DebtPositionsApisHolder(clientConfig, restTemplateBuilderMock);
   }
 
   @AfterEach
@@ -40,9 +40,9 @@ class OrganizationApiHolderTest extends BaseApiHolderTest {
   @Test
   void whenGetOrganizationEntityControllerApiApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> organizationApisHolder.getOrganizationEntityControllerApi(accessToken)
-        .crudGetOrganization("1"),
+      accessToken -> apisHolder.getReceiptNoPiiEntityControllerApi(accessToken)
+        .crudGetReceiptnopii("1"),
       new ParameterizedTypeReference<>() {},
-      organizationApisHolder::unload);
+      apisHolder::unload);
   }
 }

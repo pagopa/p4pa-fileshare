@@ -4,12 +4,11 @@ import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
 import org.junit.jupiter.api.Assertions;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class TestUtils {
 
@@ -26,21 +25,6 @@ public class TestUtils {
         Assertions.assertNotNull(f.get(o), "The field "+f.getName()+" of the input object of type "+o.getClass()+" is null!");
       },
       f -> !excludedFieldsSet.contains(f.getName()));
-  }
-
-  public static void addSampleUserIntoSecurityContext(){
-    UserInfo userInfo = getSampleUser();
-
-    Collection<? extends GrantedAuthority> authorities = null;
-    if (userInfo.getOrganizationAccess() != null) {
-      authorities = userInfo.getOrganizations().stream()
-        .filter(o -> userInfo.getOrganizationAccess().equals(o.getOrganizationIpaCode()))
-        .flatMap(r -> r.getRoles().stream())
-        .map(SimpleGrantedAuthority::new)
-        .toList();
-    }
-    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, "token", authorities);
-    SecurityContextHolder.getContext().setAuthentication(authToken);
   }
 
   public static UserInfo getSampleAdminUser(){

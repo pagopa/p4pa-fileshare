@@ -1,61 +1,78 @@
 package it.gov.pagopa.pu.fileshare.service;
 
-import static org.mockito.Mockito.mock;
-
 import it.gov.pagopa.pu.fileshare.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidAccessTokenException;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
-import java.util.List;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
+import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.security.authorization.AuthorizationDeniedException;
 
-@EnableConfigurationProperties
+import java.util.List;
+
+import static org.mockito.Mockito.when;
+
+@ExtendWith(MockitoExtension.class)
 class AuthorizationServiceTest {
 
-  @Autowired
+  @InjectMocks
   private AuthorizationService authorizationService;
-
   @Mock
   private AuthnClient authClientImplMock;
 
-  @BeforeEach
-  void setUp(){
-    authClientImplMock = mock(AuthnClient.class);
-    authorizationService = new AuthorizationService(authClientImplMock);
-  }
-
   @Test
   void givenValidAccessTokenWhenValidateTokenThenOk() {
-    // When
     UserInfo ui = new UserInfo();
-    Mockito.when(authClientImplMock.getUserInfo("ACCESSTOKEN")).thenReturn(ui);
+    when(authClientImplMock.getUserInfo("ACCESSTOKEN")).thenReturn(ui);
     UserInfo result = authorizationService.validateToken("ACCESSTOKEN");
 
-    // Then
-    Assertions.assertEquals(
-      ui,
-      result
-    );
+    Assertions.assertEquals(ui, result);
   }
 
   @Test
   void givenInvalidAccessTokenWhenValidateTokenThenInvalidAccessTokenException() {
-    // When
-    Mockito.when(authClientImplMock.getUserInfo("INVALIDACCESSTOKEN")).thenThrow(new InvalidAccessTokenException("Bad Access Token provided"));
+    when(authClientImplMock.getUserInfo("INVALIDACCESSTOKEN")).thenThrow(new InvalidAccessTokenException("Bad Access Token provided"));
     InvalidAccessTokenException result = Assertions.assertThrows(InvalidAccessTokenException.class,
       () -> authorizationService.validateToken("INVALIDACCESSTOKEN"));
 
-    // Then
-    Assertions.assertEquals(
-      "Bad Access Token provided",
-      result.getMessage()
-    );
+    Assertions.assertEquals("Bad Access Token provided", result.getMessage());
+  }
+
+  @Test
+  void givenAdminRoleWhenValidateAdminRoleThenOK() {
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(1L);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(2L);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    authorizationService.validateAdminRole(1L,userInfo);
+  }
+
+  @Test
+  void givenNoAdminRoleWhenValidateAdminRoleThenAuthorizationDeniedException() {
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(1L);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(2L);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    userInfo.setMappedExternalUserId("externalUserId");
+    AuthorizationDeniedException result = Assertions.assertThrows(
+      AuthorizationDeniedException.class,
+      () -> authorizationService.validateAdminRole(2L,userInfo));
+
+    Assertions.assertEquals("Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
   }
 
   @Test
@@ -89,5 +106,213 @@ class AuthorizationServiceTest {
     Assertions.assertFalse(adminRole);
   }
 
+  @Test
+  void givenUserEnabledToOrganizationIdWhenValidateUserForOrganizationIdThenOk() {
+    UserOrganizationRoles userOrgRole = new UserOrganizationRoles();
+    userOrgRole.setRoles(List.of("TEST"));
+    userOrgRole.setOrganizationId(1L);
 
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userOrgRole));
+
+    Assertions.assertDoesNotThrow(() -> AuthorizationService.validateUserForOrganizationId(1L, userInfo));
+  }
+
+  @Test
+  void givenUserNotEnabledToOrganizationIdWhenValidateUserForOrganizationIdThenUnauthorized() {
+    UserOrganizationRoles userOrgRole = new UserOrganizationRoles();
+    userOrgRole.setRoles(List.of("TEST"));
+    userOrgRole.setOrganizationId(1L);
+
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userOrgRole));
+
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> AuthorizationService.validateUserForOrganizationId(2L, userInfo));
+  }
+
+  @Test
+  void givenUserWithEmptyRolesWhenValidateUserForOrganizationIdThenUnauthorized() {
+    UserOrganizationRoles userOrgRole = new UserOrganizationRoles();
+    userOrgRole.setRoles(List.of());
+    userOrgRole.setOrganizationId(1L);
+
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userOrgRole));
+
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> AuthorizationService.validateUserForOrganizationId(1L, userInfo));
+  }
+
+  @Test
+  void givenUserWithNullRolesWhenValidateUserForOrganizationIdThenUnauthorized() {
+    UserOrganizationRoles userOrgRole = new UserOrganizationRoles();
+    userOrgRole.setRoles(null);
+    userOrgRole.setOrganizationId(1L);
+
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userOrgRole));
+
+    Assertions.assertThrows(AuthorizationDeniedException.class, () -> AuthorizationService.validateUserForOrganizationId(1L, userInfo));
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "true, IPA_2, true",  // Valid admin user for the organization
+    "true, IPA_1, false", // User without admin role for the organization
+    "true, IPA_3, false", // Organization not associated with the user
+    "false, IPA_2, false"  // Invalid user (no logged-in user)
+  })
+  void testIsAdminRole(boolean logged, String organizationIpaCode, boolean expectedResult) {
+    // Given
+    UserInfo expectedUserInfo = null;
+    if (logged) {
+      expectedUserInfo = new UserInfo();
+      expectedUserInfo.setMappedExternalUserId("USERID");
+      expectedUserInfo.setOrganizations(List.of(
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("")),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of(AuthorizationService.ROLE_ADMIN))
+      ));
+    }
+
+    // When
+    boolean result = AuthorizationService.isAdminRole(organizationIpaCode, expectedUserInfo);
+
+    // Then
+    Assertions.assertEquals(expectedResult, result);
+  }
+
+
+  @ParameterizedTest
+  @CsvSource(value={
+    "USERID, IPA_1, CF_1",  // Valid organization with fiscal code
+    "USERID, IPA_2, CF_2",  // Another valid organization with fiscal code
+    "USERID, IPA_3, null",  // Organization not associated with the user
+    "null, IPA_1, null",    // Null user
+    "USERID, null, null"    // Null organization IPA code
+  }, nullValues={"null"})
+  void testGetOrgFiscalCodeFromUserInfo(String userId, String organizationIpaCode, String expectedFiscalCode) {
+    // Given
+    UserInfo userInfo = null;
+    if (userId != null) {
+      userInfo = new UserInfo();
+      userInfo.setMappedExternalUserId(userId);
+      userInfo.setOrganizations(List.of(
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+      ));
+    }
+
+    // When
+    String result = AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, organizationIpaCode);
+
+    // Then
+    Assertions.assertEquals(expectedFiscalCode, result);
+  }
+
+  @ParameterizedTest
+  @CsvSource(value={
+    "USERID, IPA_1, 1",
+    "USERID, IPA_2, 2",
+    "USERID, IPA_3, null",
+    "null, IPA_1, null",
+    "USERID, null, null"
+  }, nullValues={"null"})
+  void testGetOrganizationIdFromUserInfo(String userId, String organizationIpaCode, Long expectedId) {
+    // Given
+    UserInfo userInfo = null;
+    if (userId != null) {
+      userInfo = new UserInfo();
+      userInfo.setMappedExternalUserId(userId);
+      userInfo.setOrganizations(List.of(
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+      ));
+    }
+
+    // When
+    Long result = AuthorizationService.getOrganizationIdFromUserInfo(userInfo, organizationIpaCode);
+
+    // Then
+    Assertions.assertEquals(expectedId, result);
+  }
+
+  @ParameterizedTest
+  @CsvSource(value={
+    "USERID, 1, IPA_1",  // Valid organization
+    "USERID, 2, IPA_2",  // Another valid organization
+    "USERID, 3, null",   // Organization not associated with the user
+    "null, 1, null",     // Null user
+    "USERID, null, null" // Null organizationId
+  }, nullValues={"null"})
+  void testGetOrgIpaCodeFromUserInfo(String userId, Long organizationId, String expectedIpaCode) {
+    // Given
+    UserInfo userInfo = null;
+    if (userId != null) {
+      userInfo = new UserInfo();
+      userInfo.setMappedExternalUserId(userId);
+      userInfo.setOrganizations(List.of(
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+      ));
+    }
+
+    // When
+    String result = AuthorizationService.getOrgIpaCodeFromUserInfo(userInfo, organizationId);
+
+    // Then
+    Assertions.assertEquals(expectedIpaCode, result);
+  }
+
+  @ParameterizedTest
+  @CsvSource(value={
+    "USERID, CF_1, 1",
+    "USERID, CF_2, 2",
+    "USERID, CF_3, null",
+    "null, CF_1, null",
+    "USERID, null, null"
+  }, nullValues={"null"})
+  void testGetOrganizationIdFromOrgFiscalCode(String userId, String organizationFiscalCode, Long expectedId) {
+    // Given
+    UserInfo userInfo = null;
+    if (userId != null) {
+      userInfo = new UserInfo();
+      userInfo.setMappedExternalUserId(userId);
+      userInfo.setOrganizations(List.of(
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+      ));
+    }
+
+    // When
+    Long result = AuthorizationService.getOrganizationIdFromOrgFiscalCode(userInfo, organizationFiscalCode);
+
+    // Then
+    Assertions.assertEquals(expectedId, result);
+  }
+
+  @ParameterizedTest
+  @CsvSource(value={
+    "USERID, 1, CF_1",  // Valid organization
+    "USERID, 2, CF_2",  // Another valid organization
+    "USERID, 3, null",   // Organization not associated with the user
+    "null, 1, null",     // Null user
+    "USERID, null, null" // Null organizationId
+  }, nullValues={"null"})
+  void testOrgFiscalCodeFromUserInfo(String userId, Long organizationId, String organizationFiscalCode) {
+    // Given
+    UserInfo userInfo = null;
+    if (userId != null) {
+      userInfo = new UserInfo();
+      userInfo.setMappedExternalUserId(userId);
+      userInfo.setOrganizations(List.of(
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+      ));
+    }
+
+    // When
+    String result = AuthorizationService.getOrgFiscalCodeFromUserInfo(userInfo, organizationId);
+
+    // Then
+    Assertions.assertEquals(organizationFiscalCode, result);
+  }
 }

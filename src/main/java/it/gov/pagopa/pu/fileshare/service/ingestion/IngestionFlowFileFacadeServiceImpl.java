@@ -42,6 +42,7 @@ import static it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType.DP_
 @Slf4j
 @Service
 public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFacadeService {
+
   private final UserAuthorizationService userAuthorizationService;
   private final FileService fileService;
   private final FileStorerService fileStorerService;

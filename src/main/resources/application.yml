@@ -133,6 +133,11 @@ rest:
     max-attempts: "\${PAGOPA_PAYMENTS_MAX_ATTEMPTS:3}" # It's counting also the first attempt
     wait-time-millis: "\${PAGOPA_PAYMENTS_WAIT_TIME_MILLIS:500}"
     print-body-when-error: "\${PAGOPA_PAYMENTS_PRINT_BODY_WHEN_ERROR:true}"
+  debt-positions:
+    base-url: "\${DEBT_POSITIONS_BASE_URL:}"
+    max-attempts: "\${DEBT_POSITIONS_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${DEBT_POSITIONS_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${DEBT_POSITIONS_PRINT_BODY_WHEN_ERROR:true}"
 
 app:
   fileEncryptPassword: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"

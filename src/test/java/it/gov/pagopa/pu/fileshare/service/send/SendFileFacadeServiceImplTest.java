@@ -4,7 +4,7 @@ import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationServic
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
-import it.gov.pagopa.pu.fileshare.exception.custom.SendNotificationOrganizationMissMatchException;
+import it.gov.pagopa.pu.fileshare.exception.custom.OrganizationMissMatchException;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
@@ -112,7 +112,7 @@ class SendFileFacadeServiceImplTest {
       .thenReturn(sendNotificationDTO);
 
     // When, Then
-    Assertions.assertThrows(SendNotificationOrganizationMissMatchException.class, () -> sendFileFacadeService.uploadSendFile(
+    Assertions.assertThrows(OrganizationMissMatchException.class, () -> sendFileFacadeService.uploadSendFile(
       ORGANIZATION_ID, SEND_NOTIFICATION_ID, null, multipartFile, userInfo, ACCESS_TOKEN
     ));
   }

@@ -35,7 +35,7 @@ import java.util.stream.Collectors;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class FileshareExceptionHandler {
 
-  @ExceptionHandler({IngestionFlowFileNotFoundException.class, SendNotificationOrganizationMissMatchException.class, FileNotFoundException.class})
+  @ExceptionHandler({IngestionFlowFileNotFoundException.class, OrganizationMissMatchException.class, FileNotFoundException.class, ReceiptNotFoundException.class})
   public ResponseEntity<FileshareErrorDTO> handleNotFoundException(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
   }
