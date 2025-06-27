@@ -4,12 +4,11 @@ import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
 import org.junit.jupiter.api.Assertions;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.GrantedAuthority;
-import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.context.SecurityContextHolder;
 
-import java.util.*;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
 public class TestUtils {
 
@@ -28,21 +27,6 @@ public class TestUtils {
       f -> !excludedFieldsSet.contains(f.getName()));
   }
 
-  public static void addSampleUserIntoSecurityContext(){
-    UserInfo userInfo = getSampleUser();
-
-    Collection<? extends GrantedAuthority> authorities = null;
-    if (userInfo.getOrganizationAccess() != null) {
-      authorities = userInfo.getOrganizations().stream()
-        .filter(o -> userInfo.getOrganizationAccess().equals(o.getOrganizationIpaCode()))
-        .flatMap(r -> r.getRoles().stream())
-        .map(SimpleGrantedAuthority::new)
-        .toList();
-    }
-    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, "token", authorities);
-    SecurityContextHolder.getContext().setAuthentication(authToken);
-  }
-
   public static UserInfo getSampleAdminUser(){
     return getSampleUser(true, AuthorizationService.ROLE_ADMIN);
   }
@@ -56,12 +40,14 @@ public class TestUtils {
       new UserOrganizationRoles()
         .operatorId("operator1")
         .organizationId(1L)
+        .organizationFiscalCode("ORG_FC1")
         .organizationIpaCode("ORG")
         .email("email1@example.com")
         .roles(List.of(role)),
       new UserOrganizationRoles()
         .operatorId("operator2")
         .organizationId(2L)
+        .organizationFiscalCode("ORG_FC2")
         .organizationIpaCode("ORG2")
         .email("email2@example.com")
         .roles(List.of(role))

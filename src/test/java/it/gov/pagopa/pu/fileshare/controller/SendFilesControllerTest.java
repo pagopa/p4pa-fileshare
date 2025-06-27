@@ -1,14 +1,13 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
 import it.gov.pagopa.pu.fileshare.controller.generated.SendFilesApi;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
+import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.fileshare.service.send.SendFileFacadeService;
-import it.gov.pagopa.pu.fileshare.util.TestUtils;
+import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +20,10 @@ import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+
 @WebMvcTest(value = SendFilesApi.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
   classes = JwtAuthenticationFilter.class))
 @AutoConfigureMockMvc(addFilters = false)
@@ -30,6 +33,19 @@ class SendFilesControllerTest {
   private MockMvc mockMvc;
   @MockitoBean
   private SendFileFacadeService serviceMock;
+
+  private final String accessToken = "ACCESSTOKEN";
+  private final UserInfo loggedUser = new UserInfo();
+
+  @BeforeEach
+  void init(){
+    SecurityUtilsTest.configureSecurityContext(accessToken, loggedUser);
+  }
+
+  @AfterEach
+  void clear(){
+    SecurityUtilsTest.clearSecurityContext();
+  }
 
   @Test
   void givenStartNotificationRequestThenReturnWorkFlowId() throws Exception {
@@ -42,12 +58,12 @@ class SendFilesControllerTest {
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
-    TestUtils.addSampleUserIntoSecurityContext();
 
     StartNotificationResponse expectedResponse = new StartNotificationResponse("ID", "RUNID");
 
     Mockito.when(serviceMock.uploadSendFile(Mockito.eq(organizationId),
-        Mockito.eq(sendNotificationId), Mockito.eq(digest), Mockito.eq(file), Mockito.any(), Mockito.anyString()))
+        Mockito.eq(sendNotificationId), Mockito.eq(digest), Mockito.eq(file),
+        Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(expectedResponse);
 
     mockMvc.perform(multipart("/organization/{organizationId}/send-files/{sendNotificationId}",organizationId, sendNotificationId)
@@ -69,10 +85,10 @@ class SendFilesControllerTest {
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
-    TestUtils.addSampleUserIntoSecurityContext();
 
     Mockito.when(serviceMock.uploadSendFile(Mockito.eq(organizationId),
-        Mockito.eq(sendNotificationId), Mockito.eq(digest), Mockito.eq(file), Mockito.any(), Mockito.anyString()))
+        Mockito.eq(sendNotificationId), Mockito.eq(digest), Mockito.eq(file),
+        Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(null);
 
     mockMvc.perform(multipart("/organization/{organizationId}/send-files/{sendNotificationId}",organizationId, sendNotificationId)

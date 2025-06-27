@@ -62,6 +62,8 @@ See [log configured pattern](/src/main/resources/logback-spring.xml).
 * [p4pa-send-notification](https://github.com/pagopa/p4pa-send-notification):
   * To validate SEND file (sha);
   * To start SEND notification process.
+* [p4pa-debt-positions](https://github.com/pagopa/p4pa-debt-positions):
+  * To retrieve RT file path.
 
 ## 🔧 Configuration
 
@@ -124,6 +126,10 @@ See [application.yml](src/main/resources/application.yml) for each configurable 
 | SEND_NOTIFICATION_MAX_ATTEMPTS           | SendNotification API max attempts                   | 3       |
 | SEND_NOTIFICATION_WAIT_TIME_MILLIS       | SendNotification retry waiting time (milliseconds)  | 500     |
 | SEND_NOTIFICATION_PRINT_BODY_WHEN_ERROR  | To print body when an error occurs                  | true    |
+| DEBT_POSITIONS_BASE_URL                  | DebtPositions microservice URL                      |         |
+| DEBT_POSITIONS_MAX_ATTEMPTS              | DebtPositions API max attempts                      | 3       |
+| DEBT_POSITIONS_WAIT_TIME_MILLIS          | DebtPositions retry waiting time (milliseconds)     | 500     |
+| DEBT_POSITIONS_PRINT_BODY_WHEN_ERROR     | To print body when an error occurs                  | true    |
 
 #### 🔑 keys
 | ENV                   | DESCRIPTION                                               | DEFAULT |

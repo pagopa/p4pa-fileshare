@@ -7,11 +7,8 @@ import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.dto.generated.UploadIngestionFlowFileResponseDTO;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtils;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
-import org.springframework.core.io.InputStreamResource;
+import it.gov.pagopa.pu.fileshare.util.Utilities;
 import org.springframework.core.io.Resource;
-import org.springframework.http.ContentDisposition;
-import org.springframework.http.HttpHeaders;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
@@ -36,7 +33,7 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
   public ResponseEntity<Resource> downloadIngestionFlowFile(Long organizationId, Long ingestionFlowFileId) {
     FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
 
-    return buildResourceResponseEntity(fileResourceDTO);
+    return Utilities.buildResourceResponseEntity(fileResourceDTO);
   }
 
   @Override
@@ -44,7 +41,7 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
     FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService.downloadIngestionFlowErrorsFile(
       organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
 
-    return buildResourceResponseEntity(fileResourceDTO);
+    return Utilities.buildResourceResponseEntity(fileResourceDTO);
   }
 
   @Override
@@ -52,7 +49,7 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
     FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService
       .downloadNotice(organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
 
-    return buildResourceResponseEntity(fileResourceDTO);
+    return Utilities.buildResourceResponseEntity(fileResourceDTO);
   }
 
   @Override
@@ -60,21 +57,6 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
     FileResourceDTO fileResourceDTO = ingestionFlowFileFacadeService
       .downloadIuvFile(organizationId, ingestionFlowFileId, SecurityUtils.getLoggedUser(), SecurityUtils.getAccessToken());
 
-    return buildResourceResponseEntity(fileResourceDTO);
-  }
-
-  private ResponseEntity<Resource> buildResourceResponseEntity(FileResourceDTO fileResourceDTO) {
-    Resource fileResource = new InputStreamResource(
-      fileResourceDTO.getResourceStream());
-
-    HttpHeaders headers = new HttpHeaders();
-    headers.setContentDisposition(ContentDisposition.attachment()
-      .filename(fileResourceDTO.getFileName())
-      .build());
-
-    return ResponseEntity.ok()
-      .contentType(MediaType.APPLICATION_OCTET_STREAM)
-      .headers(headers)
-      .body(fileResource);
+    return Utilities.buildResourceResponseEntity(fileResourceDTO);
   }
 }
