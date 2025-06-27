@@ -36,7 +36,7 @@ public class ReceiptRtRetrieverServiceImpl implements ReceiptRtRetrieverService 
     if(receipt == null){
       throw new ReceiptNotFoundException("Cannot find receipt having id " + receiptId);
     }
-    if(receipt.getOrgFiscalCode().equals(AuthorizationService.getOrgFiscalCodeFromUserInfo(user, organizationId))){
+    if(!receipt.getOrgFiscalCode().equals(AuthorizationService.getOrgFiscalCodeFromUserInfo(user, organizationId))){
       throw new OrganizationMissMatchException("Requested receipt ("+ receiptId + ") is not related to the provided organization ("+organizationId+")");
     }
 
