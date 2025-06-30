@@ -106,8 +106,8 @@ class FileshareExceptionHandlerTest {
   }
 
   @Test
-  void handleSendNotificationOrganizationMissMatchException() throws Exception {
-    doThrow(new SendNotificationOrganizationMissMatchException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+  void handleOrganizationMissMatchException() throws Exception {
+    doThrow(new OrganizationMissMatchException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -307,6 +307,16 @@ class FileshareExceptionHandlerTest {
   @Test
   void handleIngestionFlowFileNotFoundException() throws Exception {
     doThrow(new IngestionFlowFileNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isNotFound())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.NOT_FOUND.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"));
+  }
+
+  @Test
+  void handleReceiptNotFoundException() throws Exception {
+    doThrow(new ReceiptNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())

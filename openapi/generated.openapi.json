@@ -21,6 +21,9 @@
   }, {
     "name" : "ingestion-flow-file",
     "description" : "the ingestion-flow-file API"
+  }, {
+    "name" : "receipt",
+    "description" : "the receipt API"
   } ],
   "paths" : {
     "/organization/{organizationId}/send-files/{sendNotificationId}" : {
@@ -182,6 +185,58 @@
               "application/json" : {
                 "schema" : {
                   "$ref" : "#/components/schemas/FileshareErrorDTO"
+                }
+              }
+            }
+          }
+        },
+        "security" : [ {
+          "BearerAuth" : [ ]
+        } ]
+      }
+    },
+    "/organization/{organizationId}/rt/{receiptId}" : {
+      "get" : {
+        "tags" : [ "receipt" ],
+        "summary" : "download RT",
+        "description" : "Service to retrieve the XML RT file",
+        "operationId" : "downloadRt",
+        "parameters" : [ {
+          "name" : "organizationId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        }, {
+          "name" : "receiptId",
+          "in" : "path",
+          "required" : true,
+          "schema" : {
+            "type" : "integer",
+            "format" : "int64"
+          }
+        } ],
+        "responses" : {
+          "200" : {
+            "description" : "OK",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
+                }
+              }
+            }
+          },
+          "404" : {
+            "description" : "Not Found",
+            "content" : {
+              "application/octet-stream" : {
+                "schema" : {
+                  "type" : "string",
+                  "format" : "binary"
                 }
               }
             }

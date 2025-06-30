@@ -14,6 +14,7 @@ import org.springframework.core.Ordered;
 import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -35,7 +36,7 @@ import java.util.stream.Collectors;
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class FileshareExceptionHandler {
 
-  @ExceptionHandler({IngestionFlowFileNotFoundException.class, SendNotificationOrganizationMissMatchException.class, FileNotFoundException.class})
+  @ExceptionHandler({IngestionFlowFileNotFoundException.class, OrganizationMissMatchException.class, FileNotFoundException.class, ReceiptNotFoundException.class})
   public ResponseEntity<FileshareErrorDTO> handleNotFoundException(RuntimeException ex, HttpServletRequest request) {
     return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
   }
@@ -103,6 +104,7 @@ public class FileshareExceptionHandler {
 
     return ResponseEntity
       .status(httpStatus)
+      .contentType(MediaType.APPLICATION_JSON)
       .body(new FileshareErrorDTO(errorEnum, message));
   }
 

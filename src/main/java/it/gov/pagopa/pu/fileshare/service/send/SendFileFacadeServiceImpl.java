@@ -4,7 +4,7 @@ import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationServic
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
-import it.gov.pagopa.pu.fileshare.exception.custom.SendNotificationOrganizationMissMatchException;
+import it.gov.pagopa.pu.fileshare.exception.custom.OrganizationMissMatchException;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
@@ -60,7 +60,7 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
 
     SendNotificationDTO sendNotification = notificationService.getSendNotification(sendNotificationId, accessToken);
     if (!sendNotification.getOrganizationId().equals(organizationId)) {
-      throw new SendNotificationOrganizationMissMatchException("Requested sendNotificationId (" + sendNotificationId + ") not exists under requested organization " + organizationId);
+      throw new OrganizationMissMatchException("Requested sendNotificationId (" + sendNotificationId + ") not exists under requested organization " + organizationId);
     }
 
     fileService.validateFile(sendFile);

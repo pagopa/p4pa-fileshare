@@ -17,7 +17,7 @@ import org.springframework.web.client.HttpClientErrorException;
 @ExtendWith(MockitoExtension.class)
 class OrganizationClientTest {
   @Mock
-  private OrganizationApisHolder organizationApisHolder;
+  private OrganizationApisHolder organizationApisHolderMock;
   @Mock
   private OrganizationEntityControllerApi organizationEntityControllerApiMock;
 
@@ -25,13 +25,14 @@ class OrganizationClientTest {
 
   @BeforeEach
   void setUp() {
-    organizationClient = new OrganizationClient(organizationApisHolder);
+    organizationClient = new OrganizationClient(organizationApisHolderMock);
   }
 
   @AfterEach
   void verifyNoMoreInteractions() {
     Mockito.verifyNoMoreInteractions(
-      organizationApisHolder
+      organizationApisHolderMock,
+      organizationEntityControllerApiMock
     );
   }
 
@@ -42,7 +43,7 @@ class OrganizationClientTest {
     String accessToken = "ACCESSTOKEN";
     Organization expectedResult = new Organization();
 
-    Mockito.when(organizationApisHolder.getOrganizationEntityControllerApi(accessToken))
+    Mockito.when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
       .thenReturn(organizationEntityControllerApiMock);
     Mockito.when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
       .thenReturn(expectedResult);
@@ -60,7 +61,7 @@ class OrganizationClientTest {
     long organizationId = 1L;
     String accessToken = "ACCESSTOKEN";
 
-    Mockito.when(organizationApisHolder.getOrganizationEntityControllerApi(accessToken))
+    Mockito.when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
       .thenReturn(organizationEntityControllerApiMock);
     Mockito.when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
       .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
