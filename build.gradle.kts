@@ -277,7 +277,7 @@ tasks.register<GenerateTask>("openApiGeneratePAGOPAPAYMENTS") {
   description = "openapi"
 
   generatorName.set("java")
-  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-pagopa-payments/refs/heads/develop/openapi/p4pa-pagopa-payments.openapi.yaml")
+  remoteInputSpec.set("https://raw.githubusercontent.com/pagopa/p4pa-pagopa-payments/refs/heads/$targetEnv/openapi/p4pa-pagopa-payments.openapi.yaml")
   outputDir.set("$projectDir/build/generated")
   invokerPackage.set("it.gov.pagopa.pu.pagopapayments.generated")
   apiPackage.set("it.gov.pagopa.pu.pagopapayments.client.generated")
