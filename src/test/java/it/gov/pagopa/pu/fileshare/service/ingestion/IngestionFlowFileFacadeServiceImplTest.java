@@ -108,7 +108,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     long organizationId = 1L;
     String receiptFilePath = "/receipt";
     String filePath = "/filepath";
-    String fileName = "fileName.txt";
+    String fileName = "fileName1_1.txt";
     SaveFileResultDTO saveFileResult = new SaveFileResultDTO(filePath, "this is a test file".getBytes());
     MockMultipartFile file = new MockMultipartFile(
       "ingestionFlowFile",
@@ -132,7 +132,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
     when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(null, file,
-      IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, null))
+      IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, fileVersion))
       .thenReturn(ingestionFlowFileRequestDTO);
     when(ingestionFlowFileServiceMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
       .thenReturn(expectedIngestionFlowFileId);
