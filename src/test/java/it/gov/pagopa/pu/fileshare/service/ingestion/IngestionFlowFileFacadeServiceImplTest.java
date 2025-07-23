@@ -118,11 +118,17 @@ class IngestionFlowFileFacadeServiceImplTest {
     );
     Long expectedIngestionFlowFileId = 1L;
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
+    String fileVersion = "1.1";
+    List<String> versionList = List.of("1.0", "1.1", "1.2", "1.3");
 
     when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
     when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
       .thenReturn(alreadyUploaded);
+    when(ingestionFlowFileServiceMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT, accessToken))
+      .thenReturn(versionList);
+    when(fileServiceMock.validateVersionFromIngestionFlowFilename(versionList, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT))
+      .thenReturn(fileVersion);
     when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
     when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(null, file,
@@ -169,7 +175,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(false);
     when(ingestionFlowFileServiceMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
       .thenReturn(versionList);
-    when(fileServiceMock.validateVersionFromIngestionFlowFilename(versionList, fileName))
+    when(fileServiceMock.validateVersionFromIngestionFlowFilename(versionList, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS))
       .thenReturn(fileVersion);
     when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
@@ -209,7 +215,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(ingestionFlowFileServiceMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
       .thenReturn(List.of("1.0", "1.1", "1.3", "1.4", "2.0"));
     Mockito.doThrow(new InvalidFileException("Invalid file version"))
-      .when(fileServiceMock).validateVersionFromIngestionFlowFilename(versionList, fileName);
+      .when(fileServiceMock).validateVersionFromIngestionFlowFilename(versionList, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
     try {
       ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, fileName, file, null, TestUtils.getSampleUser(), accessToken);

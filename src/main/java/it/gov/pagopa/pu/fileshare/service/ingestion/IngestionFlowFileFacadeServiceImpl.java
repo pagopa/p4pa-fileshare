@@ -38,6 +38,7 @@ import java.util.List;
 import java.util.Objects;
 
 import static it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType.DP_INSTALLMENTS;
+import static it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType.RECEIPT;
 
 @Slf4j
 @Service
@@ -111,7 +112,12 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
         IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);
 
-      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName);
+      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+    } else if (ingestionFlowFileType.equals(RECEIPT)) {
+      List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
+        IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT, accessToken);
+
+      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT);
     }
 
     String filePath = fileStorerService.saveToSharedFolder(organizationId, multipartFile,

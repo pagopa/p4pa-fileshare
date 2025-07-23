@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service;
 
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -67,16 +68,25 @@ class FileServiceTest {
   void whenValidateVersionFromIngestionFlowFilenameThenOk(){
     String fileName = "fileName2_0.txt";
 
-    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName);
+    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
     assertEquals("2.0", version);
+  }
+
+  @Test
+  void whenValidateVersionRECEIPTFromIngestionFlowFilenameThenOk(){
+    String fileName = "fileName1_3.txt";
+
+    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT);
+
+    assertEquals("1.3", version);
   }
 
   @Test
   void givenEngVersionWhenValidateVersionFromIngestionFlowFilenameThenOk(){
     String fileName = "fileName2_0-eng.txt";
 
-    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName);
+    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
     assertEquals("2.0-eng", version);
   }
@@ -86,8 +96,18 @@ class FileServiceTest {
     String fileName = "fileName.txt";
 
     InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
-      fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName));
+      fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS));
 
     assertEquals("File name must contain a valid version: [1_0, 1_1, 1_3, 1_4, 2_0]", ex.getMessage());
+  }
+
+  @Test
+  void givenInvalidFilenameWhenValidateVersionRECEIPTFromIngestionFlowFilenameThenInvalidFileException(){
+    String fileName = "fileName.txt";
+
+    InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
+      fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT));
+
+    assertEquals("File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]", ex.getMessage());
   }
 }
