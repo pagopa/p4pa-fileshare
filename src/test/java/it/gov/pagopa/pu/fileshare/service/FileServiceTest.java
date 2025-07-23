@@ -93,6 +93,16 @@ class FileServiceTest {
   }
 
   @Test
+  void givenEngVersionAndRECEIPTWhenValidateVersionFromIngestionFlowFilenameThenOk(){
+    String fileName = "fileName2_0-eng.txt";
+
+    InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
+      fileService.validateVersionFromIngestionFlowFilename(VERSION_RECEIPT_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT));
+
+    assertEquals("File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]", ex.getMessage());
+  }
+
+  @Test
   void givenInvalidFilenameWhenValidateVersionFromIngestionFlowFilenameThenInvalidFileException(){
     String fileName = "fileName.txt";
 

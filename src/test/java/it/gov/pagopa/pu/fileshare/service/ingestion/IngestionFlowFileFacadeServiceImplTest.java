@@ -195,6 +195,45 @@ class IngestionFlowFileFacadeServiceImplTest {
   }
 
   @Test
+  void givenFileTypeRECEIPTPAGOPAWhenUploadIngestionFlowFileThenOk() {
+
+    String accessToken = "TOKEN";
+    long organizationId = 1L;
+    String receiptFilePath = "/receipt-pagopa";
+    String filePath = "/filepath";
+    String fileName = "fileName1_1.txt";
+    SaveFileResultDTO saveFileResult = new SaveFileResultDTO(filePath, "this is a test file".getBytes());
+    MockMultipartFile file = new MockMultipartFile(
+      "ingestionFlowFile",
+      "test.zip",
+      MediaType.TEXT_PLAIN_VALUE,
+      "this is a test file".getBytes()
+    );
+    Long expectedIngestionFlowFileId = 1L;
+    IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
+
+    when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT_PAGOPA))
+      .thenReturn(receiptFilePath);
+    when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
+      .thenReturn(false);
+    when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
+      .thenReturn(saveFileResult);
+    when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(null, file,
+      IngestionFlowFileType.RECEIPT_PAGOPA, FileOrigin.PAGOPA, organizationId, filePath, null))
+      .thenReturn(ingestionFlowFileRequestDTO);
+    when(ingestionFlowFileServiceMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
+      .thenReturn(expectedIngestionFlowFileId);
+
+    Long result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT_PAGOPA, FileOrigin.PAGOPA,
+      fileName, file, null, TestUtils.getSampleUser(), accessToken);
+
+    Assertions.assertSame(expectedIngestionFlowFileId, result);
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
+    Mockito.verify(fileServiceMock).validateFile(file);
+
+  }
+
+  @Test
   void givenFileTypeDPINSTALLMENTSWithFileNameWithoutValidVersionWhenUploadIngestionFlowFileThenThrowInvalidFileException() {
     String accessToken = "TOKEN";
     long organizationId = 1L;
