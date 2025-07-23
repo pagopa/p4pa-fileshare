@@ -107,19 +107,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       duplicateIngestionFlowFileRequestHandlerService.handleDuplicateFile(organizationId, archivedSubFolder, ingestionFlowFilePath, fileName, accessToken);
     }
 
-    String fileVersion = null;
-    if (ingestionFlowFileType.equals(DP_INSTALLMENTS)) {
-      List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
-        IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);
-
-      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
-    } else if (ingestionFlowFileType.equals(RECEIPT)) {
-      List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
-        IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT, accessToken);
-
-      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT);
-    }
-
+    String fileVersion = getFileVersion(ingestionFlowFileType, fileName, accessToken);
     String filePath = fileStorerService.saveToSharedFolder(organizationId, multipartFile,
       ingestionFlowFilePath, fileName).getRelativePath();
 
@@ -167,7 +155,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   public FileResourceDTO downloadIuvFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
     IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
 
-    if(!IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.equals(ingestionFlowFile.getIngestionFlowFileType())) {
+    if (!IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.equals(ingestionFlowFile.getIngestionFlowFileType())) {
       throw new InvalidFileTypeException(String.format("It's not possible to download IUV file for ingestionFlowFileId: %s. Expected type: %s, found: %s",
         ingestionFlowFileId,
         DP_INSTALLMENTS,
@@ -240,5 +228,21 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   private Path getIuvZipFilePath(IngestionFlowFile ingestionFlowFile, String iuvFileName) {
     return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder,
       ingestionFlowFile.getFilePathName(), iuvFileName).getParent();
+  }
+
+  private String getFileVersion(IngestionFlowFileType ingestionFlowFileType, String fileName, String accessToken) {
+    String fileVersion = null;
+    if (ingestionFlowFileType.equals(DP_INSTALLMENTS)) {
+      List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
+        IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);
+
+      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
+    } else if (ingestionFlowFileType.equals(RECEIPT)) {
+      List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
+        IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT, accessToken);
+
+      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT);
+    }
+    return fileVersion;
   }
 }
