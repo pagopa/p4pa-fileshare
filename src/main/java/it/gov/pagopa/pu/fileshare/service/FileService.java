@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service;
 
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
@@ -29,10 +30,10 @@ public class FileService {
     }
   }
 
-  public String validateVersionFromIngestionFlowFilename(List<String> fileVersions, String fileName) {
+  public String validateVersionFromIngestionFlowFilename(List<String> fileVersions, String fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum typeEnum) {
     // This english version exists only for test purpose
     String engVersion = "2_0-eng";
-    if (fileName.contains(engVersion)) {
+    if (fileName.contains(engVersion) && typeEnum.equals(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS)) {
       return replaceCharVersion(engVersion, "_", ".");
     }
     return fileVersions.stream()
