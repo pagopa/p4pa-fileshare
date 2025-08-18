@@ -97,6 +97,7 @@ folders:
     TREASURY_CSV_COMPLETE: "data/treasury/csv_complete"
     ASSESSMENTS: "data/assessments"
     ASSESSMENTS_REGISTRY: "data/assessments_registry"
+    SEND_NOTIFICATION: "data/send_notification"
   send-file-folder: "data/send"
 
 rest:

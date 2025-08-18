@@ -320,6 +320,7 @@ components:
         - DEBT_POSITIONS_TYPE_ORG_OPERATORS
         - ASSESSMENTS
         - ASSESSMENTS_REGISTRY
+        - SEND_NOTIFICATION
     FileshareErrorDTO:
       type: object
       required:
