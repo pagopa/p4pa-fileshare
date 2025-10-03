@@ -6,7 +6,10 @@ import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileS
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.fileshare.exception.custom.*;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
+import it.gov.pagopa.pu.fileshare.exception.custom.IngestionFlowFileNotFoundException;
+import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileTypeException;
+import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import it.gov.pagopa.pu.fileshare.mapper.IngestionFlowFileDTOMapper;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileService;
@@ -35,10 +38,11 @@ import java.io.InputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
-import static it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType.DP_INSTALLMENTS;
-import static it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType.RECEIPT;
+import static it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType.*;
+import static java.util.Map.entry;
 
 @Slf4j
 @Service
@@ -54,6 +58,23 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   private final String errorsSubFolder;
   private final DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerService;
   private final PrintPaymentNoticeService printPaymentNoticeService;
+
+  private static final Map<IngestionFlowFileType, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum> fileTypeMapping = Map.ofEntries(
+    entry(DP_INSTALLMENTS, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS),
+    entry(RECEIPT, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT),
+    entry(PAYMENTS_REPORTING, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.PAYMENTS_REPORTING),
+    entry(TREASURY_OPI, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI),
+    entry(TREASURY_POSTE, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_POSTE),
+    entry(TREASURY_CSV, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_CSV),
+    entry(PAYMENT_NOTIFICATION, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION),
+    entry(ORGANIZATIONS, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.ORGANIZATIONS),
+    entry(DEBT_POSITIONS_TYPE, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DEBT_POSITIONS_TYPE),
+    entry(DEBT_POSITIONS_TYPE_ORG, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DEBT_POSITIONS_TYPE_ORG),
+    entry(SEND_NOTIFICATION, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.SEND_NOTIFICATION),
+    entry(ASSESSMENTS_REGISTRY, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.ASSESSMENTS_REGISTRY),
+    entry(ASSESSMENTS, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.ASSESSMENTS),
+    entry(ORGANIZATIONS_SIL_SERVICE, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.ORGANIZATIONS_SIL_SERVICE)
+  );
 
   public IngestionFlowFileFacadeServiceImpl(
     @Value("${folders.process-target-sub-folders.archive}") String archivedSubFolder,
@@ -231,18 +252,13 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   }
 
   private String getFileVersion(IngestionFlowFileType ingestionFlowFileType, String fileName, String accessToken) {
-    String fileVersion = null;
-    if (ingestionFlowFileType.equals(DP_INSTALLMENTS)) {
-      List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
-        IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);
+    IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum mappedType = fileTypeMapping.get(ingestionFlowFileType);
 
-      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
-    } else if (ingestionFlowFileType.equals(RECEIPT)) {
-      List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(
-        IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT, accessToken);
-
-      fileVersion = fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT);
+    if (mappedType == null) {
+      return null;
     }
-    return fileVersion;
+
+    List<String> fileVersions = ingestionFlowFileService.getIngestionFlowFileVersion(mappedType, accessToken);
+    return fileService.validateVersionFromIngestionFlowFilename(fileVersions, fileName, mappedType);
   }
 }
