@@ -68,6 +68,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     entry(TREASURY_POSTE, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_POSTE),
     entry(TREASURY_CSV, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_CSV),
     entry(TREASURY_CSV_COMPLETE, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_CSV_COMPLETE),
+    entry(TREASURY_XLS, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_XLS),
     entry(PAYMENT_NOTIFICATION, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.PAYMENT_NOTIFICATION),
     entry(ORGANIZATIONS, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.ORGANIZATIONS),
     entry(DEBT_POSITIONS_TYPE, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DEBT_POSITIONS_TYPE),
