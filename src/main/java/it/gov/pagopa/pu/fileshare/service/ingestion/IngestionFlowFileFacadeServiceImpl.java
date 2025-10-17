@@ -62,8 +62,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   private static final Map<IngestionFlowFileType, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum> fileTypeMapping = Map.ofEntries(
     entry(DP_INSTALLMENTS, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS),
     entry(RECEIPT, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT),
-    entry(PAYMENTS_REPORTING, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.PAYMENTS_REPORTING),
-    entry(PAYMENTS_REPORTING_PAGOPA, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.PAYMENTS_REPORTING_PAGOPA),
     entry(TREASURY_OPI, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_OPI),
     entry(TREASURY_POSTE, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_POSTE),
     entry(TREASURY_CSV, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.TREASURY_CSV),
