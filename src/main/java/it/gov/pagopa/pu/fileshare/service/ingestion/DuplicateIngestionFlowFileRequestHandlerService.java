@@ -12,10 +12,16 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Set;
 
 @Service
 @Slf4j
 public class DuplicateIngestionFlowFileRequestHandlerService {
+
+  private static final Set<IngestionFlowFileStatus> RETRYABLE_STATUSES = Set.of(
+    IngestionFlowFileStatus.ERROR,
+    IngestionFlowFileStatus.WARNING
+  );
 
   private final IngestionFlowFileService ingestionFlowFileService;
   private final FileStorerService fileStorerService;
@@ -29,8 +35,8 @@ public class DuplicateIngestionFlowFileRequestHandlerService {
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
     String newFileName;
     if (ingestionFlowFile != null) {
-      if (IngestionFlowFileStatus.ERROR.equals(ingestionFlowFile.getStatus())) {
-        String fileNameSuffix = "_ERROR_" + ingestionFlowFile.getIngestionFlowFileId();
+      if (RETRYABLE_STATUSES.contains(ingestionFlowFile.getStatus())) {
+        String fileNameSuffix = "_" + ingestionFlowFile.getStatus() + "_" + ingestionFlowFile.getIngestionFlowFileId();
         newFileName = archiveNotCorrectedHandledFile(organizationId, archivedSubFolder, filePathName, fileName, fileNameSuffix);
 
         String newDiscardFileName = ingestionFlowFile.getDiscardFileName();
