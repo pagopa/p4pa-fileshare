@@ -154,6 +154,7 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     long ingestionFlowFileId = System.currentTimeMillis();
 
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
+    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
     ingestionFlowFile.setIngestionFlowFileId(ingestionFlowFileId);
 
     Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
