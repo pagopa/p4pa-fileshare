@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonMappingException;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.*;
+import it.gov.pagopa.pu.fileshare.util.Utilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
@@ -105,7 +106,7 @@ public class FileshareExceptionHandler {
     return ResponseEntity
       .status(httpStatus)
       .contentType(MediaType.APPLICATION_JSON)
-      .body(new FileshareErrorDTO(errorEnum, message));
+      .body(new FileshareErrorDTO(errorEnum, message, Utilities.getTraceId()));
   }
 
   private static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {
