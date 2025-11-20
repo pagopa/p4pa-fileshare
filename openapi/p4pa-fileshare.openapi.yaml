@@ -340,6 +340,8 @@ components:
             - GENERIC_ERROR
         message:
           type: string
+        traceId:
+          type: string
     FileOrigin:
       type: string
       enum:

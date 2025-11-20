@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.util;
 
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
+import org.slf4j.MDC;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.core.io.Resource;
 import org.springframework.http.ContentDisposition;
@@ -24,5 +25,9 @@ public class Utilities {
       .contentType(MediaType.APPLICATION_OCTET_STREAM)
       .headers(headers)
       .body(fileResource);
+  }
+
+  public static String getTraceId(){
+    return MDC.get("traceId");
   }
 }
