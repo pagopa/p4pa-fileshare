@@ -102,6 +102,7 @@ org.springframework.boot:spring-boot-validation:4.0.0=compileClasspath
 org.springframework.boot:spring-boot-web-server:4.0.0=compileClasspath
 org.springframework.boot:spring-boot-webmvc:4.0.0=compileClasspath
 org.springframework.boot:spring-boot:4.0.0=compileClasspath
+org.springframework.data:spring-data-commons:4.0.0=compileClasspath
 org.springframework.security:spring-security-config:7.0.0=compileClasspath
 org.springframework.security:spring-security-core:7.0.0=compileClasspath
 org.springframework.security:spring-security-crypto:7.0.0=compileClasspath
