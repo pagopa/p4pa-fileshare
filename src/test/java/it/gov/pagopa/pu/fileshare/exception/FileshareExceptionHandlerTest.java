@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.fileshare.config.json.JsonConfig;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.*;
+import it.gov.pagopa.pu.fileshare.util.TestUtils;
 import it.gov.pagopa.pu.fileshare.util.UtilitiesTest;
 import jakarta.servlet.ServletException;
 import jakarta.validation.ConstraintViolationException;
@@ -77,6 +78,11 @@ class FileshareExceptionHandlerTest {
     String testEndpoint(@RequestParam(DATA) String data, @Valid @RequestBody TestRequestBody body) {
       return "OK";
     }
+  }
+
+  @BeforeEach
+  void init() {
+    TestUtils.clearDefaultTimezone();
   }
 
   @Data
