@@ -5,14 +5,20 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
 import org.junit.jupiter.api.Assertions;
 
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 public class TestUtils {
 
-  private TestUtils(){}
+  private TestUtils() {
+  }
+
+  static {
+    clearDefaultTimezone();
+  }
+
+  public static void clearDefaultTimezone() {
+    TimeZone.setDefault(Constants.DEFAULT_TIMEZONE);
+  }
 
   /**
    * It will assert not null on all o's fields
@@ -22,20 +28,20 @@ public class TestUtils {
     org.springframework.util.ReflectionUtils.doWithFields(o.getClass(),
       f -> {
         f.setAccessible(true);
-        Assertions.assertNotNull(f.get(o), "The field "+f.getName()+" of the input object of type "+o.getClass()+" is null!");
+        Assertions.assertNotNull(f.get(o), "The field " + f.getName() + " of the input object of type " + o.getClass() + " is null!");
       },
       f -> !excludedFieldsSet.contains(f.getName()));
   }
 
-  public static UserInfo getSampleAdminUser(){
+  public static UserInfo getSampleAdminUser() {
     return getSampleUser(true, AuthorizationService.ROLE_ADMIN);
   }
 
-  public static UserInfo getSampleUser(){
+  public static UserInfo getSampleUser() {
     return getSampleUser(true, "ROLE_OPER");
   }
 
-  public static UserInfo getSampleUser(Boolean organizationAccess, String role){
+  public static UserInfo getSampleUser(Boolean organizationAccess, String role) {
     List<UserOrganizationRoles> organizations = List.of(
       new UserOrganizationRoles()
         .operatorId("operator1")
@@ -57,7 +63,7 @@ public class TestUtils {
       .familyName("FAMILYNAME")
       .name("NAME")
       .issuer("ISSUER")
-      .organizationAccess(organizationAccess?"ORG":null)
+      .organizationAccess(organizationAccess ? "ORG" : null)
       .organizations(organizations);
   }
 

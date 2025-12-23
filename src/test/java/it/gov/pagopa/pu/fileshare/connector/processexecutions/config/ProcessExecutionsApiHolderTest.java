@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions.config;
 
 import it.gov.pagopa.pu.fileshare.connector.BaseApiHolderTest;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileUpdateStatusRequestDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -10,7 +10,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
@@ -66,7 +66,7 @@ class ProcessExecutionsApiHolderTest extends BaseApiHolderTest {
     assertAuthenticationShouldBeSetInThreadSafeMode(
       accessToken ->
         processExecutionsApisHolder.getIngestionFlowFileEntityExtendedControllerApi(accessToken)
-          .updateStatus(1L, IngestionFlowFileStatus.ERROR, IngestionFlowFileStatus.ERROR, 0L, 0L, "1.0","", null),
+          .updateStatus(1L, new IngestionFlowFileUpdateStatusRequestDTO()),
       new ParameterizedTypeReference<>() {},
       processExecutionsApisHolder::unload);
   }

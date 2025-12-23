@@ -5,7 +5,7 @@ import it.gov.pagopa.pu.p4paprocessexecutions.controller.ApiClient;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.BaseApi;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.*;
 import jakarta.annotation.PreDestroy;
-import org.springframework.boot.web.client.RestTemplateBuilder;
+import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
