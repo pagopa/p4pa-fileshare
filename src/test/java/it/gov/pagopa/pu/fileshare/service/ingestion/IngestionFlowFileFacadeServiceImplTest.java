@@ -121,6 +121,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     String fileVersion = "1.1";
     List<String> versionList = List.of("1.0", "1.1", "1.2", "1.3");
 
+    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
     when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
@@ -169,6 +170,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
+    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.DP_INSTALLMENTS))
       .thenReturn(receiptFilePath);
     when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
@@ -212,6 +214,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     Long expectedIngestionFlowFileId = 1L;
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
+    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT_PAGOPA))
       .thenReturn(receiptFilePath);
     when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
@@ -247,6 +250,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     );
     List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
 
+    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.DP_INSTALLMENTS))
       .thenReturn(receiptFilePath);
     when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
@@ -780,6 +784,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     );
     UserInfo user = TestUtils.getSampleUser();
 
+    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(ingestionFlowFile);
 
