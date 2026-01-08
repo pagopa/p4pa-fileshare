@@ -67,7 +67,7 @@ class IngestionFlowFilesControllerTest {
     Mockito.when(serviceMock.uploadIngestionFlowFile(Mockito.eq(organizationId),
         Mockito.eq(IngestionFlowFileType.RECEIPT), Mockito.eq(FileOrigin.PAGOPA), Mockito.eq(fileName),
         Mockito.eq(ingestionFlowFileId),
-        Mockito.eq(file), null,
+        Mockito.eq(file), Mockito.isNull(),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(1L);
 
