@@ -6,6 +6,7 @@ import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
 import it.gov.pagopa.pu.fileshare.dto.generated.UploadIngestionFlowFileResponseDTO;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtils;
+import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
 import it.gov.pagopa.pu.fileshare.util.Utilities;
 import org.springframework.core.io.Resource;
@@ -16,16 +17,18 @@ import org.springframework.web.multipart.MultipartFile;
 @RestController
 public class IngestionFlowFilesController implements IngestionFlowFileApi {
 
+  private final FileService fileService;
   private final IngestionFlowFileFacadeService ingestionFlowFileFacadeService;
 
-  public IngestionFlowFilesController(IngestionFlowFileFacadeService ingestionFlowFileFacadeService) {
+  public IngestionFlowFilesController(FileService fileService, IngestionFlowFileFacadeService ingestionFlowFileFacadeService) {
+    this.fileService = fileService;
     this.ingestionFlowFileFacadeService = ingestionFlowFileFacadeService;
   }
 
-
   @Override
-  public ResponseEntity<UploadIngestionFlowFileResponseDTO> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, String fileName, Long ingestionFlowFileId, MultipartFile ingestionFlowFile, MultipartFile fileName2) {
-    Long retrievedIngestionFlowFileId = ingestionFlowFileFacadeService.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, fileOrigin, fileName, ingestionFlowFileId, ingestionFlowFile, fileName2, SecurityUtils.getLoggedUser(),
+  public ResponseEntity<UploadIngestionFlowFileResponseDTO> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, String fileName, Long ingestionFlowFileId, MultipartFile ingestionFlowFile, MultipartFile alternativeIngestionFlowFile) {
+    MultipartFile multipartFile = fileService.getExclusivePresenceOrThrow(ingestionFlowFile, alternativeIngestionFlowFile);
+    Long retrievedIngestionFlowFileId = ingestionFlowFileFacadeService.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, fileOrigin, fileName, multipartFile, ingestionFlowFileId, SecurityUtils.getLoggedUser(),
       SecurityUtils.getAccessToken());
     return ResponseEntity.ok(new UploadIngestionFlowFileResponseDTO(retrievedIngestionFlowFileId));
   }

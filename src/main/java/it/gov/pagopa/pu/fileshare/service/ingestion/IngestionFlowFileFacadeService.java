@@ -9,8 +9,8 @@ import org.springframework.web.multipart.MultipartFile;
 public interface IngestionFlowFileFacadeService {
   @SuppressWarnings("squid:S00107")
   Long uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType,
-                               FileOrigin fileOrigin, String fileName, Long ingestionFlowFileId,
-                               MultipartFile ingestionFlowFile, MultipartFile fileName2,
+                               FileOrigin fileOrigin, String fileName,
+                               MultipartFile ingestionFlowFile, Long ingestionFlowFileId,
                                UserInfo user, String accessToken);
 
   FileResourceDTO downloadIngestionFlowFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken);

@@ -4,13 +4,16 @@ import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
+import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
+import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -37,7 +40,9 @@ class IngestionFlowFilesControllerTest {
   private MockMvc mockMvc;
 
   @MockitoBean
-  private IngestionFlowFileFacadeService serviceMock;
+  private IngestionFlowFileFacadeService ingestionFlowFileFacadeServiceMock;
+  @Mock
+  private FileService fileServiceMock;
 
   private final String accessToken = "ACCESSTOKEN";
   private final UserInfo loggedUser = new UserInfo();
@@ -64,10 +69,10 @@ class IngestionFlowFilesControllerTest {
       "this is a test file".getBytes()
     );
 
-    Mockito.when(serviceMock.uploadIngestionFlowFile(Mockito.eq(organizationId),
+    Mockito.when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
+    Mockito.when(ingestionFlowFileFacadeServiceMock.uploadIngestionFlowFile(Mockito.eq(organizationId),
         Mockito.eq(IngestionFlowFileType.RECEIPT), Mockito.eq(FileOrigin.PAGOPA), Mockito.eq(fileName),
-        Mockito.eq(ingestionFlowFileId),
-        Mockito.eq(file), Mockito.isNull(),
+        Mockito.eq(file), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(1L);
 
@@ -91,6 +96,7 @@ class IngestionFlowFilesControllerTest {
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
+    Mockito.when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
 
     mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles", organizationId)
       .file(file)
@@ -101,7 +107,25 @@ class IngestionFlowFilesControllerTest {
       .contentType(MediaType.MULTIPART_FORM_DATA)
     ).andExpect(status().is4xxClientError());
 
-    Mockito.verifyNoInteractions(serviceMock);
+    Mockito.verifyNoInteractions(ingestionFlowFileFacadeServiceMock);
+  }
+
+  @Test
+  void givenNoFileWhenUploadIngestionFlowFileThenError() throws Exception {
+    long organizationId = 1L;
+    String fileName = "fileName.txt";
+
+    Mockito.when(fileServiceMock.getExclusivePresenceOrThrow(null, null)).thenThrow(InvalidFileException.class);
+
+    mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles", organizationId)
+      .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
+      .param("fileOrigin", FileOrigin.PAGOPA.toString())
+      .param("fileName", fileName)
+      .param("ingestionFlowFileId", "1")
+      .contentType(MediaType.MULTIPART_FORM_DATA)
+    ).andExpect(status().is4xxClientError());
+
+    Mockito.verifyNoInteractions(ingestionFlowFileFacadeServiceMock);
   }
 
   @Test
@@ -114,6 +138,7 @@ class IngestionFlowFilesControllerTest {
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
+    Mockito.when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
 
     mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles", organizationId)
       .file(file)
@@ -123,7 +148,7 @@ class IngestionFlowFilesControllerTest {
       .param("ingestionFlowFileId", "1")
     ).andExpect(status().is4xxClientError());
 
-    Mockito.verifyNoInteractions(serviceMock);
+    Mockito.verifyNoInteractions(ingestionFlowFileFacadeServiceMock);
   }
 
   @Test
@@ -136,6 +161,7 @@ class IngestionFlowFilesControllerTest {
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
+    Mockito.when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
 
     mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles", organizationId)
       .file(file)
@@ -146,7 +172,7 @@ class IngestionFlowFilesControllerTest {
       .contentType(MediaType.MULTIPART_FORM_DATA)
     ).andExpect(status().is4xxClientError());
 
-    Mockito.verifyNoInteractions(serviceMock);
+    Mockito.verifyNoInteractions(ingestionFlowFileFacadeServiceMock);
   }
 
   @Test
@@ -159,6 +185,7 @@ class IngestionFlowFilesControllerTest {
       MediaType.TEXT_PLAIN_VALUE,
       "this is a test file".getBytes()
     );
+    Mockito.when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
 
     mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles", organizationId)
       .file(file)
@@ -168,7 +195,7 @@ class IngestionFlowFilesControllerTest {
       .param("ingestionFlowFileId", "1")
     ).andExpect(status().is4xxClientError());
 
-    Mockito.verifyNoInteractions(serviceMock);
+    Mockito.verifyNoInteractions(ingestionFlowFileFacadeServiceMock);
   }
 
   @Test
@@ -182,7 +209,7 @@ class IngestionFlowFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(serviceMock.downloadIngestionFlowFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+    Mockito.when(ingestionFlowFileFacadeServiceMock.downloadIngestionFlowFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -191,6 +218,8 @@ class IngestionFlowFilesControllerTest {
       .andExpect(status().isOk())
       .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
       .andExpect(content().string(fileContent));
+
+    Mockito.verifyNoInteractions(fileServiceMock);
   }
 
   @Test
@@ -204,7 +233,7 @@ class IngestionFlowFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(serviceMock.downloadIngestionFlowErrorsFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+    Mockito.when(ingestionFlowFileFacadeServiceMock.downloadIngestionFlowErrorsFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -213,6 +242,8 @@ class IngestionFlowFilesControllerTest {
       .andExpect(status().isOk())
       .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
       .andExpect(content().string(fileContent));
+
+    Mockito.verifyNoInteractions(fileServiceMock);
   }
 
   @Test
@@ -226,7 +257,7 @@ class IngestionFlowFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(serviceMock.downloadNotice(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+    Mockito.when(ingestionFlowFileFacadeServiceMock.downloadNotice(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -235,6 +266,8 @@ class IngestionFlowFilesControllerTest {
       .andExpect(status().isOk())
       .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
       .andExpect(content().string(fileContent));
+
+    Mockito.verifyNoInteractions(fileServiceMock);
   }
 
   @Test
@@ -248,7 +281,7 @@ class IngestionFlowFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(serviceMock.downloadIuvFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+    Mockito.when(ingestionFlowFileFacadeServiceMock.downloadIuvFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -257,5 +290,7 @@ class IngestionFlowFilesControllerTest {
       .andExpect(status().isOk())
       .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
       .andExpect(content().string(fileContent));
+
+    Mockito.verifyNoInteractions(fileServiceMock);
   }
 }

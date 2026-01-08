@@ -121,7 +121,6 @@ class IngestionFlowFileFacadeServiceImplTest {
     String fileVersion = "1.1";
     List<String> versionList = List.of("1.0", "1.1", "1.2", "1.3");
 
-    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT))
       .thenReturn(receiptFilePath);
     when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
@@ -139,7 +138,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(expectedIngestionFlowFileId);
 
     Long result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA,
-      fileName, null, file, null, TestUtils.getSampleUser(), accessToken);
+      fileName, file, null, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
@@ -170,7 +169,6 @@ class IngestionFlowFileFacadeServiceImplTest {
     List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
-    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.DP_INSTALLMENTS))
       .thenReturn(receiptFilePath);
     when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
@@ -188,7 +186,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(expectedIngestionFlowFileId);
 
     Long result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA,
-      fileName, null, file, null, TestUtils.getSampleUser(), accessToken);
+      fileName, file, null, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
@@ -214,7 +212,6 @@ class IngestionFlowFileFacadeServiceImplTest {
     Long expectedIngestionFlowFileId = 1L;
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
 
-    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.RECEIPT_PAGOPA))
       .thenReturn(receiptFilePath);
     when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
@@ -228,7 +225,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(expectedIngestionFlowFileId);
 
     Long result = ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.RECEIPT_PAGOPA, FileOrigin.PAGOPA,
-      fileName, null, file, null, TestUtils.getSampleUser(), accessToken);
+      fileName, file, null, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
@@ -250,7 +247,6 @@ class IngestionFlowFileFacadeServiceImplTest {
     );
     List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
 
-    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(foldersPathsConfigMock.getIngestionFlowFilePath(IngestionFlowFileType.DP_INSTALLMENTS))
       .thenReturn(receiptFilePath);
     when(fileStorerServiceMock.checkIfAlreadyUploadedOrArchived(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName))
@@ -261,7 +257,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       .when(fileServiceMock).validateVersionFromIngestionFlowFilename(versionList, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
     try {
-      ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, fileName, null, file, null, TestUtils.getSampleUser(), accessToken);
+      ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, fileName, file, null, TestUtils.getSampleUser(), accessToken);
     } catch (InvalidFileException e) {
       assertEquals("Invalid file version", e.getMessage());
     }
@@ -784,12 +780,11 @@ class IngestionFlowFileFacadeServiceImplTest {
     );
     UserInfo user = TestUtils.getSampleUser();
 
-    when(fileServiceMock.getExclusivePresenceOrThrow(file, null)).thenReturn(file);
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(ingestionFlowFile);
 
     Assertions.assertThrows(IngestionFlowFileNotFoundException.class, () -> ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.ORGANIZATIONS_SIL_SERVICE, FileOrigin.SIL,
-      fileName, ingestionFlowFileId, file, null, user, accessToken));
+      fileName, file, ingestionFlowFileId, user, accessToken));
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
   }
