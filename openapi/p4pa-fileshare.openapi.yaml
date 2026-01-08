@@ -41,11 +41,12 @@ paths:
         content:
           'multipart/form-data':
             schema:
-              required:
-                - ingestionFlowFile
               type: object
               properties:
                 ingestionFlowFile:
+                  type: string
+                  format: binary
+                fileName:
                   type: string
                   format: binary
       responses:

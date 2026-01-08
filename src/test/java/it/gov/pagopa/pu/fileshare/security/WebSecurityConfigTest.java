@@ -3,6 +3,7 @@ package it.gov.pagopa.pu.fileshare.security;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
+import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
 import it.gov.pagopa.pu.fileshare.service.receipt.ReceiptRtRetrieverService;
@@ -35,6 +36,8 @@ class WebSecurityConfigTest {
   private SendFileFacadeService sendFileFacadeServiceMock;
   @MockitoBean
   private ReceiptRtRetrieverService receiptRtRetrieverServiceMock;
+  @MockitoBean
+  private FileService fileServiceMock;
 
   @Test
   void givenURLWhenWithoutAccessTokenThenReturn403() throws Exception {
