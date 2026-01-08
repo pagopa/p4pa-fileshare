@@ -6,16 +6,11 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.Arguments;
-import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -126,46 +121,4 @@ class FileServiceTest {
 
     assertEquals("File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]", ex.getMessage());
   }
-
-  @ParameterizedTest
-  @MethodSource("provideFilesForExclusivePresenceTest")
-  void givenFileParametersWhenGetExclusivePresenceOrThrowThenVerifyBehavior(
-      MockMultipartFile fileA,
-      MockMultipartFile fileB,
-      boolean shouldThrow,
-      MockMultipartFile expectedResult) {
-
-    if (shouldThrow) {
-      InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
-        fileService.getExclusivePresenceOrThrow(fileA, fileB));
-      assertEquals("Exactly one of the two files must be non-null", ex.getMessage());
-    } else {
-      MultipartFile result = fileService.getExclusivePresenceOrThrow(fileA, fileB);
-      assertEquals(expectedResult, result);
-    }
-  }
-
-  private static Stream<Arguments> provideFilesForExclusivePresenceTest() {
-    MockMultipartFile fileA = new MockMultipartFile(
-      "fileA",
-      "testA.zip",
-      MediaType.TEXT_PLAIN_VALUE,
-      "contentA".getBytes()
-    );
-
-    MockMultipartFile fileB = new MockMultipartFile(
-      "fileB",
-      "testB.zip",
-      MediaType.TEXT_PLAIN_VALUE,
-      "contentB".getBytes()
-    );
-
-    return Stream.of(
-      Arguments.of(fileA, null, false, fileA),  // fileA not null, fileB null -> returns fileA
-      Arguments.of(null, fileB, false, fileB),  // fileA null, fileB not null -> returns fileB
-      Arguments.of(fileA, fileB, true, null),   // both not null -> throws exception
-      Arguments.of(null, null, true, null)      // both null -> throws exception
-    );
-  }
-
 }
