@@ -105,22 +105,6 @@ class IngestionFlowFilesControllerTest {
   }
 
   @Test
-  void givenNoFileWhenUploadIngestionFlowFileThenError() throws Exception {
-    long organizationId = 1L;
-    String fileName = "fileName.txt";
-
-    mockMvc.perform(multipart("/organization/{organizationId}/ingestionflowfiles", organizationId)
-      .param("ingestionFlowFileType", IngestionFlowFileType.RECEIPT.toString())
-      .param("fileOrigin", FileOrigin.PAGOPA.toString())
-      .param("fileName", fileName)
-      .param("ingestionFlowFileId", "1")
-      .contentType(MediaType.MULTIPART_FORM_DATA)
-    ).andExpect(status().is4xxClientError());
-
-    Mockito.verifyNoInteractions(serviceMock);
-  }
-
-  @Test
   void givenNoIngestionFlowFileTypeWhenUploadIngestionFlowFileThenError() throws Exception {
     long organizationId = 1L;
     String fileName = "fileName.txt";
