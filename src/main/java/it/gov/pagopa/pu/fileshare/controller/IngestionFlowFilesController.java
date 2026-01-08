@@ -22,9 +22,10 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
     this.ingestionFlowFileFacadeService = ingestionFlowFileFacadeService;
   }
 
+
   @Override
-  public ResponseEntity<UploadIngestionFlowFileResponseDTO> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, MultipartFile ingestionFlowFile, String fileName, Long ingestionFlowFileId) {
-    Long retrievedIngestionFlowFileId = ingestionFlowFileFacadeService.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, fileOrigin, fileName, ingestionFlowFile, ingestionFlowFileId, SecurityUtils.getLoggedUser(),
+  public ResponseEntity<UploadIngestionFlowFileResponseDTO> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, String fileName, Long ingestionFlowFileId, MultipartFile ingestionFlowFile, MultipartFile fileName2) {
+    Long retrievedIngestionFlowFileId = ingestionFlowFileFacadeService.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, fileOrigin, fileName, ingestionFlowFileId, ingestionFlowFile, fileName2, SecurityUtils.getLoggedUser(),
       SecurityUtils.getAccessToken());
     return ResponseEntity.ok(new UploadIngestionFlowFileResponseDTO(retrievedIngestionFlowFileId));
   }
