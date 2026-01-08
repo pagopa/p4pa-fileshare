@@ -13,7 +13,6 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
@@ -41,7 +40,7 @@ class IngestionFlowFilesControllerTest {
 
   @MockitoBean
   private IngestionFlowFileFacadeService ingestionFlowFileFacadeServiceMock;
-  @Mock
+  @MockitoBean
   private FileService fileServiceMock;
 
   private final String accessToken = "ACCESSTOKEN";
