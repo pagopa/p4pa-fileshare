@@ -7,10 +7,6 @@ import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.Objects;
-
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.MDC;
@@ -24,6 +20,10 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.util.StringUtils;
 import org.springframework.web.filter.OncePerRequestFilter;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.Objects;
 
 @Component
 @Slf4j
@@ -39,9 +39,8 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
   protected void doFilterInternal(@NonNull HttpServletRequest request,@NonNull HttpServletResponse response,
     @NonNull FilterChain filterChain) throws ServletException, IOException {
     try {
-      String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
-      if (StringUtils.hasText(authorization)) {
-        String token = authorization.replace("Bearer ", "");
+      String token = extractToken(request);
+      if (StringUtils.hasText(token)) {
         UserInfo userInfo = authorizationService.validateToken(token);
         Collection<? extends GrantedAuthority> authorities = null;
         if (userInfo.getOrganizationAccess() != null) {
@@ -72,5 +71,17 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
       return;
     }
     filterChain.doFilter(request, response);
+  }
+
+  private String extractToken(HttpServletRequest request) {
+    String token = request.getParameter("token");
+    String authorization = request.getHeader(HttpHeaders.AUTHORIZATION);
+    if (StringUtils.hasText(token)) {
+      return token;
+    }
+    if (StringUtils.hasText(authorization)) {
+      return authorization.replace("Bearer ", "");
+    }
+    return null;
   }
 }
