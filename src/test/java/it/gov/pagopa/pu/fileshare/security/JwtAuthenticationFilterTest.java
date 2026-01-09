@@ -6,9 +6,6 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
-import java.io.IOException;
-import java.util.Collection;
-import java.util.List;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -29,6 +26,10 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.web.context.request.RequestContextHolder;
+
+import java.io.IOException;
+import java.util.Collection;
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
@@ -194,6 +195,56 @@ class JwtAuthenticationFilterTest {
     Assertions.assertNull(MDC.get("externalUserId"));
     Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
     Mockito.verify(filterChainMock, Mockito.times(0)).doFilter(request, response);
+  }
+
+  @Test
+  void givenTokenInQueryParamWhenDoFilterInternalThenOk() throws ServletException, IOException {
+    // Given
+    String accessToken = "ACCESSTOKEN";
+    MockHttpServletRequest request = new MockHttpServletRequest(HttpMethod.GET.name(), "/path");
+    request.setParameter("token", accessToken);
+
+    MockHttpServletResponse response = new MockHttpServletResponse();
+
+    List<UserOrganizationRoles> organizations = List.of(
+      new UserOrganizationRoles()
+        .operatorId("operator1")
+        .organizationIpaCode("ORG")
+        .email("email1@example.com")
+        .roles(List.of("ROLE")));
+
+    UserInfo userInfo = new UserInfo().mappedExternalUserId("MAPPEDEXTERNALUSERID")
+      .fiscalCode("FISCALCODE")
+      .familyName("FAMILYNAME")
+      .name("NAME")
+      .issuer("ISSUER")
+      .organizationAccess("ORG")
+      .organizations(organizations);
+
+    Collection<? extends GrantedAuthority> authorities = null;
+    if (userInfo.getOrganizationAccess() != null) {
+      authorities = userInfo.getOrganizations().stream()
+        .filter(o -> userInfo.getOrganizationAccess().equals(o.getOrganizationIpaCode()))
+        .flatMap(r -> r.getRoles().stream())
+        .map(SimpleGrantedAuthority::new)
+        .toList();
+    }
+
+    Mockito.when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
+
+    UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken,
+      authorities);
+    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+    // When
+    jwtAuthenticationFilterMock.doFilterInternal(request, response, filterChainMock);
+
+    // Then
+    Assertions.assertEquals(userInfo.getMappedExternalUserId(), MDC.get("externalUserId"));
+    Mockito.verify(filterChainMock).doFilter(request, response);
+    Assertions.assertEquals(
+      authToken,
+      SecurityContextHolder.getContext().getAuthentication());
   }
 
 }
