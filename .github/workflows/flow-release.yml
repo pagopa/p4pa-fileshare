@@ -55,5 +55,6 @@ jobs:
               "APPS_TOP": "[]",
               "APPS_MID": "[p4pa-fileshare]",
               "APPS_EXT": "[]",
+              "POSTMAN_BRANCH": "${{ github.ref_name }}",
               "TRIGGER_MESSAGE": "p4pa-fileshare"
             }

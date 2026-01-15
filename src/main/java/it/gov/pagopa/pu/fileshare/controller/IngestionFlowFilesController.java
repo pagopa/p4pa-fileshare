@@ -23,8 +23,9 @@ public class IngestionFlowFilesController implements IngestionFlowFileApi {
   }
 
   @Override
-  public ResponseEntity<UploadIngestionFlowFileResponseDTO> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, MultipartFile ingestionFlowFile, String fileName, Long ingestionFlowFileId) {
-    Long retrievedIngestionFlowFileId = ingestionFlowFileFacadeService.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, fileOrigin, fileName, ingestionFlowFile, ingestionFlowFileId, SecurityUtils.getLoggedUser(),
+  public ResponseEntity<UploadIngestionFlowFileResponseDTO> uploadIngestionFlowFile(Long organizationId, IngestionFlowFileType ingestionFlowFileType, FileOrigin fileOrigin, String fileName, Long ingestionFlowFileId, MultipartFile ingestionFlowFile, MultipartFile alternativeIngestionFlowFile) {
+    MultipartFile multipartFile = Utilities.getExclusivePresenceOrThrow(ingestionFlowFile, alternativeIngestionFlowFile);
+    Long retrievedIngestionFlowFileId = ingestionFlowFileFacadeService.uploadIngestionFlowFile(organizationId, ingestionFlowFileType, fileOrigin, fileName, multipartFile, ingestionFlowFileId, SecurityUtils.getLoggedUser(),
       SecurityUtils.getAccessToken());
     return ResponseEntity.ok(new UploadIngestionFlowFileResponseDTO(retrievedIngestionFlowFileId));
   }

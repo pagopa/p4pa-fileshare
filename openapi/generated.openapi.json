@@ -161,9 +161,12 @@
                   "ingestionFlowFile" : {
                     "type" : "string",
                     "format" : "binary"
+                  },
+                  "fileName" : {
+                    "type" : "string",
+                    "format" : "binary"
                   }
-                },
-                "required" : [ "ingestionFlowFile" ]
+                }
               }
             }
           }
