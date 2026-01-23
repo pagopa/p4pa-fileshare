@@ -93,6 +93,6 @@ class UserAuthorizationServiceTest {
 
     AuthorizationDeniedException result = Assertions.assertThrows(AuthorizationDeniedException.class, () -> userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken));
 
-    Assertions.assertEquals("Access Denied", result.getMessage());
+    Assertions.assertEquals("[USER_UNAUTHORIZED] Access Denied", result.getMessage());
   }
 }

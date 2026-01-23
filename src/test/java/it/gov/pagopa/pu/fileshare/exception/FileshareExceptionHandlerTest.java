@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.fileshare.config.json.JsonConfig;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.*;
+import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
 import it.gov.pagopa.pu.fileshare.util.UtilitiesTest;
 import jakarta.servlet.ServletException;
@@ -28,6 +29,7 @@ import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.http.MediaType;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.ContextConfiguration;
+import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.context.bean.override.mockito.MockitoSpyBean;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 import org.springframework.test.web.servlet.MockMvc;
@@ -65,6 +67,9 @@ class FileshareExceptionHandlerTest {
   private MockMvc mockMvc;
   @Autowired
   private ObjectMapper objectMapper;
+
+  @MockitoBean
+  private UpstreamErrorMapper upstreamErrorMapperMock;
 
   @MockitoSpyBean
   private TestController testControllerSpy;
@@ -127,7 +132,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleOrganizationMissMatchException() throws Exception {
-    doThrow(new OrganizationMissMatchException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new OrganizationMissMatchException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -138,7 +143,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleInvalidFileException() throws Exception {
-    doThrow(new InvalidFileException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new InvalidFileException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
@@ -149,7 +154,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleInvalidFileTypeException() throws Exception {
-    doThrow(new InvalidFileTypeException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new InvalidFileTypeException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
@@ -160,7 +165,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleFlowFileNotFoundException() throws Exception {
-    doThrow(new FileNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new FileNotFoundException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -171,7 +176,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleUnauthorizedFileDownloadException() throws Exception {
-    doThrow(new UnauthorizedFileDownloadException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new UnauthorizedFileDownloadException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isUnauthorized())
@@ -193,7 +198,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleFileUploadException() throws Exception {
-    doThrow(new FileUploadException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new FileUploadException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isInternalServerError())
@@ -228,7 +233,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleCustomFileAlreadyExistsException() throws Exception {
-    doThrow(new FileAlreadyExistsException("Conflict"))
+    doThrow(new FileAlreadyExistsException("", "Conflict"))
       .when(requestMappingHandlerAdapterSpy).handle(any(), any(), any());
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
@@ -345,7 +350,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleIngestionFlowFileNotFoundException() throws Exception {
-    doThrow(new IngestionFlowFileNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new IngestionFlowFileNotFoundException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -356,7 +361,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleReceiptNotFoundException() throws Exception {
-    doThrow(new ReceiptNotFoundException("Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new ReceiptNotFoundException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())

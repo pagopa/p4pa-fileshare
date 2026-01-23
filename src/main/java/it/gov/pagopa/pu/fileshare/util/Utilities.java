@@ -36,6 +36,6 @@ public class Utilities {
   public static MultipartFile getExclusivePresenceOrThrow(MultipartFile a, MultipartFile b) {
     if (a != null && b == null) return a;
     if (a == null && b != null) return b;
-    throw new InvalidFileException("Exactly one of the two files must be non-null");
+    throw new InvalidFileException("INVALID_FILES", "[INVALID_FILES] Exactly one of the two files must be non-null");
   }
 }

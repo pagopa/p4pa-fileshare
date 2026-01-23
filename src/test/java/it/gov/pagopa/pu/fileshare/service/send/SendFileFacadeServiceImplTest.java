@@ -205,7 +205,7 @@ class SendFileFacadeServiceImplTest {
       .thenReturn(false);
     when(fileStorerService.saveToSharedFolder(
       ORGANIZATION_ID, multipartFile, SEND_NOTIFICATION_ID_FOLDER, FINAL_FILE_NAME))
-      .thenThrow(new FileUploadException("Error saving file"));
+      .thenThrow(new FileUploadException("FILE_UPLOADING_ERROR", "Error saving file"));
 
     // Act & Assert
     assertThrows(FileUploadException.class, () ->

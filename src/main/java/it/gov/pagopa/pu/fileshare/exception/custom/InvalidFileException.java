@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.fileshare.exception.custom;
 
-public class InvalidFileException extends RuntimeException {
-  public InvalidFileException(String message) {
-    super(message);
+public class InvalidFileException extends BaseBusinessException {
+  public InvalidFileException(String code, String message) {
+    super(code, message);
   }
 }

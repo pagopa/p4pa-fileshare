@@ -3,11 +3,14 @@ package it.gov.pagopa.pu.fileshare.exception;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.*;
+import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
+import it.gov.pagopa.pu.fileshare.util.ErrorMessageParser;
 import it.gov.pagopa.pu.fileshare.util.Utilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
+import org.apache.commons.lang3.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.event.Level;
 import org.springframework.core.Ordered;
@@ -24,6 +27,7 @@ import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DatabindException;
@@ -37,6 +41,11 @@ import java.util.stream.Collectors;
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class FileshareExceptionHandler {
+  private final UpstreamErrorMapper upstreamErrorMapper;
+
+  public FileshareExceptionHandler(UpstreamErrorMapper upstreamErrorMapper) {
+    this.upstreamErrorMapper = upstreamErrorMapper;
+  }
 
   @ExceptionHandler({IngestionFlowFileNotFoundException.class, OrganizationMissMatchException.class, FileNotFoundException.class, ReceiptNotFoundException.class})
   public ResponseEntity<FileshareErrorDTO> handleNotFoundException(RuntimeException ex, HttpServletRequest request) {
@@ -79,6 +88,39 @@ public class FileshareExceptionHandler {
     return handleException(ex, request, HttpStatus.BAD_REQUEST, FileshareErrorDTO.CodeEnum.BAD_REQUEST);
   }
 
+  @ExceptionHandler({HttpClientErrorException.class})
+  public ResponseEntity<FileshareErrorDTO> handleHttpClientErrorException(HttpClientErrorException ex, HttpServletRequest request) {
+    FileshareErrorDTO.CodeEnum errorEnum = transcodeStatus(ex.getStatusCode());
+    String traceId = Utilities.getTraceId();
+    String description = ex.getMessage();
+    String i8nCode = "GENERIC_ERROR";
+
+    UpstreamErrorMapper.MappedUpstreamError mapped = upstreamErrorMapper.from(ex);
+    if(mapped != null) {
+      description = mapped.description();
+      i8nCode = mapped.code();
+    }
+
+    FileshareErrorDTO dto = new FileshareErrorDTO();
+    dto.setCode(errorEnum);
+    dto.setMessage(description);
+    dto.setTraceId(traceId);
+    dto.setI18nCode(i8nCode);
+
+    return ResponseEntity
+      .status(ex.getStatusCode())
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(dto);
+  }
+
+  private static FileshareErrorDTO.CodeEnum transcodeStatus(HttpStatusCode status) {
+    if (status.isSameCodeAs(HttpStatus.NOT_FOUND)) return FileshareErrorDTO.CodeEnum.NOT_FOUND;
+    if (status.isSameCodeAs(HttpStatus.CONFLICT)) return FileshareErrorDTO.CodeEnum.CONFLICT;
+    if (status.isSameCodeAs(HttpStatus.FORBIDDEN)) return FileshareErrorDTO.CodeEnum.UNAUTHORIZED;
+    if (status.is4xxClientError()) return FileshareErrorDTO.CodeEnum.BAD_REQUEST;
+    return FileshareErrorDTO.CodeEnum.GENERIC_ERROR;
+  }
+
   @ExceptionHandler({ServletException.class, ErrorResponseException.class})
   public ResponseEntity<FileshareErrorDTO> handleServletException(Exception ex, HttpServletRequest request) {
     HttpStatusCode httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
@@ -103,11 +145,25 @@ public class FileshareExceptionHandler {
     logException(ex, request, httpStatus);
 
     String message = buildReturnedMessage(ex);
+    String i8nCode;
+
+    if (ex instanceof BaseBusinessException codedEx && StringUtils.isNotBlank(codedEx.getCode())) {
+      i8nCode = codedEx.getCode();
+    } else {
+      ErrorMessageParser.ParsedError parsed = ErrorMessageParser.parse(message);
+      i8nCode = parsed.code();
+    }
+
+    FileshareErrorDTO dto = new FileshareErrorDTO();
+    dto.setCode(errorEnum);
+    dto.setMessage(message);
+    dto.setTraceId(Utilities.getTraceId());
+    dto.setI18nCode(i8nCode);
 
     return ResponseEntity
       .status(httpStatus)
       .contentType(MediaType.APPLICATION_JSON)
-      .body(new FileshareErrorDTO(errorEnum, message, Utilities.getTraceId()));
+      .body(dto);
   }
 
   private static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {

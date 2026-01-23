@@ -165,7 +165,7 @@ class JwtAuthenticationFilterTest {
 
     MockHttpServletResponse response = new MockHttpServletResponse();
 
-    Mockito.doThrow(new InvalidAccessTokenException(message)).when(authorizationServiceMock).validateToken(accessToken);
+    Mockito.doThrow(new InvalidAccessTokenException("INVALID_ACCESS_TOKEN", message)).when(authorizationServiceMock).validateToken(accessToken);
 
     // When
     jwtAuthenticationFilterMock.doFilterInternal(request, response, filterChainMock);

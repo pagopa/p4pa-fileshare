@@ -253,7 +253,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(false);
     when(ingestionFlowFileServiceMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
       .thenReturn(List.of("1.0", "1.1", "1.3", "1.4", "2.0"));
-    Mockito.doThrow(new InvalidFileException("Invalid file version"))
+    Mockito.doThrow(new InvalidFileException("INVALID_FILE_NAME", "Invalid file version"))
       .when(fileServiceMock).validateVersionFromIngestionFlowFilename(versionList, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
     try {

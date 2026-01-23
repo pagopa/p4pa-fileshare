@@ -34,10 +34,10 @@ public class ReceiptRtRetrieverServiceImpl implements ReceiptRtRetrieverService 
 
     ReceiptNoPII receipt = receiptService.getReceiptById(receiptId, accessToken);
     if(receipt == null){
-      throw new ReceiptNotFoundException("Cannot find receipt having id " + receiptId);
+      throw new ReceiptNotFoundException("RECEIPT_NOT_FOUND", "[RECEIPT_NOT_FOUND] Cannot find receipt having id " + receiptId);
     }
     if(!receipt.getOrgFiscalCode().equals(AuthorizationService.getOrgFiscalCodeFromUserInfo(user, organizationId))){
-      throw new OrganizationMissMatchException("Requested receipt ("+ receiptId + ") is not related to the provided organization ("+organizationId+")");
+      throw new OrganizationMissMatchException("INVALID_RECEIPT_ORG_MISMATCH", "[INVALID_RECEIPT_ORG_MISMATCH] Requested receipt ("+ receiptId + ") is not related to the provided organization ("+organizationId+")");
     }
 
     if(receipt.getRtFilePath()!=null) {
@@ -49,7 +49,7 @@ public class ReceiptRtRetrieverServiceImpl implements ReceiptRtRetrieverService 
 
       return new FileResourceDTO(new InputStreamResource(decryptedInputStream), fileName);
     } else {
-      throw new FileNotFoundException("RT related to receipt "+ receiptId + " not available");
+      throw new FileNotFoundException("RECEIPT_NOT_FOUND", "[RECEIPT_NOT_FOUND] RT related to receipt "+ receiptId + " not available");
     }
   }
 }

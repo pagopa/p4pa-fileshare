@@ -550,6 +550,9 @@
           },
           "traceId" : {
             "type" : "string"
+          },
+          "i18nCode" : {
+            "type" : "string"
           }
         },
         "required" : [ "code", "message" ]

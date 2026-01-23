@@ -99,7 +99,7 @@ class FileServiceTest {
     InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
       fileService.validateVersionFromIngestionFlowFilename(VERSION_RECEIPT_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT));
 
-    assertEquals("File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]", ex.getMessage());
+    assertEquals("[INVALID_FILE_NAME] File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]", ex.getMessage());
   }
 
   @Test
@@ -109,7 +109,7 @@ class FileServiceTest {
     InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
       fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS));
 
-    assertEquals("File name must contain a valid version: [1_0, 1_1, 1_3, 1_4, 2_0]", ex.getMessage());
+    assertEquals("[INVALID_FILE_NAME] File name must contain a valid version: [1_0, 1_1, 1_3, 1_4, 2_0]", ex.getMessage());
   }
 
   @Test
@@ -119,6 +119,6 @@ class FileServiceTest {
     InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
       fileService.validateVersionFromIngestionFlowFilename(VERSION_RECEIPT_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT));
 
-    assertEquals("File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]", ex.getMessage());
+    assertEquals("[INVALID_FILE_NAME] File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]", ex.getMessage());
   }
 }

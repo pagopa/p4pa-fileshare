@@ -37,7 +37,7 @@ class AuthorizationServiceTest {
 
   @Test
   void givenInvalidAccessTokenWhenValidateTokenThenInvalidAccessTokenException() {
-    when(authClientImplMock.getUserInfo("INVALIDACCESSTOKEN")).thenThrow(new InvalidAccessTokenException("Bad Access Token provided"));
+    when(authClientImplMock.getUserInfo("INVALIDACCESSTOKEN")).thenThrow(new InvalidAccessTokenException("INVALID_ACCESS_TOKEN", "Bad Access Token provided"));
     InvalidAccessTokenException result = Assertions.assertThrows(InvalidAccessTokenException.class,
       () -> authorizationService.validateToken("INVALIDACCESSTOKEN"));
 
