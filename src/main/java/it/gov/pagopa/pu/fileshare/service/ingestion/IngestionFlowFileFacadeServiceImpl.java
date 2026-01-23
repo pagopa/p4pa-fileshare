@@ -167,7 +167,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     SignedUrlResultDTO signedUrlResultDTO = printPaymentNoticeService.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken);
 
     if (signedUrlResultDTO.getSignedUrl() == null) {
-      throw new IllegalStateException(String.format("Signed URL not available for ingestionFlowFileId: %s", ingestionFlowFileId));
+      throw new IllegalStateException(String.format("[INVALID_URL] Signed URL not available for ingestionFlowFileId: %s", ingestionFlowFileId));
     }
 
     return downloadNotice(organizationId, ingestionFlowFileId, signedUrlResultDTO.getSignedUrl(), ingestionFlowFile);
@@ -178,7 +178,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
 
     if (!IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.equals(ingestionFlowFile.getIngestionFlowFileType())) {
-      throw new InvalidFileTypeException("INVALID_FILE_TYPE", String.format("It's not possible to download IUV file for ingestionFlowFileId: %s. Expected type: %s, found: %s",
+      throw new InvalidFileTypeException("INVALID_FILE_TYPE", String.format("[INVALID_FILE_TYPE] It's not possible to download IUV file for ingestionFlowFileId: %s. Expected type: %s, found: %s",
         ingestionFlowFileId,
         DP_INSTALLMENTS,
         ingestionFlowFile.getIngestionFlowFileType()));
@@ -203,7 +203,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       URI uri = URI.create(signedUrl);
       ResponseEntity<byte[]> response = restTemplate.getForEntity(uri, byte[].class);
       if (response.getBody() == null) {
-        throw new IllegalStateException(String.format("Downloaded file in the signed url: %s with ingestionFlowFileId: %s is empty", signedUrl, ingestionFlowFileId));
+        throw new IllegalStateException(String.format("[EMPTY_FILE] Downloaded file in the signed url: %s with ingestionFlowFileId: %s is empty", signedUrl, ingestionFlowFileId));
       }
       return new FileResourceDTO(new ByteArrayResource(response.getBody()), ingestionFlowFile.getFileName().replace(".zip", "_notice.zip"));
 
@@ -219,17 +219,17 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
     if (ingestionFlowFile == null) {
-      throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s was not found".formatted(ingestionFlowFileId));
+      throw new FileNotFoundException("FILE_NOT_FOUND", "[FILE_NOT_FOUND] Ingestion flow file with id %s was not found".formatted(ingestionFlowFileId));
     }
 
     if (!organizationId.equals(ingestionFlowFile.getOrganizationId())) {
-      throw new AuthorizationDeniedException("Access Denied");
+      throw new AuthorizationDeniedException("[USER_UNAUTHORIZED] Access Denied");
     }
 
     if (!AuthorizationService.isAdminRole(organizationId, user) &&
       !user.getMappedExternalUserId().equals(ingestionFlowFile.getOperatorExternalId())) {
       throw new UnauthorizedFileDownloadException(
-        "USER_UNAUTHORIZED", "User is not authorized to download ingestion flow file with ID " + ingestionFlowFileId);
+        "USER_UNAUTHORIZED", "[USER_UNAUTHORIZED] User is not authorized to download ingestion flow file with ID " + ingestionFlowFileId);
     }
     return ingestionFlowFile;
   }
@@ -240,7 +240,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
   private Path getErrorsFilePath(IngestionFlowFile ingestionFlowFile) {
     if (ingestionFlowFile.getDiscardFileName() == null) {
-      throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s has no errors file".formatted(ingestionFlowFile.getIngestionFlowFileId()));
+      throw new FileNotFoundException("FILE_NOT_FOUND", "[FILE_NOT_FOUND] Ingestion flow file with id %s has no errors file".formatted(ingestionFlowFile.getIngestionFlowFileId()));
     }
 
     return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName())

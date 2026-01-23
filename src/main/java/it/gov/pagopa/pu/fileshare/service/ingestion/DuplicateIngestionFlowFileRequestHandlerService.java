@@ -76,7 +76,7 @@ public class DuplicateIngestionFlowFileRequestHandlerService {
       try {
         Files.createDirectories(parentFolder);
       } catch (IOException e) {
-        throw new IllegalStateException("Cannot create archive subfolder " + parentFolder + ": " + e.getMessage(), e);
+        throw new IllegalStateException("[FOLDER_CREATION_ERROR] Cannot create archive subfolder " + parentFolder + ": " + e.getMessage(), e);
       }
     }
     return parentFolder;
@@ -87,7 +87,7 @@ public class DuplicateIngestionFlowFileRequestHandlerService {
       Files.move(filePath, renamedPath);
       log.info("Renamed file {} into {}", filePath, renamedPath);
     } catch (IOException e) {
-      throw new IllegalStateException("Cannot rename file " + filePath + " into " + renamedPath + ": " + e.getMessage(), e);
+      throw new IllegalStateException("[FILE_RENAMING_ERROR] Cannot rename file " + filePath + " into " + renamedPath + ": " + e.getMessage(), e);
     }
   }
 }

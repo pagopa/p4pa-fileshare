@@ -132,7 +132,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleOrganizationMissMatchException() throws Exception {
-    doThrow(new OrganizationMissMatchException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new OrganizationMissMatchException("CODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -143,7 +143,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleInvalidFileException() throws Exception {
-    doThrow(new InvalidFileException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new InvalidFileException("CODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
@@ -154,7 +154,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleInvalidFileTypeException() throws Exception {
-    doThrow(new InvalidFileTypeException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new InvalidFileTypeException("CODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
@@ -165,7 +165,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleFlowFileNotFoundException() throws Exception {
-    doThrow(new FileNotFoundException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new FileNotFoundException("CODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -176,7 +176,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleUnauthorizedFileDownloadException() throws Exception {
-    doThrow(new UnauthorizedFileDownloadException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new UnauthorizedFileDownloadException("CODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isUnauthorized())
@@ -198,7 +198,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleFileUploadException() throws Exception {
-    doThrow(new FileUploadException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new FileUploadException("CODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isInternalServerError())
@@ -233,7 +233,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleCustomFileAlreadyExistsException() throws Exception {
-    doThrow(new FileAlreadyExistsException("", "Conflict"))
+    doThrow(new FileAlreadyExistsException("CODE", "Conflict"))
       .when(requestMappingHandlerAdapterSpy).handle(any(), any(), any());
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
@@ -350,7 +350,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleIngestionFlowFileNotFoundException() throws Exception {
-    doThrow(new IngestionFlowFileNotFoundException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new IngestionFlowFileNotFoundException("CODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
@@ -361,7 +361,7 @@ class FileshareExceptionHandlerTest {
 
   @Test
   void handleReceiptNotFoundException() throws Exception {
-    doThrow(new ReceiptNotFoundException("", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
+    doThrow(new ReceiptNotFoundException("CODE", "Error")).when(testControllerSpy).testEndpoint(DATA, BODY);
 
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())

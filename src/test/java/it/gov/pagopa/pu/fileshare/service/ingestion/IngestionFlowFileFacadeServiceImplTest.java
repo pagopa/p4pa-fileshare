@@ -614,7 +614,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
       ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
-    assertEquals("Signed URL not available for ingestionFlowFileId: 10", exception.getMessage());
+    assertEquals("[INVALID_URL] Signed URL not available for ingestionFlowFileId: 10", exception.getMessage());
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
 
   }
@@ -654,7 +654,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
         ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
-      assertEquals("Downloaded file in the signed url: http://example.com/notice.zip with ingestionFlowFileId: 10 is empty", exception.getMessage());
+      assertEquals("[EMPTY_FILE] Downloaded file in the signed url: http://example.com/notice.zip with ingestionFlowFileId: 10 is empty", exception.getMessage());
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
     }
   }
@@ -764,7 +764,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken));
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    assertEquals("It's not possible to download IUV file for ingestionFlowFileId: 10. Expected type: DP_INSTALLMENTS, found: DEBT_POSITIONS_TYPE", exception.getMessage());
+    assertEquals("[INVALID_FILE_TYPE] It's not possible to download IUV file for ingestionFlowFileId: 10. Expected type: DP_INSTALLMENTS, found: DEBT_POSITIONS_TYPE", exception.getMessage());
   }
 
   void givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(IngestionFlowFile ingestionFlowFile) {

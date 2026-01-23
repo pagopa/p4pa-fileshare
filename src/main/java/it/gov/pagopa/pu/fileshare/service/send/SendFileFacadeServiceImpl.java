@@ -85,10 +85,10 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
         Path organizationBasePath = fileStorerService.buildOrganizationBasePath(organizationId);
         Path absolutePath = concatenatePaths(organizationBasePath.toString(), relativeFileLocation.toString());
         Files.deleteIfExists(absolutePath);
-        throw new InvalidFileException("INVALID_DIGEST", "Invalid digest");
+        throw new InvalidFileException("INVALID_DIGEST", "[INVALID_DIGEST] Invalid digest");
       }
     } catch (IOException e){
-      throw new FileUploadException("FILE_UPLOADING_ERROR", e.getMessage());
+      throw new FileUploadException("FILE_UPLOADING_ERROR", "[FILE_UPLOADING_ERROR] " + e.getMessage());
     }
   }
 }
