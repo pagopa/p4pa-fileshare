@@ -328,7 +328,7 @@ components:
         - code
         - message
       properties:
-        code:
+        category:
           type: string
           enum:
             - INVALID_FILE
@@ -343,7 +343,7 @@ components:
           type: string
         traceId:
           type: string
-        i18nCode:
+        code:
           type: string
     FileOrigin:
       type: string
