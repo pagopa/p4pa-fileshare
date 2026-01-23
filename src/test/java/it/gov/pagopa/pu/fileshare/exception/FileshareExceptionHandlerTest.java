@@ -26,6 +26,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.test.context.ContextConfiguration;
@@ -41,15 +43,18 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ServerErrorException;
 import org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerAdapter;
 
+import java.nio.charset.StandardCharsets;
 import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Set;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.doThrow;
+import static org.mockito.Mockito.when;
 
 @ExtendWith({SpringExtension.class})
 @WebMvcTest(value = {FileshareExceptionHandlerTest.TestController.class})
@@ -138,7 +143,8 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.NOT_FOUND.toString()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("CODE"));
   }
 
   @Test
@@ -149,7 +155,8 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(FileshareErrorDTO.CodeEnum.INVALID_FILE.toString()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("CODE"));
   }
 
   @Test
@@ -160,7 +167,8 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.INVALID_FILE_TYPE.toString()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("CODE"));
   }
 
   @Test
@@ -171,7 +179,8 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.NOT_FOUND.toString()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("CODE"));
   }
 
   @Test
@@ -182,7 +191,8 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isUnauthorized())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.UNAUTHORIZED.toString()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("CODE"));
   }
 
   @Test
@@ -204,7 +214,8 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isInternalServerError())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(FileshareErrorDTO.CodeEnum.FILE_UPLOAD_ERROR.toString()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("CODE"));
   }
 
   @Test
@@ -240,7 +251,8 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isConflict())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CONFLICT"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Conflict"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("CODE"));
   }
 
   @Test
@@ -356,7 +368,8 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.NOT_FOUND.toString()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("CODE"));
   }
 
   @Test
@@ -367,7 +380,37 @@ class FileshareExceptionHandlerTest {
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.NOT_FOUND.toString()))
       .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId));
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("CODE"));
   }
 
+  @Test
+  void handleHttpClientErrorException() throws Exception {
+    String upstreamBody = """
+  {"code":"SOME_UPSTREAM_CODE","message":"[INVALID_IBAN] eltjhreigjpo","traceId":"slfjhdio"}
+  """;
+
+    HttpClientErrorException ex = HttpClientErrorException.create(
+      HttpStatus.BAD_REQUEST,
+      "Error",
+      HttpHeaders.EMPTY,
+      upstreamBody.getBytes(StandardCharsets.UTF_8),
+      StandardCharsets.UTF_8
+    );
+
+    when(upstreamErrorMapperMock.from(any(HttpClientErrorException.class)))
+      .thenReturn(new UpstreamErrorMapper.MappedUpstreamError(
+        "INVALID_IBAN",
+        "[INVALID_IBAN] eltjhreigjpo"
+      ));
+
+    doThrow(ex).when(testControllerSpy).testEndpoint(DATA, BODY);
+
+    performRequest(DATA, MediaType.APPLICATION_JSON)
+      .andExpect(MockMvcResultMatchers.status().isBadRequest())
+      .andExpect(MockMvcResultMatchers.jsonPath("$.code").value(CodeEnum.BAD_REQUEST.toString()))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[INVALID_IBAN] eltjhreigjpo"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.i18nCode").value("INVALID_IBAN"));
+  }
 }
