@@ -654,7 +654,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
         ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
-      assertEquals("[EMPTY_FILE] Downloaded file in the signed url: http://example.com/notice.zip with ingestionFlowFileId: 10 is empty", exception.getMessage());
+      assertEquals("[INVALID_FILE_EMPTY] Downloaded file in the signed url: http://example.com/notice.zip with ingestionFlowFileId: 10 is empty", exception.getMessage());
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
     }
   }

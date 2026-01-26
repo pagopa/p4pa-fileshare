@@ -203,7 +203,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       URI uri = URI.create(signedUrl);
       ResponseEntity<byte[]> response = restTemplate.getForEntity(uri, byte[].class);
       if (response.getBody() == null) {
-        throw new IllegalStateException(String.format("[EMPTY_FILE] Downloaded file in the signed url: %s with ingestionFlowFileId: %s is empty", signedUrl, ingestionFlowFileId));
+        throw new IllegalStateException(String.format("[INVALID_FILE_EMPTY] Downloaded file in the signed url: %s with ingestionFlowFileId: %s is empty", signedUrl, ingestionFlowFileId));
       }
       return new FileResourceDTO(new ByteArrayResource(response.getBody()), ingestionFlowFile.getFileName().replace(".zip", "_notice.zip"));
 

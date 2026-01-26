@@ -71,7 +71,7 @@ public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
 
   private Path getFilePath(ExportFile exportFile) {
     if(StringUtils.isEmpty(exportFile.getFilePathName())){
-      throw new FileNotFoundException("FILE_NOT_READY", "[FILE_NOT_READY] ExportFile not ready");
+      throw new FileNotFoundException("INVALID_FILE_NOT_READY", "[INVALID_FILE_NOT_READY] ExportFile not ready");
     }
     Path organizationBasePath = fileStorerService.buildOrganizationBasePath(
       exportFile.getOrganizationId());

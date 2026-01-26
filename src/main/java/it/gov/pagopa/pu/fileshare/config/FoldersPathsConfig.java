@@ -23,7 +23,7 @@ public class FoldersPathsConfig {
         ingestionFlowFileTypePaths.get(ingestionFlowFileType))
       .orElseThrow(()-> {
         log.debug("No path configured for ingestionFlowFileType {}",ingestionFlowFileType);
-        return new UnsupportedOperationException("[PATH_NOT_CONFIGURED] No path configured for ingestionFlowFileType %s".formatted(ingestionFlowFileType));
+        return new UnsupportedOperationException("[MISSING_PATH_CONFIGURATION] No path configured for ingestionFlowFileType %s".formatted(ingestionFlowFileType));
       });
   }
 }
