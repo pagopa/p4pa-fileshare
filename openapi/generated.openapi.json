@@ -555,7 +555,7 @@
             "type" : "string"
           }
         },
-        "required" : [ "code", "message" ]
+        "required" : [ "category", "message" ]
       },
       "UploadIngestionFlowFileResponseDTO" : {
         "type" : "object",
