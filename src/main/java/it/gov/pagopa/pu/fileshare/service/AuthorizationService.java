@@ -95,7 +95,7 @@ public class AuthorizationService {
 
   private static void handleUnauthorizedUser(Long organizationId, UserInfo loggedUser) {
     log.debug("Unauthorized user. [organizationId:{}]", organizationId);
-    throw new AuthorizationDeniedException("Access denied on organizationId " + organizationId + " to user " + loggedUser.getMappedExternalUserId());
+    throw new AuthorizationDeniedException("[USER_UNAUTHORIZED] Access denied on organizationId " + organizationId + " to user " + loggedUser.getMappedExternalUserId());
   }
 
   private static Optional<UserOrganizationRoles> getUserOrganizationRoles(Long organizationId, UserInfo loggedUser) {

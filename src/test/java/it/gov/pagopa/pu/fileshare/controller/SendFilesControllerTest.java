@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
 import it.gov.pagopa.pu.fileshare.controller.generated.SendFilesApi;
+import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.fileshare.service.send.SendFileFacadeService;
@@ -33,6 +34,8 @@ class SendFilesControllerTest {
   private MockMvc mockMvc;
   @MockitoBean
   private SendFileFacadeService serviceMock;
+  @MockitoBean
+  private UpstreamErrorMapper upstreamErrorMapperMock;
 
   private final String accessToken = "ACCESSTOKEN";
   private final UserInfo loggedUser = new UserInfo();

@@ -45,18 +45,18 @@ public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
 
     if (exportFile == null) {
       throw new FileNotFoundException(
-        "Export file with id %s was not found".formatted(exportFileId));
+        "FILE_NOT_FOUND", "Export file with id %s was not found".formatted(exportFileId));
     }
 
     if(!organizationId.equals(exportFile.getOrganizationId())){
-      throw new AuthorizationDeniedException("Access Denied");
+      throw new AuthorizationDeniedException("[USER_UNAUTHORIZED] Access Denied");
     }
 
     if (!AuthorizationService.isAdminRole(organizationId, user) &&
       !user.getMappedExternalUserId()
         .equals(exportFile.getOperatorExternalId())) {
       throw new UnauthorizedFileDownloadException(
-        "User is not authorized to download export file with ID "
+        "USER_UNAUTHORIZED", "User is not authorized to download export file with ID "
           + exportFileId);
     }
 
@@ -71,7 +71,7 @@ public class ExportFileFacadeServiceImpl implements ExportFileFacadeService {
 
   private Path getFilePath(ExportFile exportFile) {
     if(StringUtils.isEmpty(exportFile.getFilePathName())){
-      throw new FileNotFoundException("ExportFile not ready");
+      throw new FileNotFoundException("INVALID_FILE_NOT_READY", "ExportFile not ready");
     }
     Path organizationBasePath = fileStorerService.buildOrganizationBasePath(
       exportFile.getOrganizationId());

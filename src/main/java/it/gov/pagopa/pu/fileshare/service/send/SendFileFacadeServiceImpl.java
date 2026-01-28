@@ -60,7 +60,7 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
 
     SendNotificationDTO sendNotification = notificationService.getSendNotification(sendNotificationId, accessToken);
     if (!sendNotification.getOrganizationId().equals(organizationId)) {
-      throw new OrganizationMissMatchException("Requested sendNotificationId (" + sendNotificationId + ") not exists under requested organization " + organizationId);
+      throw new OrganizationMissMatchException("INVALID_SEND_NOTIFICATION_ORG_MISMATCH", "Requested sendNotificationId (" + sendNotificationId + ") not exists under requested organization " + organizationId);
     }
 
     fileService.validateFile(sendFile);
@@ -85,10 +85,10 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
         Path organizationBasePath = fileStorerService.buildOrganizationBasePath(organizationId);
         Path absolutePath = concatenatePaths(organizationBasePath.toString(), relativeFileLocation.toString());
         Files.deleteIfExists(absolutePath);
-        throw new InvalidFileException("Invalid digest");
+        throw new InvalidFileException("INVALID_DIGEST", "Invalid digest");
       }
     } catch (IOException e){
-      throw new FileUploadException(e.getMessage());
+      throw new FileUploadException("FILE_UPLOADING_ERROR", e.getMessage());
     }
   }
 }

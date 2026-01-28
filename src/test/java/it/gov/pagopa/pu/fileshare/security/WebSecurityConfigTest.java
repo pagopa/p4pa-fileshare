@@ -2,6 +2,7 @@ package it.gov.pagopa.pu.fileshare.security;
 
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
+import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
@@ -38,6 +39,8 @@ class WebSecurityConfigTest {
   private ReceiptRtRetrieverService receiptRtRetrieverServiceMock;
   @MockitoBean
   private FileService fileServiceMock;
+  @MockitoBean
+  private UpstreamErrorMapper upstreamErrorMapperMock;
 
   @Test
   void givenURLWhenWithoutAccessTokenThenReturn403() throws Exception {

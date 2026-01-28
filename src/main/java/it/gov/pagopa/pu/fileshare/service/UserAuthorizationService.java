@@ -26,7 +26,7 @@ public class UserAuthorizationService {
         && !CollectionUtils.isEmpty(o.getRoles()));
     if(!isAuthorized){
       log.debug("Unauthorized user. [organizationId:{}, organizationStatus:{}]", organizationId, organization.getStatus());
-      throw new AuthorizationDeniedException("Access Denied");
+      throw new AuthorizationDeniedException("[USER_UNAUTHORIZED] Access Denied");
     }
   }
 }

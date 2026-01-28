@@ -20,7 +20,7 @@ public class AuthnClient {
       return authApisHolder.getAuthnApi(accessToken)
         .getUserInfo();
     } catch (HttpClientErrorException.Unauthorized e) {
-      throw new InvalidAccessTokenException(e.getResponseBodyAsString());
+      throw new InvalidAccessTokenException("INVALID_ACCESS_TOKEN", e.getResponseBodyAsString());
     }
   }
 
