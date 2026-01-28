@@ -259,7 +259,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     try {
       ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, fileName, file, null, TestUtils.getSampleUser(), accessToken);
     } catch (InvalidFileException e) {
-      assertEquals("Invalid file version", e.getMessage());
+      assertEquals("[INVALID_FILE_NAME] Invalid file version", e.getMessage());
     }
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
     Mockito.verify(fileServiceMock).validateFile(file);

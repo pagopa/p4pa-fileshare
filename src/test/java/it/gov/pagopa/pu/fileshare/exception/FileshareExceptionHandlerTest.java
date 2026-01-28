@@ -142,7 +142,7 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value(CategoryEnum.NOT_FOUND.toString()))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[CODE] Error"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CODE"));
   }
@@ -154,7 +154,7 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value(FileshareErrorDTO.CategoryEnum.INVALID_FILE.toString()))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[CODE] Error"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CODE"));
   }
@@ -166,7 +166,7 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isBadRequest())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value(CategoryEnum.INVALID_FILE_TYPE.toString()))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[CODE] Error"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CODE"));
   }
@@ -178,7 +178,7 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value(CategoryEnum.NOT_FOUND.toString()))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[CODE] Error"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CODE"));
   }
@@ -190,7 +190,7 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isUnauthorized())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value(CategoryEnum.UNAUTHORIZED.toString()))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[CODE] Error"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CODE"));
   }
@@ -213,7 +213,7 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isInternalServerError())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value(FileshareErrorDTO.CategoryEnum.FILE_UPLOAD_ERROR.toString()))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[CODE] Error"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CODE"));
   }
@@ -250,7 +250,7 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isConflict())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value("CONFLICT"))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Conflict"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[CODE] Conflict"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CODE"));
   }
@@ -367,7 +367,7 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value(CategoryEnum.NOT_FOUND.toString()))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[CODE] Error"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CODE"));
   }
@@ -379,7 +379,7 @@ class FileshareExceptionHandlerTest {
     performRequest(DATA, MediaType.APPLICATION_JSON)
       .andExpect(MockMvcResultMatchers.status().isNotFound())
       .andExpect(MockMvcResultMatchers.jsonPath("$.category").value(CategoryEnum.NOT_FOUND.toString()))
-      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("Error"))
+      .andExpect(MockMvcResultMatchers.jsonPath("$.message").value("[CODE] Error"))
       .andExpect(MockMvcResultMatchers.jsonPath("$.traceId").value(traceId))
       .andExpect(MockMvcResultMatchers.jsonPath("$.code").value("CODE"));
   }

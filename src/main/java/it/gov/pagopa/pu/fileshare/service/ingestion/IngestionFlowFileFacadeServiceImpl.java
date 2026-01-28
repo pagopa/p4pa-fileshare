@@ -116,7 +116,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
         !IngestionFlowFileStatus.WAITING_FILE.equals(ingestionFlowFile.getStatus()) ||
         !ingestionFlowFile.getFileOrigin().equals(String.valueOf(fileOrigin))) {
         throw new IngestionFlowFileNotFoundException(
-          "FILE_NOT_FOUND", "[FILE_NOT_FOUND] IngestionFlowFile in WAITING_FILE status and matching origin not found with id %d%s"
+          "FILE_NOT_FOUND", "IngestionFlowFile in WAITING_FILE status and matching origin not found with id %d%s"
             .formatted(ingestionFlowFileId, ingestionFlowFile == null ? "" : " - actual status: " + ingestionFlowFile.getStatus() + ", origin: " + ingestionFlowFile.getFileOrigin()));
       }
     }
@@ -178,7 +178,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
 
     if (!IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.equals(ingestionFlowFile.getIngestionFlowFileType())) {
-      throw new InvalidFileTypeException("INVALID_FILE_TYPE", String.format("[INVALID_FILE_TYPE] It's not possible to download IUV file for ingestionFlowFileId: %s. Expected type: %s, found: %s",
+      throw new InvalidFileTypeException("INVALID_FILE_TYPE", String.format("It's not possible to download IUV file for ingestionFlowFileId: %s. Expected type: %s, found: %s",
         ingestionFlowFileId,
         DP_INSTALLMENTS,
         ingestionFlowFile.getIngestionFlowFileType()));
@@ -219,7 +219,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
     if (ingestionFlowFile == null) {
-      throw new FileNotFoundException("FILE_NOT_FOUND", "[FILE_NOT_FOUND] Ingestion flow file with id %s was not found".formatted(ingestionFlowFileId));
+      throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s was not found".formatted(ingestionFlowFileId));
     }
 
     if (!organizationId.equals(ingestionFlowFile.getOrganizationId())) {
@@ -229,7 +229,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     if (!AuthorizationService.isAdminRole(organizationId, user) &&
       !user.getMappedExternalUserId().equals(ingestionFlowFile.getOperatorExternalId())) {
       throw new UnauthorizedFileDownloadException(
-        "USER_UNAUTHORIZED", "[USER_UNAUTHORIZED] User is not authorized to download ingestion flow file with ID " + ingestionFlowFileId);
+        "USER_UNAUTHORIZED", "User is not authorized to download ingestion flow file with ID " + ingestionFlowFileId);
     }
     return ingestionFlowFile;
   }
@@ -240,7 +240,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
   private Path getErrorsFilePath(IngestionFlowFile ingestionFlowFile) {
     if (ingestionFlowFile.getDiscardFileName() == null) {
-      throw new FileNotFoundException("FILE_NOT_FOUND", "[FILE_NOT_FOUND] Ingestion flow file with id %s has no errors file".formatted(ingestionFlowFile.getIngestionFlowFileId()));
+      throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s has no errors file".formatted(ingestionFlowFile.getIngestionFlowFileId()));
     }
 
     return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName())

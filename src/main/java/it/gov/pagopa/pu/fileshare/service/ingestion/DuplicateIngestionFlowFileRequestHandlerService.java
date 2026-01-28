@@ -46,7 +46,7 @@ public class DuplicateIngestionFlowFileRequestHandlerService {
 
         ingestionFlowFileService.updateFileNames(ingestionFlowFile.getIngestionFlowFileId(), newFileName, newDiscardFileName, accessToken);
       } else {
-        throw new FileAlreadyExistsException("FILE_ALREADY_EXISTS", "[FILE_ALREADY_EXISTS] File already uploaded or archived");
+        throw new FileAlreadyExistsException("FILE_ALREADY_EXISTS", "File already uploaded or archived");
       }
     } else {
       newFileName = archiveNotCorrectedHandledFile(organizationId, archivedSubFolder, filePathName, fileName, "_UNKNOWN_" + System.currentTimeMillis());

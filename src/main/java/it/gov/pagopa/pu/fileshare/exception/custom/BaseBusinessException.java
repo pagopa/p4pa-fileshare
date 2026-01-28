@@ -7,12 +7,12 @@ public class BaseBusinessException extends RuntimeException {
   protected final String code;
 
   protected BaseBusinessException(String code, String message) {
-    super(message);
+    super("[%s] %s".formatted(code, message));
     this.code = code;
   }
 
   protected BaseBusinessException(String code, String message, Throwable e) {
-    super(message, e);
+    super("[%s] %s".formatted(code, message), e);
     this.code = code;
   }
 }

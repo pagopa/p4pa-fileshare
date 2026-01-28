@@ -17,7 +17,7 @@ public class FileService {
   public void validateFile(MultipartFile ingestionFlowFile) {
     if (ingestionFlowFile == null) {
       log.debug("Invalid ingestion flow file");
-      throw new InvalidFileException("INVALID_FILE", "[INVALID_FILE] Invalid file");
+      throw new InvalidFileException("INVALID_FILE", "Invalid file");
     }
     String filename = StringUtils.defaultString(ingestionFlowFile.getOriginalFilename());
     validateFilename(filename);
@@ -26,7 +26,7 @@ public class FileService {
   public static void validateFilename(String filename) {
     if (Stream.of("..", "\\", "/").anyMatch(filename::contains)) {
       log.debug("Invalid ingestion flow filename");
-      throw new InvalidFileException("INVALID_FILE_NAME", "[INVALID_FILE_NAME] Invalid filename");
+      throw new InvalidFileException("INVALID_FILE_NAME", "Invalid filename");
     }
   }
 
@@ -42,7 +42,7 @@ public class FileService {
         return fileName.contains(version);
       })
       .findFirst()
-      .orElseThrow(() -> new InvalidFileException("INVALID_FILE_NAME", String.format("[INVALID_FILE_NAME] File name must contain a valid version: %s",
+      .orElseThrow(() -> new InvalidFileException("INVALID_FILE_NAME", String.format("File name must contain a valid version: %s",
         fileVersions.stream().map(version -> replaceCharVersion(version,".", "_")).toList())));
 
   }
