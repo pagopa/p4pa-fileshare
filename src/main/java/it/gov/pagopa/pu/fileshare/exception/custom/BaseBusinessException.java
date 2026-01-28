@@ -7,8 +7,7 @@ public class BaseBusinessException extends RuntimeException {
   protected final String code;
 
   protected BaseBusinessException(String code, String message) {
-    super("[%s] %s".formatted(code, message));
-    this.code = code;
+    this(code, message, null);
   }
 
   protected BaseBusinessException(String code, String message, Throwable e) {
