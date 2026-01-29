@@ -253,13 +253,13 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(false);
     when(ingestionFlowFileServiceMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
       .thenReturn(List.of("1.0", "1.1", "1.3", "1.4", "2.0"));
-    Mockito.doThrow(new InvalidFileException("Invalid file version"))
+    Mockito.doThrow(new InvalidFileException("INVALID_FILE_NAME", "Invalid file version"))
       .when(fileServiceMock).validateVersionFromIngestionFlowFilename(versionList, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
     try {
       ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, fileName, file, null, TestUtils.getSampleUser(), accessToken);
     } catch (InvalidFileException e) {
-      assertEquals("Invalid file version", e.getMessage());
+      assertEquals("[INVALID_FILE_NAME] Invalid file version", e.getMessage());
     }
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
     Mockito.verify(fileServiceMock).validateFile(file);
@@ -614,7 +614,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
       ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
-    assertEquals("Signed URL not available for ingestionFlowFileId: 10", exception.getMessage());
+    assertEquals("[INVALID_URL] Signed URL not available for ingestionFlowFileId: 10", exception.getMessage());
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
 
   }
@@ -654,7 +654,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
         ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
-      assertEquals("Downloaded file in the signed url: http://example.com/notice.zip with ingestionFlowFileId: 10 is empty", exception.getMessage());
+      assertEquals("[INVALID_FILE_EMPTY] Downloaded file in the signed url: http://example.com/notice.zip with ingestionFlowFileId: 10 is empty", exception.getMessage());
       Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
     }
   }
@@ -764,7 +764,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken));
 
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    assertEquals("It's not possible to download IUV file for ingestionFlowFileId: 10. Expected type: DP_INSTALLMENTS, found: DEBT_POSITIONS_TYPE", exception.getMessage());
+    assertEquals("[INVALID_FILE_TYPE] It's not possible to download IUV file for ingestionFlowFileId: 10. Expected type: DP_INSTALLMENTS, found: DEBT_POSITIONS_TYPE", exception.getMessage());
   }
 
   void givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(IngestionFlowFile ingestionFlowFile) {

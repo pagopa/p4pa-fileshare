@@ -34,7 +34,7 @@ public class FileStorerService {
   public SaveFileResultDTO saveToSharedFolder(Long organizationId, MultipartFile file, String relativePath, String fileName) {
     if (file == null) {
       log.debug("File is mandatory");
-      throw new InvalidFileException("File is mandatory");
+      throw new InvalidFileException("MISSING_FILE", "File is mandatory");
     }
 
     fileName = org.springframework.util.StringUtils.cleanPath(StringUtils.defaultString(fileName));
@@ -51,7 +51,7 @@ public class FileStorerService {
       fileHash = AESUtils.encryptAndSave(fileEncryptPassword, file.getInputStream(), absolutePath.getParent(), absolutePath.getFileName().toString());
     } catch (Exception e) {
       throw new FileUploadException(
-        "Error uploading file to shared folder %s".formatted(relativePath), e);
+        "FILE_UPLOADING_ERROR", "Error uploading file to shared folder %s".formatted(relativePath), e);
     }
     log.debug("File upload to shared folder {} completed", relativePath);
     return new SaveFileResultDTO(relativePath, fileHash);
@@ -65,7 +65,7 @@ public class FileStorerService {
     Path concatenatedPath = Paths.get(firstPath, secondPath).normalize();
     if (!concatenatedPath.startsWith(firstPath)) {
       log.debug("Invalid file path");
-      throw new InvalidFileException("Invalid file path");
+      throw new InvalidFileException("INVALID_FILE_PATH", "Invalid file path");
     }
     return concatenatedPath;
   }

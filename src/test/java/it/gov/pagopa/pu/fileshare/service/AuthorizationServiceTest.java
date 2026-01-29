@@ -37,11 +37,11 @@ class AuthorizationServiceTest {
 
   @Test
   void givenInvalidAccessTokenWhenValidateTokenThenInvalidAccessTokenException() {
-    when(authClientImplMock.getUserInfo("INVALIDACCESSTOKEN")).thenThrow(new InvalidAccessTokenException("Bad Access Token provided"));
+    when(authClientImplMock.getUserInfo("INVALIDACCESSTOKEN")).thenThrow(new InvalidAccessTokenException("INVALID_ACCESS_TOKEN", "Bad Access Token provided"));
     InvalidAccessTokenException result = Assertions.assertThrows(InvalidAccessTokenException.class,
       () -> authorizationService.validateToken("INVALIDACCESSTOKEN"));
 
-    Assertions.assertEquals("Bad Access Token provided", result.getMessage());
+    Assertions.assertEquals("[INVALID_ACCESS_TOKEN] Bad Access Token provided", result.getMessage());
   }
 
   @Test
@@ -72,7 +72,7 @@ class AuthorizationServiceTest {
       AuthorizationDeniedException.class,
       () -> authorizationService.validateAdminRole(2L,userInfo));
 
-    Assertions.assertEquals("Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
+    Assertions.assertEquals("[USER_UNAUTHORIZED] Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
   }
 
   @Test

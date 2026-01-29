@@ -1,13 +1,16 @@
 package it.gov.pagopa.pu.fileshare.exception;
 
 import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO;
-import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CodeEnum;
+import it.gov.pagopa.pu.fileshare.dto.generated.FileshareErrorDTO.CategoryEnum;
 import it.gov.pagopa.pu.fileshare.exception.custom.*;
+import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
+import it.gov.pagopa.pu.fileshare.util.ErrorMessageParser;
 import it.gov.pagopa.pu.fileshare.util.Utilities;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.ConstraintViolationException;
 import jakarta.validation.ValidationException;
+import org.apache.commons.lang3.StringUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.slf4j.event.Level;
 import org.springframework.core.Ordered;
@@ -24,6 +27,7 @@ import org.springframework.web.ErrorResponseException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import tools.jackson.core.JacksonException;
 import tools.jackson.databind.DatabindException;
@@ -37,77 +41,129 @@ import java.util.stream.Collectors;
 @Slf4j
 @Order(Ordered.HIGHEST_PRECEDENCE)
 public class FileshareExceptionHandler {
+  private final UpstreamErrorMapper upstreamErrorMapper;
+
+  public FileshareExceptionHandler(UpstreamErrorMapper upstreamErrorMapper) {
+    this.upstreamErrorMapper = upstreamErrorMapper;
+  }
 
   @ExceptionHandler({IngestionFlowFileNotFoundException.class, OrganizationMissMatchException.class, FileNotFoundException.class, ReceiptNotFoundException.class})
   public ResponseEntity<FileshareErrorDTO> handleNotFoundException(RuntimeException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
+    return handleException(ex, request, HttpStatus.NOT_FOUND, CategoryEnum.NOT_FOUND);
   }
 
   @ExceptionHandler({InvalidFileException.class})
   public ResponseEntity<FileshareErrorDTO> handleInvalidFileError(RuntimeException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.BAD_REQUEST, CodeEnum.INVALID_FILE);
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, CategoryEnum.INVALID_FILE);
   }
 
   @ExceptionHandler(InvalidFileTypeException.class)
   public ResponseEntity<FileshareErrorDTO> handleInvalidFileTypeException(RuntimeException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.BAD_REQUEST, CodeEnum.INVALID_FILE_TYPE);
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, CategoryEnum.INVALID_FILE_TYPE);
   }
 
   @ExceptionHandler({UnauthorizedFileDownloadException.class, AuthorizationDeniedException.class})
   public ResponseEntity<FileshareErrorDTO> handleUnauthorizedFileDownloadError(RuntimeException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.UNAUTHORIZED, CodeEnum.UNAUTHORIZED);
+    return handleException(ex, request, HttpStatus.UNAUTHORIZED, CategoryEnum.UNAUTHORIZED);
   }
 
   @ExceptionHandler({FileUploadException.class})
   public ResponseEntity<FileshareErrorDTO> handleFileStorageError(RuntimeException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, CodeEnum.FILE_UPLOAD_ERROR);
+    return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, CategoryEnum.FILE_UPLOAD_ERROR);
   }
 
   @ExceptionHandler({java.io.FileNotFoundException.class})
   public ResponseEntity<FileshareErrorDTO> handleFileNotFoundException(
     java.io.FileNotFoundException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.NOT_FOUND, CodeEnum.NOT_FOUND);
+    return handleException(ex, request, HttpStatus.NOT_FOUND, CategoryEnum.NOT_FOUND);
   }
 
   @ExceptionHandler({FileAlreadyExistsException.class, java.nio.file.FileAlreadyExistsException.class})
   public ResponseEntity<FileshareErrorDTO> handleFileAlreadyExistsException(Exception ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.CONFLICT, CodeEnum.CONFLICT);
+    return handleException(ex, request, HttpStatus.CONFLICT, CategoryEnum.CONFLICT);
   }
 
   @ExceptionHandler({ValidationException.class, HttpMessageNotReadableException.class, MethodArgumentNotValidException.class, MethodArgumentTypeMismatchException.class})
   public ResponseEntity<FileshareErrorDTO> handleViolationException(Exception ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.BAD_REQUEST, FileshareErrorDTO.CodeEnum.BAD_REQUEST);
+    return handleException(ex, request, HttpStatus.BAD_REQUEST, FileshareErrorDTO.CategoryEnum.BAD_REQUEST);
+  }
+
+  @ExceptionHandler({HttpClientErrorException.class})
+  public ResponseEntity<FileshareErrorDTO> handleHttpClientErrorException(HttpClientErrorException ex, HttpServletRequest request) {
+    FileshareErrorDTO.CategoryEnum categoryErrorEnum = transcodeStatus(ex.getStatusCode());
+    String traceId = Utilities.getTraceId();
+    String description = ex.getMessage();
+    String code = "GENERIC_ERROR";
+
+    UpstreamErrorMapper.MappedUpstreamError mapped = upstreamErrorMapper.from(ex);
+    if(mapped != null) {
+      description = mapped.description();
+      code = mapped.code();
+    }
+
+    FileshareErrorDTO dto = new FileshareErrorDTO();
+    dto.setCategory(categoryErrorEnum);
+    dto.setMessage(description);
+    dto.setTraceId(traceId);
+    dto.setCode(code);
+
+    return ResponseEntity
+      .status(ex.getStatusCode())
+      .contentType(MediaType.APPLICATION_JSON)
+      .body(dto);
+  }
+
+  private static FileshareErrorDTO.CategoryEnum transcodeStatus(HttpStatusCode status) {
+    if (status.isSameCodeAs(HttpStatus.NOT_FOUND)) return FileshareErrorDTO.CategoryEnum.NOT_FOUND;
+    if (status.isSameCodeAs(HttpStatus.CONFLICT)) return FileshareErrorDTO.CategoryEnum.CONFLICT;
+    if (status.isSameCodeAs(HttpStatus.FORBIDDEN)) return FileshareErrorDTO.CategoryEnum.UNAUTHORIZED;
+    if (status.is4xxClientError()) return FileshareErrorDTO.CategoryEnum.BAD_REQUEST;
+    return FileshareErrorDTO.CategoryEnum.GENERIC_ERROR;
   }
 
   @ExceptionHandler({ServletException.class, ErrorResponseException.class})
   public ResponseEntity<FileshareErrorDTO> handleServletException(Exception ex, HttpServletRequest request) {
     HttpStatusCode httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
-    FileshareErrorDTO.CodeEnum errorCode = FileshareErrorDTO.CodeEnum.GENERIC_ERROR;
+    FileshareErrorDTO.CategoryEnum categoryErrorEnum = FileshareErrorDTO.CategoryEnum.GENERIC_ERROR;
     if (ex instanceof ErrorResponse errorResponse) {
       httpStatus = errorResponse.getStatusCode();
       if (httpStatus.isSameCodeAs(HttpStatus.NOT_FOUND)) {
-        errorCode = CodeEnum.NOT_FOUND;
+        categoryErrorEnum = CategoryEnum.NOT_FOUND;
       } else if (httpStatus.is4xxClientError()) {
-        errorCode = FileshareErrorDTO.CodeEnum.BAD_REQUEST;
+        categoryErrorEnum = FileshareErrorDTO.CategoryEnum.BAD_REQUEST;
       }
     }
-    return handleException(ex, request, httpStatus, errorCode);
+    return handleException(ex, request, httpStatus, categoryErrorEnum);
   }
 
   @ExceptionHandler({RuntimeException.class})
   public ResponseEntity<FileshareErrorDTO> handleRuntimeException(RuntimeException ex, HttpServletRequest request) {
-    return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, FileshareErrorDTO.CodeEnum.GENERIC_ERROR);
+    return handleException(ex, request, HttpStatus.INTERNAL_SERVER_ERROR, FileshareErrorDTO.CategoryEnum.GENERIC_ERROR);
   }
 
-  static ResponseEntity<FileshareErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, FileshareErrorDTO.CodeEnum errorEnum) {
+  static ResponseEntity<FileshareErrorDTO> handleException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus, FileshareErrorDTO.CategoryEnum errorCategoryEnum) {
     logException(ex, request, httpStatus);
 
     String message = buildReturnedMessage(ex);
+    String code;
+
+    if (ex instanceof BaseBusinessException codedEx && StringUtils.isNotBlank(codedEx.getCode())) {
+      code = codedEx.getCode();
+    } else {
+      ErrorMessageParser.ParsedError parsed = ErrorMessageParser.parse(message);
+      code = parsed.code();
+    }
+
+    FileshareErrorDTO dto = new FileshareErrorDTO();
+    dto.setCategory(errorCategoryEnum);
+    dto.setMessage(message);
+    dto.setTraceId(Utilities.getTraceId());
+    dto.setCode(code);
 
     return ResponseEntity
       .status(httpStatus)
       .contentType(MediaType.APPLICATION_JSON)
-      .body(new FileshareErrorDTO(errorEnum, message, Utilities.getTraceId()));
+      .body(dto);
   }
 
   private static void logException(Exception ex, HttpServletRequest request, HttpStatusCode httpStatus) {

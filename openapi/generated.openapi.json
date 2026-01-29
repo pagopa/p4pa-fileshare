@@ -535,24 +535,27 @@
           }
         }
       },
-      "CodeEnum" : {
+      "CategoryEnum" : {
         "type" : "string",
         "enum" : [ "INVALID_FILE", "INVALID_FILE_TYPE", "FILE_UPLOAD_ERROR", "NOT_FOUND", "CONFLICT", "BAD_REQUEST", "UNAUTHORIZED", "GENERIC_ERROR" ]
       },
       "FileshareErrorDTO" : {
         "type" : "object",
         "properties" : {
-          "code" : {
-            "$ref" : "#/components/schemas/CodeEnum"
+          "category" : {
+            "$ref" : "#/components/schemas/CategoryEnum"
           },
           "message" : {
             "type" : "string"
           },
           "traceId" : {
             "type" : "string"
+          },
+          "code" : {
+            "type" : "string"
           }
         },
-        "required" : [ "code", "message" ]
+        "required" : [ "category", "message" ]
       },
       "UploadIngestionFlowFileResponseDTO" : {
         "type" : "object",

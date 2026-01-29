@@ -1,11 +1,11 @@
 package it.gov.pagopa.pu.fileshare.exception.custom;
 
-public class FileUploadException extends RuntimeException {
-  public FileUploadException(String message) {
-    super(message);
+public class FileUploadException extends BaseBusinessException {
+  public FileUploadException(String code, String message) {
+    super(code, message);
   }
 
-  public FileUploadException(String message, Throwable e) {
-    super(message,e);
+  public FileUploadException(String code, String message, Throwable e) {
+    super(code, message, e);
   }
 }

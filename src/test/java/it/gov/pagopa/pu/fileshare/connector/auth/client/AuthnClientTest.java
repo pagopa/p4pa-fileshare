@@ -69,6 +69,6 @@ class AuthnClientTest {
 
     InvalidAccessTokenException exception = Assertions.assertThrows(InvalidAccessTokenException.class, () -> authnClient.getUserInfo(accessToken));
 
-    assertEquals(bodyMessage, exception.getMessage());
+    assertEquals("[INVALID_ACCESS_TOKEN] %s".formatted(bodyMessage), exception.getMessage());
   }
 }
