@@ -215,6 +215,44 @@ paths:
         '404':
           description: Not Found
   /organization/{organizationId}/send-files/{sendNotificationId}:
+    get:
+      tags:
+        - send-files
+      summary: downloadSendFile
+      description: Service to download a send file
+      operationId: downloadSendFile
+      parameters:
+        - name: organizationId
+          in: path
+          required: true
+          schema:
+            type: integer
+            format: int64
+        - name: sendNotificationId
+          in: path
+          required: true
+          schema:
+            type: string
+        - name: filePath
+          in: query
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+        '404':
+          description: Not Found
+        '500':
+          description: Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/FileshareErrorDTO'
     post:
       tags:
         - send-files
