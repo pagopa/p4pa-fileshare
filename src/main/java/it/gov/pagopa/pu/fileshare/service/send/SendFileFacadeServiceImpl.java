@@ -80,7 +80,7 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
     validateSendNotification(organizationId, sendNotificationId, accessToken);
 
     Path relativeSendPath = buildRelativeSendPath(organizationId, sendNotificationId);
-    Path absolutePath = relativeSendPath.resolve(pathFile);
+    Path absolutePath = concatenatePaths(relativeSendPath.toString(), pathFile);
     String fileName = absolutePath.getFileName().toString();
 
     InputStream decryptedInputStream = fileStorerService.decryptFile(absolutePath.getParent(), fileName);
