@@ -22,6 +22,8 @@ import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
+import static it.gov.pagopa.pu.fileshare.service.FileStorerService.concatenatePaths;
+
 @ExtendWith(MockitoExtension.class)
 class FileStorerServiceTest {
 
@@ -58,7 +60,17 @@ class FileStorerServiceTest {
     );
 
     Assertions.assertThrows(InvalidFileException.class, () ->
-      fileStorerService.saveToSharedFolder(0L, file, "", "../test.txt"));
+      fileStorerService.saveToSharedFolder(0L, file, "/app/storage", "../../test.txt"));
+  }
+
+  @Test
+  void givenInvalidPathWhenConcatenateThenThrowException() {
+    String base = "/app/storage";
+    String malicious = "../../etc/passwd";
+
+    Assertions.assertThrows(InvalidFileException.class, () ->
+      concatenatePaths(base, malicious)
+    );
   }
 
   @Test
