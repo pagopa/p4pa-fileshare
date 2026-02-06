@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service.send;
 
 import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationService;
+import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
@@ -15,10 +16,12 @@ import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Base64;
@@ -57,11 +60,7 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
     MultipartFile sendFile, UserInfo user, String accessToken
   ) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
-
-    SendNotificationDTO sendNotification = notificationService.getSendNotification(sendNotificationId, accessToken);
-    if (!sendNotification.getOrganizationId().equals(organizationId)) {
-      throw new OrganizationMissMatchException("INVALID_SEND_NOTIFICATION_ORG_MISMATCH", "Requested sendNotificationId (" + sendNotificationId + ") not exists under requested organization " + organizationId);
-    }
+    validateSendNotification(organizationId, sendNotificationId, accessToken);
 
     fileService.validateFile(sendFile);
     String fileName = sendNotificationId+"_"+sendFile.getOriginalFilename();
@@ -73,6 +72,31 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
 
     LoadFileRequest fileRequest = LoadFileRequest.builder().fileName(sendFile.getOriginalFilename()).digest(digest).build();
     return notificationService.startNotification(sendNotificationId, fileRequest, accessToken);
+  }
+
+  @Override
+  public FileResourceDTO downloadSendFile(Long organizationId, String sendNotificationId, String pathFile, UserInfo user, String accessToken) {
+    userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
+    validateSendNotification(organizationId, sendNotificationId, accessToken);
+
+    Path relativeSendPath = buildRelativeSendPath(organizationId, sendNotificationId);
+    Path absolutePath = concatenatePaths(relativeSendPath.toString(), pathFile);
+    String fileName = absolutePath.getFileName().toString();
+
+    InputStream decryptedInputStream = fileStorerService.decryptFile(absolutePath.getParent(), fileName);
+
+    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), fileName);
+  }
+
+  public Path buildRelativeSendPath(Long organizationId, String sendNotificationId) {
+    return fileStorerService.buildOrganizationBasePath(organizationId).resolve(sendFolder).resolve(sendNotificationId);
+  }
+
+  private void validateSendNotification(Long organizationId, String sendNotificationId, String accessToken) {
+    SendNotificationDTO sendNotification = notificationService.getSendNotification(sendNotificationId, accessToken);
+    if (!sendNotification.getOrganizationId().equals(organizationId)) {
+      throw new OrganizationMissMatchException("INVALID_SEND_NOTIFICATION_ORG_MISMATCH", "Requested sendNotificationId (" + sendNotificationId + ") not exists under requested organization " + organizationId);
+    }
   }
 
   private void validateDigestAndSave(Long organizationId, MultipartFile sendFile,

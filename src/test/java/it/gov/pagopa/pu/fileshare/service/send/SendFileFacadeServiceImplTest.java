@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service.send;
 
 import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationService;
+import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileUploadException;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidFileException;
@@ -9,6 +10,7 @@ import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LoadFileRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
@@ -18,14 +20,19 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
+import java.io.InputStream;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -219,4 +226,74 @@ class SendFileFacadeServiceImplTest {
       )
     );
   }
+
+  @Test
+  void givenAuthorizedUserWhenDownloadExportFileThenReturnFileResource() {
+    Long organizationId = 1L;
+
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST", "ADMIN"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo user = new UserInfo();
+    user.setOrganizations(List.of(userTestRole));
+    user.setMappedExternalUserId("TEST");
+    Path mockBasePath = Path.of("base-path");
+
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(ORGANIZATION_ID);
+    when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
+      .thenReturn(sendNotificationDTO);
+
+    InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
+
+    when(fileStorerService.buildOrganizationBasePath(organizationId))
+      .thenReturn(mockBasePath);
+
+    Mockito.when(fileStorerService.decryptFile(Path.of(mockBasePath.toString() ,SEND_NOTIFICATION_ID_FOLDER), FILE_NAME)).thenReturn(decryptedInputStream);
+
+    FileResourceDTO result = sendFileFacadeService.downloadSendFile(organizationId, SEND_NOTIFICATION_ID, "test.txt", user, ACCESS_TOKEN);
+
+    Assertions.assertNotNull(result);
+    Assertions.assertEquals(FILE_NAME, result.getFileName());
+    verify(fileStorerService).buildOrganizationBasePath(organizationId);
+  }
+
+  @Test
+  void givenNotRelatedNotificationToOrganizationWhenDownloadSendFileThenThrowSendNotificationOrganizationMissMatchException() {
+    // Given
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(-1L);
+    when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
+      .thenReturn(sendNotificationDTO);
+
+    // When, Then
+    Assertions.assertThrows(OrganizationMissMatchException.class, () -> sendFileFacadeService.downloadSendFile(
+      ORGANIZATION_ID, SEND_NOTIFICATION_ID, "text.txt", userInfo, ACCESS_TOKEN
+    ));
+  }
+
+  @Test
+  void givenPotentialPathExploitWhenDownloadSendFileThenInvalidFileException() {
+    Long organizationId = 1L;
+
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST", "ADMIN"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo user = new UserInfo();
+    user.setOrganizations(List.of(userTestRole));
+    user.setMappedExternalUserId("TEST");
+    Path mockBasePath = Path.of("base-path");
+
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(ORGANIZATION_ID);
+    when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
+      .thenReturn(sendNotificationDTO);
+
+    when(fileStorerService.buildOrganizationBasePath(organizationId))
+      .thenReturn(mockBasePath);
+
+    Assertions.assertThrows(InvalidFileException.class, () ->
+      sendFileFacadeService.downloadSendFile(organizationId, SEND_NOTIFICATION_ID, "../test.txt", user, ACCESS_TOKEN));
+  }
+
 }
