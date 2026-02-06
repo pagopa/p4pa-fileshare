@@ -272,4 +272,28 @@ class SendFileFacadeServiceImplTest {
     ));
   }
 
+  @Test
+  void givenPotentialPathExploitWhenDownloadSendFileThenInvalidFileException() {
+    Long organizationId = 1L;
+
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST", "ADMIN"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo user = new UserInfo();
+    user.setOrganizations(List.of(userTestRole));
+    user.setMappedExternalUserId("TEST");
+    Path mockBasePath = Path.of("base-path");
+
+    SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
+    sendNotificationDTO.setOrganizationId(ORGANIZATION_ID);
+    when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
+      .thenReturn(sendNotificationDTO);
+
+    when(fileStorerService.buildOrganizationBasePath(organizationId))
+      .thenReturn(mockBasePath);
+
+    Assertions.assertThrows(InvalidFileException.class, () ->
+      sendFileFacadeService.downloadSendFile(organizationId, SEND_NOTIFICATION_ID, "../../test.txt", user, ACCESS_TOKEN));
+  }
+
 }
