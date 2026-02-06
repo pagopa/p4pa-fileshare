@@ -293,7 +293,7 @@ class SendFileFacadeServiceImplTest {
       .thenReturn(mockBasePath);
 
     Assertions.assertThrows(InvalidFileException.class, () ->
-      sendFileFacadeService.downloadSendFile(organizationId, SEND_NOTIFICATION_ID, "../../test.txt", user, ACCESS_TOKEN));
+      sendFileFacadeService.downloadSendFile(organizationId, SEND_NOTIFICATION_ID, "../test.txt", user, ACCESS_TOKEN));
   }
 
 }
