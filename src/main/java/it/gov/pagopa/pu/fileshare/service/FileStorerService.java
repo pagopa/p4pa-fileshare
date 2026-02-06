@@ -62,12 +62,16 @@ public class FileStorerService {
    * The normalized path still starts with the first path.
    */
   public static Path concatenatePaths(String firstPath, String secondPath) {
-    Path concatenatedPath = Paths.get(firstPath, secondPath).normalize();
-    if (!concatenatedPath.startsWith(firstPath)) {
-      log.debug("Invalid file path");
+    Path base = Paths.get(firstPath).normalize();
+    Path fullPath = base.resolve(secondPath).normalize();
+    validatePath(base, fullPath);
+    return fullPath;
+  }
+
+  public static void validatePath(Path base, Path fullPath) {
+    if (!fullPath.startsWith(base)) {
       throw new InvalidFileException("INVALID_FILE_PATH", "Invalid file path");
     }
-    return concatenatedPath;
   }
 
   public InputStream decryptFile(Path filePath, String fileName) {

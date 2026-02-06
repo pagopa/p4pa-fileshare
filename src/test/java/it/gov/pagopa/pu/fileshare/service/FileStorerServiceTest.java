@@ -129,7 +129,7 @@ class FileStorerServiceTest {
     );
 
     Assertions.assertThrows(InvalidFileException.class, () ->
-      fileStorerService.saveToSharedFolder(0L, file, "relative/../../test", ""));
+      fileStorerService.saveToSharedFolder(0L, file, "../../test", ""));
   }
 
   @Test

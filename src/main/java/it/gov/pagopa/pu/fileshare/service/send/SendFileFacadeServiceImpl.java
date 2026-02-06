@@ -78,12 +78,18 @@ public class SendFileFacadeServiceImpl implements SendFileFacadeService {
   public FileResourceDTO downloadSendFile(Long organizationId, String sendNotificationId, String pathFile, UserInfo user, String accessToken) {
     userAuthorizationService.checkUserAuthorization(organizationId, user, accessToken);
     validateSendNotification(organizationId, sendNotificationId, accessToken);
-    Path path = Path.of(pathFile);
-    String fileName = path.getFileName().toString();
 
-    InputStream decryptedInputStream = fileStorerService.decryptFile(path.getParent(), fileName);
+    Path relativeSendPath = buildRelativeSendPath(organizationId, sendNotificationId);
+    Path absolutePath = relativeSendPath.resolve(pathFile);
+    String fileName = absolutePath.getFileName().toString();
+
+    InputStream decryptedInputStream = fileStorerService.decryptFile(absolutePath.getParent(), fileName);
 
     return new FileResourceDTO(new InputStreamResource(decryptedInputStream), fileName);
+  }
+
+  public Path buildRelativeSendPath(Long organizationId, String sendNotificationId) {
+    return fileStorerService.buildOrganizationBasePath(organizationId).resolve(sendFolder).resolve(sendNotificationId);
   }
 
   private void validateSendNotification(Long organizationId, String sendNotificationId, String accessToken) {

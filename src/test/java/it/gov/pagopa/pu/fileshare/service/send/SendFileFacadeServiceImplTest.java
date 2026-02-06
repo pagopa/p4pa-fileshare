@@ -65,7 +65,6 @@ class SendFileFacadeServiceImplTest {
   private static final String SEND_NOTIFICATION_ID = "notification123";
   private static final String SEND_NOTIFICATION_ID_FOLDER = SEND_FOLDER + "/" + SEND_NOTIFICATION_ID;
   private static final String FILE_NAME = "test.txt";
-  private static final String SEND_NOTIFICATION_FILE_PATH = SEND_NOTIFICATION_ID_FOLDER + "/" + FILE_NAME;
   private static final String ACCESS_TOKEN = "token123";
   private static final String VALID_DIGEST = "9e9LsYp4qQ4bjyGI4Mp/jmBN2jKehKTTaonMr1AJEPU=";
   private static final String FILE_CONTENT = "TEST FILE HASH P4PA SEND";
@@ -238,6 +237,7 @@ class SendFileFacadeServiceImplTest {
     UserInfo user = new UserInfo();
     user.setOrganizations(List.of(userTestRole));
     user.setMappedExternalUserId("TEST");
+    Path mockBasePath = Path.of("base-path");
 
     SendNotificationDTO sendNotificationDTO = new SendNotificationDTO();
     sendNotificationDTO.setOrganizationId(ORGANIZATION_ID);
@@ -246,12 +246,16 @@ class SendFileFacadeServiceImplTest {
 
     InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
 
-    Mockito.when(fileStorerService.decryptFile(Path.of(SEND_NOTIFICATION_ID_FOLDER), FILE_NAME)).thenReturn(decryptedInputStream);
+    when(fileStorerService.buildOrganizationBasePath(organizationId))
+      .thenReturn(mockBasePath);
 
-    FileResourceDTO result = sendFileFacadeService.downloadSendFile(organizationId, SEND_NOTIFICATION_ID, SEND_NOTIFICATION_FILE_PATH, user, ACCESS_TOKEN);
+    Mockito.when(fileStorerService.decryptFile(Path.of(mockBasePath.toString() ,SEND_NOTIFICATION_ID_FOLDER), FILE_NAME)).thenReturn(decryptedInputStream);
+
+    FileResourceDTO result = sendFileFacadeService.downloadSendFile(organizationId, SEND_NOTIFICATION_ID, "test.txt", user, ACCESS_TOKEN);
 
     Assertions.assertNotNull(result);
     Assertions.assertEquals(FILE_NAME, result.getFileName());
+    verify(fileStorerService).buildOrganizationBasePath(organizationId);
   }
 
   @Test
@@ -264,7 +268,7 @@ class SendFileFacadeServiceImplTest {
 
     // When, Then
     Assertions.assertThrows(OrganizationMissMatchException.class, () -> sendFileFacadeService.downloadSendFile(
-      ORGANIZATION_ID, SEND_NOTIFICATION_ID, SEND_NOTIFICATION_FILE_PATH, userInfo, ACCESS_TOKEN
+      ORGANIZATION_ID, SEND_NOTIFICATION_ID, "text.txt", userInfo, ACCESS_TOKEN
     ));
   }
 
