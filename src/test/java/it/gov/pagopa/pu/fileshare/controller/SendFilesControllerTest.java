@@ -1,6 +1,8 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
 import it.gov.pagopa.pu.fileshare.controller.generated.SendFilesApi;
+import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
+import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
@@ -16,14 +18,17 @@ import org.springframework.boot.webmvc.test.autoconfigure.AutoConfigureMockMvc;
 import org.springframework.boot.webmvc.test.autoconfigure.WebMvcTest;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.FilterType;
+import org.springframework.core.io.InputStreamResource;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.ByteArrayInputStream;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @WebMvcTest(value = SendFilesApi.class, excludeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
   classes = JwtAuthenticationFilter.class))
@@ -99,5 +104,45 @@ class SendFilesControllerTest {
         .param("digest", digest)
         .contentType(MediaType.MULTIPART_FORM_DATA)
       ).andExpect(status().isAccepted());
+  }
+
+  @Test
+  void givenCorrectRequestWhenDownloadSendFileThenReturnFile() throws Exception {
+    Long organizationId = 1L;
+    String sendNotificationId = "NOTIFICATIONID";
+    String fileName = "test.txt";
+    String fileContent = "this is a test file";
+    String filePath = "/shared/test.txt";
+
+    FileResourceDTO fileResourceDTO = new FileResourceDTO();
+    fileResourceDTO.setFileName(fileName);
+    fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
+
+    Mockito.when(serviceMock.downloadSendFile(Mockito.eq(organizationId), Mockito.eq(sendNotificationId), Mockito.eq(filePath),
+        Mockito.same(loggedUser), Mockito.same(accessToken)))
+      .thenReturn(fileResourceDTO);
+
+    mockMvc.perform(get("/organization/{organizationId}/send-files/{sendNotificationId}", organizationId, sendNotificationId)
+        .queryParam("filePath", filePath)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM))
+      .andExpect(status().isOk())
+      .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
+      .andExpect(content().string(fileContent));
+  }
+
+  @Test
+  void givenNonExistentFileWhenDownloadSendFileThenReturnNotFound() throws Exception {
+    Long organizationId = 1L;
+    String sendNotificationId = "NOTIFICATIONID";
+    String filePath = "/shared/test.txt";
+
+    Mockito.when(serviceMock.downloadSendFile(Mockito.eq(organizationId), Mockito.eq(sendNotificationId), Mockito.eq(filePath),
+        Mockito.same(loggedUser), Mockito.same(accessToken)))
+      .thenThrow(new FileNotFoundException("FILE_NOT_FOUND", "File not found"));
+
+    mockMvc.perform(get("/organization/{organizationId}/send-files/{sendNotificationId}", organizationId, sendNotificationId)
+        .queryParam("filePath", filePath)
+        .contentType(MediaType.APPLICATION_OCTET_STREAM))
+      .andExpect(status().isNotFound());
   }
 }

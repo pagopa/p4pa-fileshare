@@ -62,9 +62,10 @@ public class FileStorerService {
    * The normalized path still starts with the first path.
    */
   public static Path concatenatePaths(String firstPath, String secondPath) {
-    Path concatenatedPath = Paths.get(firstPath, secondPath).normalize();
-    if (!concatenatedPath.startsWith(firstPath)) {
-      log.debug("Invalid file path");
+    Path normalizedBase = Path.of(firstPath).normalize();
+    Path concatenatedPath = normalizedBase.resolve(secondPath).normalize();
+
+    if (!concatenatedPath.startsWith(normalizedBase)) {
       throw new InvalidFileException("INVALID_FILE_PATH", "Invalid file path");
     }
     return concatenatedPath;
