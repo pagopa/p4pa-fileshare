@@ -1,9 +1,12 @@
 package it.gov.pagopa.pu.fileshare.service;
 
 import it.gov.pagopa.pu.fileshare.connector.auth.client.AuthnClient;
+import it.gov.pagopa.pu.fileshare.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidAccessTokenException;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.p4paorganization.dto.generated.Organization;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -11,6 +14,7 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.CsvSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 
@@ -21,10 +25,21 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class AuthorizationServiceTest {
 
-  @InjectMocks
-  private AuthorizationService authorizationService;
   @Mock
   private AuthnClient authClientImplMock;
+  @Mock
+  private OrganizationService organizationServiceMock;
+
+  @InjectMocks
+  private AuthorizationService authorizationService;
+
+  @AfterEach
+  void verifyNoMoreInteractions() {
+    Mockito.verifyNoMoreInteractions(
+      authClientImplMock,
+      organizationServiceMock
+    );
+  }
 
   @Test
   void givenValidAccessTokenWhenValidateTokenThenOk() {
@@ -45,6 +60,192 @@ class AuthorizationServiceTest {
   }
 
   @Test
+  void givenAdminRoleWhenValidateAdminRoleOrBrokerAdminThenReturnOrgFiscalCode() {
+    // Given
+    String accessToken = "accessToken";
+    long organizationId = 1L;
+    String expectedOrgFiscalCode = "ORG_FISCAL_CODE";
+
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(organizationId);
+    userAdminRole.setOrganizationFiscalCode(expectedOrgFiscalCode);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(2L);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+
+    // When
+    String result = authorizationService.validateAdminRoleOrBrokerAdmin(organizationId, userInfo, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedOrgFiscalCode, result);
+  }
+
+  @Test
+  void givenNoAdminRoleAndNotOrganizationWhenValidateAdminRoleThenAuthorizationDeniedException() {
+    // Given
+    Long organizationId = 2L;
+    String accessToken = "accessToken";
+
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(1L);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    userInfo.setMappedExternalUserId("externalUserId");
+
+    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+      .thenReturn(null);
+
+    // When
+    AuthorizationDeniedException result = Assertions.assertThrows(
+      AuthorizationDeniedException.class,
+      () -> authorizationService.validateAdminRoleOrBrokerAdmin(organizationId, userInfo, accessToken));
+
+    // Then
+    Assertions.assertEquals("[USER_UNAUTHORIZED] Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
+  }
+
+  @Test
+  void givenNoAdminRoleAndNotOrgBrokerIdWhenValidateAdminRoleThenAuthorizationDeniedException() {
+    // Given
+    Long organizationId = 2L;
+    String accessToken = "accessToken";
+
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(1L);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    userInfo.setMappedExternalUserId("externalUserId");
+
+    Organization organization = new Organization();
+
+    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+      .thenReturn(organization);
+
+    // When
+    AuthorizationDeniedException result = Assertions.assertThrows(
+      AuthorizationDeniedException.class,
+      () -> authorizationService.validateAdminRoleOrBrokerAdmin(organizationId, userInfo, accessToken));
+
+    // Then
+    Assertions.assertEquals("[USER_UNAUTHORIZED] Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
+  }
+
+  @Test
+  void givenNoAdminRoleAndBrokerIdNotMatchedWhenValidateAdminRoleThenAuthorizationDeniedException() {
+    // Given
+    Long organizationId = 2L;
+    Long brokerId = 1L;
+    String accessToken = "accessToken";
+
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(1L);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setBrokerId(-1L);
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    userInfo.setMappedExternalUserId("externalUserId");
+
+    Organization org = new Organization();
+    org.setBrokerId(brokerId);
+
+    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+      .thenReturn(org);
+
+    // When
+    AuthorizationDeniedException result = Assertions.assertThrows(
+      AuthorizationDeniedException.class,
+      () -> authorizationService.validateAdminRoleOrBrokerAdmin(organizationId, userInfo, accessToken));
+
+    // Then
+    Assertions.assertEquals("[USER_UNAUTHORIZED] Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
+  }
+
+  @Test
+  void givenNoAdminRoleAndBrokerIdMatchedAndNotAdminOnBrokerWhenValidateAdminRoleThenAuthorizationDeniedException() {
+    // Given
+    Long organizationId = 2L;
+    Long brokerId = 10L;
+    String accessToken = "accessToken";
+    String brokerFiscalCode = "BROKER_FISCAL_CODE";
+
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationId(1L);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setBrokerId(brokerId);
+    userInfo.setBrokerFiscalCode(brokerFiscalCode);
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    userInfo.setMappedExternalUserId("externalUserId");
+
+    Organization org = new Organization();
+    org.setBrokerId(brokerId);
+
+    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+      .thenReturn(org);
+
+    // When
+    AuthorizationDeniedException result = Assertions.assertThrows(
+      AuthorizationDeniedException.class,
+      () -> authorizationService.validateAdminRoleOrBrokerAdmin(organizationId, userInfo, accessToken));
+
+    // Then
+    Assertions.assertEquals("[USER_UNAUTHORIZED] Access denied on brokerOrgFiscalCode BROKER_FISCAL_CODE to user externalUserId", result.getMessage());
+  }
+
+  @Test
+  void givenNoAdminRoleAndBrokerIdMatchedAndAdminOnBrokerWhenValidateAdminRoleThenReturnOrgFiscalCode() {
+    // Given
+    Long organizationId = 2L;
+    Long brokerId = 1L;
+    String accessToken = "accessToken";
+    String brokerFiscalCode = "BROKER_FISCAL_CODE";
+    String expectedOrgFiscalCode = "ORG_FISCAL_CODE";
+
+    UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
+    userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
+    userAdminRole.setOrganizationFiscalCode(brokerFiscalCode);
+    userAdminRole.setOrganizationId(1L);
+    UserOrganizationRoles userTestRole = new UserOrganizationRoles();
+    userTestRole.setRoles(List.of("TEST"));
+    userTestRole.setOrganizationId(organizationId);
+    UserInfo userInfo = new UserInfo();
+    userInfo.setBrokerId(brokerId);
+    userInfo.setBrokerFiscalCode(brokerFiscalCode);
+    userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
+    userInfo.setMappedExternalUserId("externalUserId");
+
+    Organization org = new Organization();
+    org.setBrokerId(brokerId);
+    org.setOrgFiscalCode(expectedOrgFiscalCode);
+
+    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+      .thenReturn(org);
+
+    // When
+    String result = authorizationService.validateAdminRoleOrBrokerAdmin(organizationId, userInfo, accessToken);
+
+    // Then
+    Assertions.assertSame(expectedOrgFiscalCode, result);
+  }
+
+  @Test
   void givenAdminRoleWhenValidateAdminRoleThenOK() {
     UserOrganizationRoles userAdminRole = new UserOrganizationRoles();
     userAdminRole.setRoles(List.of("TEST","ROLE_ADMIN"));
@@ -54,7 +255,8 @@ class AuthorizationServiceTest {
     userTestRole.setOrganizationId(2L);
     UserInfo userInfo = new UserInfo();
     userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
-    authorizationService.validateAdminRole(1L,userInfo);
+
+    AuthorizationService.validateAdminRole(1L,userInfo);
   }
 
   @Test
@@ -68,11 +270,39 @@ class AuthorizationServiceTest {
     UserInfo userInfo = new UserInfo();
     userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
     userInfo.setMappedExternalUserId("externalUserId");
+
     AuthorizationDeniedException result = Assertions.assertThrows(
       AuthorizationDeniedException.class,
-      () -> authorizationService.validateAdminRole(2L,userInfo));
+      () -> AuthorizationService.validateAdminRole(2L,userInfo));
 
     Assertions.assertEquals("[USER_UNAUTHORIZED] Access denied on organizationId " + 2L + " to user externalUserId", result.getMessage());
+  }
+
+  @ParameterizedTest
+  @CsvSource({
+    "orgFiscalCode, orgFiscalCode, false",
+    "orgFiscalCode, adminOrgFiscalCode, true"
+  })
+  void testValidateBrokerAdminRole(String brokerFiscalCode,
+                                   String adminOrgFiscalCode,
+                                   boolean expectError) {
+    // Given
+    UserInfo userInfo = new UserInfo();
+    userInfo.setMappedExternalUserId("userId");
+    userInfo.setBrokerFiscalCode(brokerFiscalCode);
+    userInfo.setOrganizations(List.of(
+      new UserOrganizationRoles("OID1", 1L, "IPA_1", adminOrgFiscalCode, "email", List.of("TEST", "ROLE_ADMIN")),
+      new UserOrganizationRoles("OID2", 2L, "IPA_2", brokerFiscalCode, "email", List.of("TEST"))
+    ));
+
+    // When/Then
+    if (expectError) {
+      Assertions.assertThrows(AuthorizationDeniedException.class,
+        () -> AuthorizationService.validateBrokerAdminRole(userInfo)
+      );
+    } else {
+      Assertions.assertDoesNotThrow(() -> AuthorizationService.validateBrokerAdminRole(userInfo));
+    }
   }
 
   @Test

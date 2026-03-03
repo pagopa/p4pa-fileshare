@@ -18,25 +18,27 @@ import java.nio.file.Path;
 @Service
 public class ReceiptRtRetrieverServiceImpl implements ReceiptRtRetrieverService {
 
+  private final AuthorizationService authorizationService;
   private final ReceiptService receiptService;
   private final FileStorerService fileStorerService;
 
   public ReceiptRtRetrieverServiceImpl(
-    ReceiptService receiptService,
+    AuthorizationService authorizationService, ReceiptService receiptService,
     FileStorerService fileStorerService) {
+    this.authorizationService = authorizationService;
     this.receiptService = receiptService;
     this.fileStorerService = fileStorerService;
   }
 
   @Override
   public FileResourceDTO downloadRt(Long organizationId, Long receiptId, UserInfo user, String accessToken) {
-    AuthorizationService.validateAdminRole(organizationId, user);
+    String orgFiscalCode = authorizationService.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken);
 
     ReceiptNoPII receipt = receiptService.getReceiptById(receiptId, accessToken);
     if(receipt == null){
       throw new ReceiptNotFoundException("RECEIPT_NOT_FOUND", "Cannot find receipt having id " + receiptId);
     }
-    if(!receipt.getOrgFiscalCode().equals(AuthorizationService.getOrgFiscalCodeFromUserInfo(user, organizationId))){
+    if(!receipt.getOrgFiscalCode().equals(orgFiscalCode)){
       throw new OrganizationMissMatchException("INVALID_RECEIPT_ORG_MISMATCH", "Requested receipt ("+ receiptId + ") is not related to the provided organization ("+organizationId+")");
     }
 
