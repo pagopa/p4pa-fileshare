@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
-import it.gov.pagopa.pu.fileshare.connector.pagopapayments.PrintPaymentNoticeService;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
@@ -19,23 +18,14 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
-import it.gov.pagopa.pu.pagopapayments.dto.generated.SignedUrlResultDTO;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.hc.client5.http.impl.classic.CloseableHttpClient;
-import org.apache.hc.client5.http.impl.classic.HttpClients;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.InputStreamResource;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.security.authorization.AuthorizationDeniedException;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Map;
@@ -57,7 +47,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   private final String archivedSubFolder;
   private final String errorsSubFolder;
   private final DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerService;
-  private final PrintPaymentNoticeService printPaymentNoticeService;
 
   private static final Map<IngestionFlowFileType, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum> fileTypeMapping = Map.ofEntries(
     entry(DP_INSTALLMENTS, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS),
@@ -87,7 +76,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     FoldersPathsConfig foldersPathsConfig,
     IngestionFlowFileService ingestionFlowFileService,
     IngestionFlowFileDTOMapper ingestionFlowFileDTOMapper,
-    DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerService, PrintPaymentNoticeService printPaymentNoticeService
+    DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerService
   ) {
     this.userAuthorizationService = userAuthorizationService;
     this.fileService = fileService;
@@ -98,7 +87,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     this.archivedSubFolder = archivedSubFolder;
     this.errorsSubFolder = errorsSubFolder;
     this.duplicateIngestionFlowFileRequestHandlerService = duplicateIngestionFlowFileRequestHandlerService;
-    this.printPaymentNoticeService = printPaymentNoticeService;
   }
 
   @Override
@@ -164,13 +152,8 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   @Override
   public FileResourceDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
     IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
-    SignedUrlResultDTO signedUrlResultDTO = printPaymentNoticeService.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken);
 
-    if (signedUrlResultDTO.getSignedUrl() == null) {
-      throw new IllegalStateException(String.format("[INVALID_URL] Signed URL not available for ingestionFlowFileId: %s", ingestionFlowFileId));
-    }
-
-    return downloadNotice(organizationId, ingestionFlowFileId, signedUrlResultDTO.getSignedUrl(), ingestionFlowFile);
+    return downloadFileWithSuffix(ingestionFlowFile, "_notice.zip");
   }
 
   @Override
@@ -184,33 +167,18 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
         ingestionFlowFile.getIngestionFlowFileType()));
     }
 
-    String iuvFileName = ingestionFlowFile.getFileName().replace(".zip", "_iuv.zip");
-    Path filePath = getIuvZipFilePath(ingestionFlowFile, iuvFileName);
-
-    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, iuvFileName);
-
-    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), iuvFileName);
+    return downloadFileWithSuffix(ingestionFlowFile, "_iuv.zip");
   }
 
-  private static FileResourceDTO downloadNotice(Long organizationId, Long ingestionFlowFileId, String signedUrl, IngestionFlowFile ingestionFlowFile) {
-    try {
-      CloseableHttpClient httpClient = HttpClients.custom()
-        .disableRedirectHandling()
-        .build();
-      HttpComponentsClientHttpRequestFactory factory = new HttpComponentsClientHttpRequestFactory(httpClient);
+  private FileResourceDTO downloadFileWithSuffix(IngestionFlowFile ingestionFlowFile, String suffix) {
+    String newFileName = ingestionFlowFile.getFileName().replace(".zip", suffix);
 
-      RestTemplate restTemplate = new RestTemplate(factory);
-      URI uri = URI.create(signedUrl);
-      ResponseEntity<byte[]> response = restTemplate.getForEntity(uri, byte[].class);
-      if (response.getBody() == null) {
-        throw new IllegalStateException(String.format("[INVALID_FILE_EMPTY] Downloaded file in the signed url: %s with ingestionFlowFileId: %s is empty", signedUrl, ingestionFlowFileId));
-      }
-      return new FileResourceDTO(new ByteArrayResource(response.getBody()), ingestionFlowFile.getFileName().replace(".zip", "_notice.zip"));
+    Path filePath = fileStorerService.getUploadedOrArchivedPath(
+      ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), newFileName).getParent();
 
-    } catch (RestClientException e) {
-      log.error("Error downloading notice for organizationId {} and fileId {}", organizationId, ingestionFlowFileId, e);
-      throw e;
-    }
+    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, newFileName);
+
+    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), newFileName);
   }
 
   private IngestionFlowFile authorizeDownload(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
@@ -245,11 +213,6 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName())
       .getParent();
-  }
-
-  private Path getIuvZipFilePath(IngestionFlowFile ingestionFlowFile, String iuvFileName) {
-    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder,
-      ingestionFlowFile.getFilePathName(), iuvFileName).getParent();
   }
 
   private String getFileVersion(IngestionFlowFileType ingestionFlowFileType, String fileName, String accessToken) {
