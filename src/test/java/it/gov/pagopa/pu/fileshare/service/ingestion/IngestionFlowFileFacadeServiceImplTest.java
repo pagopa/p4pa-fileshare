@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
-import it.gov.pagopa.pu.fileshare.connector.pagopapayments.PrintPaymentNoticeService;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
@@ -17,7 +16,6 @@ import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
-import it.gov.pagopa.pu.pagopapayments.dto.generated.SignedUrlResultDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -26,21 +24,15 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
-import org.mockito.MockedConstruction;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
-import org.springframework.http.ResponseEntity;
-import org.springframework.http.client.HttpComponentsClientHttpRequestFactory;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authorization.AuthorizationDeniedException;
-import org.springframework.web.client.RestClientException;
-import org.springframework.web.client.RestTemplate;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.nio.file.Path;
 import java.util.List;
 
@@ -68,8 +60,6 @@ class IngestionFlowFileFacadeServiceImplTest {
   private IngestionFlowFileDTOMapper ingestionFlowFileDTOMapperMock;
   @Mock
   private DuplicateIngestionFlowFileRequestHandlerService duplicateIngestionFlowFileRequestHandlerServiceMock;
-  @Mock
-  private PrintPaymentNoticeService printPaymentNoticeServiceMock;
 
   private IngestionFlowFileFacadeServiceImpl ingestionFlowFileService;
 
@@ -84,8 +74,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       foldersPathsConfigMock,
       ingestionFlowFileServiceMock,
       ingestionFlowFileDTOMapperMock,
-      duplicateIngestionFlowFileRequestHandlerServiceMock,
-      printPaymentNoticeServiceMock);
+      duplicateIngestionFlowFileRequestHandlerServiceMock);
   }
 
   @AfterEach
@@ -97,8 +86,7 @@ class IngestionFlowFileFacadeServiceImplTest {
       foldersPathsConfigMock,
       ingestionFlowFileServiceMock,
       ingestionFlowFileDTOMapperMock,
-      duplicateIngestionFlowFileRequestHandlerServiceMock,
-      printPaymentNoticeServiceMock);
+      duplicateIngestionFlowFileRequestHandlerServiceMock);
   }
 
   @ParameterizedTest
@@ -549,154 +537,55 @@ class IngestionFlowFileFacadeServiceImplTest {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long ingestionFlowFileId = 10L;
-    String fileName = "notice.zip";
-    String pdfGeneratedId = "pdf123";
-    String signedUrl = "http://example.com/notice.zip";
-    byte[] fileContent = "test content".getBytes();
+    String fileName = "file.zip";
+    String filePathName = "examplePath";
+    String noticeFileName = "file_notice.zip";
+    Path organizationBasePath = Path.of("/organizationFolder");
+    Path archiveFolderPath = organizationBasePath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
 
     UserInfo user = TestUtils.getSampleAdminUser();
 
     IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
     ingestionFlowFile.setIngestionFlowFileId(1L);
     ingestionFlowFile.setOrganizationId(organizationId);
-    ingestionFlowFile.setPdfGeneratedId(pdfGeneratedId);
     ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
     ingestionFlowFile.setFileName(fileName);
+    ingestionFlowFile.setFilePathName(filePathName);
 
-    SignedUrlResultDTO signedUrlResultDTO = new SignedUrlResultDTO(null, List.of("notice"), signedUrl);
+    byte[] fileContent = "test content".getBytes();
+    InputStream decryptedInputStream = new ByteArrayInputStream(fileContent);
 
     when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
       .thenReturn(ingestionFlowFile);
 
-    when(printPaymentNoticeServiceMock.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken))
-      .thenReturn(signedUrlResultDTO);
+    when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, filePathName, noticeFileName))
+      .thenReturn(archiveFolderPath.resolve(noticeFileName));
 
-    try (
-      MockedConstruction<HttpComponentsClientHttpRequestFactory> ignoredFactory = Mockito.mockConstruction(HttpComponentsClientHttpRequestFactory.class);
-      MockedConstruction<RestTemplate> ignoredRestTemplate = Mockito.mockConstruction(RestTemplate.class,
-        (mock, context) -> when(mock.getForEntity(URI.create(signedUrl), byte[].class))
-          .thenReturn(ResponseEntity.ok(fileContent)))
-    ) {
-      FileResourceDTO result = ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken);
+    when(fileStorerServiceMock.decryptFile(archiveFolderPath, noticeFileName))
+      .thenReturn(decryptedInputStream);
 
-      assertNotNull(result);
-      assertEquals("notice_notice.zip", result.getFileName());
-      assertArrayEquals(fileContent, result.getResourceStream().getContentAsByteArray());
-      Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    }
+    FileResourceDTO result = ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken);
+
+    assertNotNull(result);
+    assertEquals(noticeFileName, result.getFileName());
+    assertArrayEquals(fileContent, result.getResourceStream().getContentAsByteArray());
+    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
-  void givenSignedUrlNullWhenDownloadNoticeThenThrowIllegalStateException() {
+  void givenIngestionFlowFileNotFoundWhenDownloadNoticeThenThrowFileNotFoundException() {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long ingestionFlowFileId = 10L;
-    String fileName = "notice.zip";
-    String pdfGeneratedId = "pdf123";
 
-    UserInfo user = TestUtils.getSampleAdminUser();
+    UserInfo user = TestUtils.getSampleUser();
 
-    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
-    ingestionFlowFile.setIngestionFlowFileId(1L);
-    ingestionFlowFile.setOrganizationId(organizationId);
-    ingestionFlowFile.setPdfGeneratedId(pdfGeneratedId);
-    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
-    ingestionFlowFile.setFileName(fileName);
+    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken)).thenReturn(null);
 
-    SignedUrlResultDTO signedUrlResultDTO = new SignedUrlResultDTO(null, null, null);
-
-    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
-      .thenReturn(ingestionFlowFile);
-
-    when(printPaymentNoticeServiceMock.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken))
-      .thenReturn(signedUrlResultDTO);
-
-    IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
+    Assertions.assertThrows(FileNotFoundException.class, () ->
       ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
-    assertEquals("[INVALID_URL] Signed URL not available for ingestionFlowFileId: 10", exception.getMessage());
     Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-
-  }
-
-  @Test
-  void givenNoticeNullWhenDownloadNoticeThenThrowIllegalStateException() {
-    String accessToken = "TOKEN";
-    Long organizationId = 1L;
-    Long ingestionFlowFileId = 10L;
-    String fileName = "notice.zip";
-    String pdfGeneratedId = "pdf123";
-    String signedUrl = "http://example.com/notice.zip";
-
-    UserInfo user = TestUtils.getSampleAdminUser();
-
-    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
-    ingestionFlowFile.setIngestionFlowFileId(1L);
-    ingestionFlowFile.setOrganizationId(organizationId);
-    ingestionFlowFile.setPdfGeneratedId(pdfGeneratedId);
-    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
-    ingestionFlowFile.setFileName(fileName);
-
-    SignedUrlResultDTO signedUrlResultDTO = new SignedUrlResultDTO(null, List.of("notice"), signedUrl);
-
-    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
-      .thenReturn(ingestionFlowFile);
-
-    when(printPaymentNoticeServiceMock.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken))
-      .thenReturn(signedUrlResultDTO);
-
-    try (
-      MockedConstruction<HttpComponentsClientHttpRequestFactory> ignoredFactory = Mockito.mockConstruction(HttpComponentsClientHttpRequestFactory.class);
-      MockedConstruction<RestTemplate> ignoredRestTemplate = Mockito.mockConstruction(RestTemplate.class,
-        (mock, context) -> when(mock.getForEntity(URI.create(signedUrl), byte[].class))
-          .thenReturn(ResponseEntity.ok(null)))
-    ) {
-      IllegalStateException exception = assertThrows(IllegalStateException.class, () ->
-        ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
-
-      assertEquals("[INVALID_FILE_EMPTY] Downloaded file in the signed url: http://example.com/notice.zip with ingestionFlowFileId: 10 is empty", exception.getMessage());
-      Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    }
-  }
-
-  @Test
-  void givenClientExceptionWhenDownloadNoticeThenThrowRestClientException() {
-    String accessToken = "TOKEN";
-    Long organizationId = 1L;
-    Long ingestionFlowFileId = 10L;
-    String fileName = "notice.zip";
-    String pdfGeneratedId = "pdf123";
-    String signedUrl = "http://example.com/notice.zip";
-
-    UserInfo user = TestUtils.getSampleAdminUser();
-
-    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
-    ingestionFlowFile.setIngestionFlowFileId(1L);
-    ingestionFlowFile.setOrganizationId(organizationId);
-    ingestionFlowFile.setPdfGeneratedId(pdfGeneratedId);
-    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
-    ingestionFlowFile.setFileName(fileName);
-
-    SignedUrlResultDTO signedUrlResultDTO = new SignedUrlResultDTO(null, List.of("notice"), signedUrl);
-
-    when(ingestionFlowFileServiceMock.getIngestionFlowFile(ingestionFlowFileId, accessToken))
-      .thenReturn(ingestionFlowFile);
-
-    when(printPaymentNoticeServiceMock.getSignedUrl(organizationId, ingestionFlowFile.getPdfGeneratedId(), accessToken))
-      .thenReturn(signedUrlResultDTO);
-
-    try (
-      MockedConstruction<HttpComponentsClientHttpRequestFactory> ignoredFactory = Mockito.mockConstruction(HttpComponentsClientHttpRequestFactory.class);
-      MockedConstruction<RestTemplate> ignoredRestTemplate = Mockito.mockConstruction(RestTemplate.class,
-        (mock, context) -> when(mock.getForEntity(URI.create(signedUrl), byte[].class))
-          .thenThrow(new RestClientException("Error")))
-    ) {
-      RestClientException exception = assertThrows(RestClientException.class, () ->
-        ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
-
-      assertEquals("Error", exception.getMessage());
-      Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    }
   }
 
   @Test
@@ -741,7 +630,7 @@ class IngestionFlowFileFacadeServiceImplTest {
   }
 
   @Test
-  void givenTypeNotDPInstallmentsWhenDownloadIuvFileThenThrowIllegalStateException() {
+  void givenTypeNotDPInstallmentsWhenDownloadIuvFileThenThrowInvalidFileTypeException() {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long ingestionFlowFileId = 10L;
