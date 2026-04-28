@@ -60,7 +60,6 @@ val httpClientVersion = "5.6.1"
 val httpCoreVersion = "5.4.2"
 val commonsLang3Version = "3.20.0"
 
-
 dependencies {
   implementation("org.springframework.boot:spring-boot-starter-webmvc")
   implementation("org.springframework.boot:spring-boot-starter-opentelemetry")
