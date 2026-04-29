@@ -2,7 +2,9 @@
 
 This application belong to the **inbound/outbound** tier of the **Piattaforma Unitaria** product.
 
-See [PU Microservice Architecture](https://pagopa.atlassian.net/wiki/spaces/SPAC/pages/1405845916/Architettura+microservizi) for more details.
+See [PU Microservice Architecture](https://raw.githubusercontent.com/pagopa/p4pa-doc/refs/heads/main/reference/technical-docs/Architettura_microservizi.pdf) for more details.
+
+See [p4pa-doc](https://github.com/pagopa/p4pa-doc) for further documentation.
 
 ## 🧱 Role
 
@@ -53,8 +55,6 @@ See [log configured pattern](/src/main/resources/logback-spring.xml).
   * To validate access token and retrieve user info;
 * [p4pa-organization](https://github.com/pagopa/p4pa-organization):
   * To validate organization status;
-* [p4pa-pagopa-payments](https://github.com/pagopa/p4pa-pagopa-payments):
-  * To download single notices;
 * [p4pa-process-executions](https://github.com/pagopa/p4pa-process-executions):
   * To start file ingestion processing;
   * To retrieve ingestion file info;
