@@ -1,18 +1,147 @@
+server:
+  http: "\${SERVER_PORT:8080}"
+
 spring:
-    application:
-      name: ${artifactId}
-      version: ${version}
-    jmx.enabled: true
+  application:
+    name: ${artifactId}
+    version: ${version}
+  jmx.enabled: true
+  threads:
+    virtual:
+      enabled: "\${VIRTUAL_THREADS_ENABLED:true}"
+  servlet:
+    multipart:
+      max-file-size: "\${MULTIPART_MAX_FILE_SIZE:50MB}"
+      max-request-size: "\${MULTIPART_MAX_REQUEST_SIZE:50MB}"
+
 management:
-    endpoint:
-      health:
-        probes.enabled: true
-        group:
-          readiness.include: "*"
-          liveness.include: livenessState,diskSpace,ping
-    endpoints:
-      jmx:
-        exposure.include: "*"
-      web:
-        exposure.include: info, health
+  info:
+    build.enabled: true
+    java.enabled: true
+    git.enabled: true
+  otlp.metrics.export.enabled: "\${TRACING_EXPORT:false}"
+  tracing:
+    sampling.probability: "\${TRACING_SAMPLING_PROBABILITY:1.0}"
+    baggage.remote-fields:
+      - X-user-id
+  observations:
+    http.server:
+        filter.order: -100
+  endpoints:
+    jmx:
+      exposure.include: "*"
+    web:
+      exposure:
+        include: health, info, prometheus, metrics
+      base-path: /actuator
+  endpoint:
+    health:
+      probes.enabled: true
+      logging.slow-indicator-threshold: "\${HEALTH_ACTUATOR_LOGGER_TIMEOUT_DURATION:PT1S}"
+      show-details: "\${HEALTH_ACTUATOR_SHOW_DETAILS:when-authorized}"
+      group:
+        readiness.include: "*"
+        liveness.include: livenessState,diskSpace,ping
+    prometheus:
+      enabled: true
+  metrics:
+    tags:
+      application: ${artifactId}
+    export:
+      prometheus:
+        enabled: true
+        step: 1m
+        descriptions: true
+    enable:
+      jvm: true
+      process: true
+      system: true
+      http: true
+      logback: true
+
+logging:
+  level:
+    root: "\${LOG_LEVEL_ROOT:INFO}"
+    it.gov.pagopa: "\${LOG_LEVEL_PAGOPA:INFO}"
+    org.springframework: "\${LOG_LEVEL_SPRING:INFO}"
+    org.springframework.boot.availability: "\${LOG_LEVEL_SPRING_BOOT_AVAILABILITY:DEBUG}"
+    it.gov.pagopa.pu.fileshare.exception.FileshareExceptionHandler: "\${LOGGING_LEVEL_API_REQUEST_EXCEPTION:INFO}"
+    org.springdoc.core.utils.SpringDocAnnotationsUtils: "\${LOG_LEVEL_SPRING_DOC:ERROR}"
+    PERFORMANCE_LOG: "\${LOG_LEVEL_PERFORMANCE_LOG:INFO}"
+    PERFORMANCE_LOG.API_REQUEST: "\${LOG_LEVEL_PERFORMANCE_LOG_API_REQUEST:\${logging.level.PERFORMANCE_LOG}}"
+    PERFORMANCE_LOG.REST_INVOKE: "\${LOG_LEVEL_PERFORMANCE_LOG_REST_INVOKE:\${logging.level.PERFORMANCE_LOG}}"
+
+springdoc:
+  api-docs.version: openapi_3_0
+  writer-with-default-pretty-printer: true
+
+folders:
+  shared: "\${SHARED_FOLDER_ROOT:/shared}"
+  tmp: "\${TMP_FOLDER:/tmp}"
+  process-target-sub-folders:
+    archive: "\${PROCESS_TARGET_SUB_FOLDER_ARCHIVE:archive}"
+    errors: "\${PROCESS_TARGET_SUB_FOLDER_ERRORS:errors}"
+  ingestion-flow-file-type-paths:
+    RECEIPT: "data/receipt"
+    RECEIPT_PAGOPA: "data/receipt/pagopa"
+    PAYMENT_NOTIFICATION: "data/payment_notification"
+    PAYMENTS_REPORTING: "data/payments_reporting"
+    PAYMENTS_REPORTING_PAGOPA: "data/payments_reporting/pagopa"
+    TREASURY_OPI: "data/treasury/opi"
+    TREASURY_CSV: "data/treasury/csv"
+    TREASURY_XLS: "data/treasury/xls"
+    TREASURY_POSTE: "data/treasury/poste"
+    DP_INSTALLMENTS: "data/installment"
+    ORGANIZATIONS: "data/organizations"
+    ORGANIZATIONS_SIL_SERVICE: "data/organizations/sil_service"
+    DEBT_POSITIONS_TYPE: "data/debt_positions/type"
+    DEBT_POSITIONS_TYPE_ORG: "data/debt_positions/type_org"
+    DEBT_POSITIONS_TYPE_ORG_OPERATORS: "data/debt_positions/type_org_operators"
+    TREASURY_CSV_COMPLETE: "data/treasury/csv_complete"
+    ASSESSMENTS: "data/assessments"
+    ASSESSMENTS_REGISTRY: "data/assessments_registry"
+    SEND_NOTIFICATION: "data/send_notification"
+  send-file-folder: "data/send"
+
+rest:
+  defaults:
+    connection-pool:
+      size: "\${DEFAULT_REST_CONNECTION_POOL_SIZE:10}"
+      size-per-route: "\${DEFAULT_REST_CONNECTION_POOL_SIZE_PER_ROUTE:5}"
+      time-to-live-minutes: "\${DEFAULT_REST_CONNECTION_POOL_TIME_TO_LIVE_MINUTES:10}"
+    timeout:
+      connect-millis: "\${DEFAULT_REST_TIMEOUT_CONNECT_MILLIS:120000}"
+      read-millis: "\${DEFAULT_REST_TIMEOUT_READ_MILLIS:120000}"
+  auth:
+    base-url: "\${AUTH_SERVER_BASE_URL:}"
+    max-attempts: "\${AUTH_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${AUTH_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${AUTH_PRINT_BODY_WHEN_ERROR:true}"
+  organization:
+    base-url: "\${ORGANIZATION_BASE_URL:}"
+    max-attempts: "\${ORGANIZATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${ORGANIZATION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${ORGANIZATION_PRINT_BODY_WHEN_ERROR:true}"
+  process-executions:
+    base-url: "\${PROCESS_EXECUTIONS_BASE_URL:}"
+    max-attempts: "\${PROCESS_EXECUTIONS_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${PROCESS_EXECUTIONS_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${PROCESS_EXECUTIONS_PRINT_BODY_WHEN_ERROR:true}"
+  send-notification:
+    base-url: "\${SEND_NOTIFICATION_BASE_URL:}"
+    max-attempts: "\${SEND_NOTIFICATION_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${SEND_NOTIFICATION_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${SEND_NOTIFICATION_PRINT_BODY_WHEN_ERROR:true}"
+  pagopa-payments:
+    base-url: "\${PAGOPA_PAYMENTS_BASE_URL:}"
+    max-attempts: "\${PAGOPA_PAYMENTS_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${PAGOPA_PAYMENTS_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${PAGOPA_PAYMENTS_PRINT_BODY_WHEN_ERROR:true}"
+  debt-positions:
+    base-url: "\${DEBT_POSITIONS_BASE_URL:}"
+    max-attempts: "\${DEBT_POSITIONS_MAX_ATTEMPTS:3}" # It's counting also the first attempt
+    wait-time-millis: "\${DEBT_POSITIONS_WAIT_TIME_MILLIS:500}"
+    print-body-when-error: "\${DEBT_POSITIONS_PRINT_BODY_WHEN_ERROR:true}"
+
 app:
+  fileEncryptPassword: "\${FILE_ENCRYPT_PASSWORD:ENCR_PSW}"
