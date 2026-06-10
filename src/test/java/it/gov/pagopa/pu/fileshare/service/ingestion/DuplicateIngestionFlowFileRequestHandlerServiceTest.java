@@ -19,6 +19,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
@@ -90,7 +91,7 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     String fileName = "NOT_EXISTENT_FILE";
 
     Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
-      .thenReturn(null);
+      .thenReturn(List.of());
 
     // When, Then
     Assertions.assertDoesNotThrow(() -> service.handleDuplicateFile(organizationId, ARCHIVE_FOLDER, filePathName, fileName, accessToken));
@@ -113,7 +114,7 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     String fileName = filePath.getFileName().toString().replace(".cipher", "");
 
     Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
-      .thenReturn(null);
+      .thenReturn(List.of());
 
     long previousMillis = System.currentTimeMillis();
 
@@ -146,19 +147,22 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
   }
 //endregion
 
-  //region KnownIngestionFlowFile
+//region KnownIngestionFlowFile
   @Test
   void givenKnownIngestionFlowFileNotErrorWhenHandleDuplicateFileThenRenameIt() {
     // Given
     String fileName = "NOT_EXISTENT_FILE";
-    long ingestionFlowFileId = System.currentTimeMillis();
 
-    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
-    ingestionFlowFile.setStatus(IngestionFlowFileStatus.PROCESSING);
-    ingestionFlowFile.setIngestionFlowFileId(ingestionFlowFileId);
+    IngestionFlowFile firstAttempt = new IngestionFlowFile();
+    firstAttempt.setIngestionFlowFileId(0L);
+    firstAttempt.setStatus(IngestionFlowFileStatus.ERROR);
+
+    IngestionFlowFile lastAttempt = new IngestionFlowFile();
+    lastAttempt.setIngestionFlowFileId(10L);
+    lastAttempt.setStatus(IngestionFlowFileStatus.PROCESSING);
 
     Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
-      .thenReturn(ingestionFlowFile);
+      .thenReturn(List.of(firstAttempt, lastAttempt));
 
     // When, Then
     Assertions.assertThrows(FileAlreadyExistsException.class, () -> service.handleDuplicateFile(organizationId, ARCHIVE_FOLDER, filePathName, fileName, accessToken));
@@ -168,18 +172,23 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
   void givenKnownIngestionFlowFileAndNotExistentFileAndNotDiscardFileNameWhenHandleDuplicateFileThenRenameIt() {
     // Given
     String fileName = "NOT_EXISTENT_FILE";
-    long ingestionFlowFileId = System.currentTimeMillis();
+    long lastAttemptIngestionFlowFileId = 10L;
 
-    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
-    ingestionFlowFile.setIngestionFlowFileId(ingestionFlowFileId);
-    ingestionFlowFile.setStatus(IngestionFlowFileStatus.ERROR);
-    ingestionFlowFile.setFileName(fileName);
+    IngestionFlowFile firstAttempt = new IngestionFlowFile();
+    firstAttempt.setIngestionFlowFileId(0L);
+    firstAttempt.setStatus(IngestionFlowFileStatus.ERROR);
+    firstAttempt.setFileName(fileName);
+
+    IngestionFlowFile lastAttempt = new IngestionFlowFile();
+    lastAttempt.setIngestionFlowFileId(lastAttemptIngestionFlowFileId);
+    lastAttempt.setStatus(IngestionFlowFileStatus.ERROR);
+    lastAttempt.setFileName(fileName);
 
     Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
-      .thenReturn(ingestionFlowFile);
+      .thenReturn(List.of(firstAttempt, lastAttempt));
 
-    Mockito.when(ingestionFlowFileServiceMock.updateFileNames(ingestionFlowFileId,
-        buildExpectedNewName(fileName, ingestionFlowFileId),
+    Mockito.when(ingestionFlowFileServiceMock.updateFileNames(lastAttemptIngestionFlowFileId,
+        buildExpectedNewName(fileName, lastAttemptIngestionFlowFileId),
         null,
         accessToken))
       .thenReturn(0);
@@ -203,21 +212,27 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     // Given
     String fileNameNoExtension = filePath.getFileName().toString().replace(fileExtension, "");
     String fileName = filePath.getFileName().toString().replace(".cipher", "");
-    long ingestionFlowFileId = System.currentTimeMillis();
+    long lastAttemptIngestionFlowFileId = 10L;
     Path discardFilePath = createDiscardFile();
 
-    IngestionFlowFile ingestionFlowFile = new IngestionFlowFile();
-    ingestionFlowFile.setIngestionFlowFileId(ingestionFlowFileId);
-    ingestionFlowFile.setStatus(IngestionFlowFileStatus.ERROR);
-    ingestionFlowFile.setFileName(fileName);
-    ingestionFlowFile.setDiscardFileName(discardFilePath.getFileName().toString().replace(".cipher", ""));
+    IngestionFlowFile firstAttempt = new IngestionFlowFile();
+    firstAttempt.setIngestionFlowFileId(0L);
+    firstAttempt.setStatus(IngestionFlowFileStatus.ERROR);
+    firstAttempt.setFileName(fileName);
+    firstAttempt.setDiscardFileName(discardFilePath.getFileName().toString().replace(".cipher", ""));
+
+    IngestionFlowFile lastAttempt = new IngestionFlowFile();
+    lastAttempt.setIngestionFlowFileId(lastAttemptIngestionFlowFileId);
+    lastAttempt.setStatus(IngestionFlowFileStatus.ERROR);
+    lastAttempt.setFileName(fileName);
+    lastAttempt.setDiscardFileName(discardFilePath.getFileName().toString().replace(".cipher", ""));
 
     Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
-      .thenReturn(ingestionFlowFile);
+      .thenReturn(List.of(firstAttempt, lastAttempt));
 
-    Mockito.when(ingestionFlowFileServiceMock.updateFileNames(ingestionFlowFileId,
-        buildExpectedNewName(fileName, ingestionFlowFileId),
-        buildExpectedNewName(Objects.requireNonNull(ingestionFlowFile.getDiscardFileName()), ingestionFlowFileId),
+    Mockito.when(ingestionFlowFileServiceMock.updateFileNames(lastAttemptIngestionFlowFileId,
+        buildExpectedNewName(fileName, lastAttemptIngestionFlowFileId),
+        buildExpectedNewName(Objects.requireNonNull(lastAttempt.getDiscardFileName()), lastAttemptIngestionFlowFileId),
         accessToken))
       .thenReturn(0);
 
@@ -225,7 +240,7 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     service.handleDuplicateFile(organizationId, ARCHIVE_FOLDER, filePathName, fileName, accessToken);
 
     // Then
-    assertKnownIngestionFlowFile(ingestionFlowFileId, filePath, fileNameNoExtension, fileExtension, discardFilePath);
+    assertKnownIngestionFlowFile(lastAttemptIngestionFlowFileId, filePath, fileNameNoExtension, fileExtension, discardFilePath);
   }
 
   private String buildExpectedNewName(String fileName, long ingestionFlowFileId){

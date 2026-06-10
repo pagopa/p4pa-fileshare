@@ -12,6 +12,7 @@ import org.springframework.stereotype.Service;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Set;
 
 @Service
@@ -32,7 +33,11 @@ public class DuplicateIngestionFlowFileRequestHandlerService {
   }
 
   void handleDuplicateFile(Long organizationId, String archivedSubFolder, String filePathName, String fileName, String accessToken) {
-    IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
+    //noinspection DataFlowIssue: ingestionFlowFileId cannot be null when returned from DB
+    IngestionFlowFile ingestionFlowFile = ingestionFlowFileService.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken)
+      .stream()
+      .max(Comparator.comparing(IngestionFlowFile::getIngestionFlowFileId))
+      .orElse(null);
     String newFileName;
     if (ingestionFlowFile != null) {
       if (RETRYABLE_STATUSES.contains(ingestionFlowFile.getStatus())) {
