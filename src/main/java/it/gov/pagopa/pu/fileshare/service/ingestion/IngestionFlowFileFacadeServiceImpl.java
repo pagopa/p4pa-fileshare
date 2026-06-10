@@ -123,7 +123,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     return ingestionFlowFileService.createIngestionFlowFile(
       ingestionFlowFileDTOMapper.mapToIngestionFlowFileDTO(ingestionFlowFileId, multipartFile,
-        ingestionFlowFileType, fileOrigin, organizationId, filePath, fileVersion)
+        ingestionFlowFileType, fileOrigin, organizationId, filePath, fileName, fileVersion)
       , accessToken);
   }
 
