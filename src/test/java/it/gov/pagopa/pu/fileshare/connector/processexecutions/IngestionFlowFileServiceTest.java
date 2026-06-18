@@ -83,13 +83,13 @@ class IngestionFlowFileServiceTest {
     String fileName = "FILE_NAME";
 
     String accessToken = "ACCESSTOKEN";
-    IngestionFlowFile expectedResult = new IngestionFlowFile();
+    List<IngestionFlowFile> expectedResult = List.of(new IngestionFlowFile());
 
     Mockito.when(searchClientMock.findByOrganizationIdAndFilePathNameAndFileName(Mockito.same(organizationId), Mockito.same(filePathName), Mockito.same(fileName), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When
-    IngestionFlowFile result = service.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
+    List<IngestionFlowFile> result = service.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
 
     // Then
     Assertions.assertSame(expectedResult, result);

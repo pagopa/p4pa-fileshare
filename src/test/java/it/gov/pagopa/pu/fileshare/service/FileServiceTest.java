@@ -6,6 +6,8 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -67,7 +69,7 @@ class FileServiceTest {
 
   @Test
   void whenValidateVersionFromIngestionFlowFilenameThenOk(){
-    String fileName = "fileName2_0.txt";
+    String fileName = "fileName1234__2_0.txt";
 
     String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
@@ -106,6 +108,19 @@ class FileServiceTest {
   void givenInvalidFilenameWhenValidateVersionFromIngestionFlowFilenameThenInvalidFileException(){
     String fileName = "fileName.txt";
 
+    InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
+      fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS));
+
+    assertEquals("[INVALID_FILE_NAME] File name must contain a valid version: [1_0, 1_1, 1_3, 1_4, 2_0]", ex.getMessage());
+  }
+
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "2_0fileName.txt",
+    "fileName_2026_2_0.txt",
+    "fileName_22_0.txt",
+  })
+  void givenUnknownVersionWhenValidateVersionFromIngestionFlowFilenameThenInvalidFileException(String fileName){
     InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
       fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS));
 

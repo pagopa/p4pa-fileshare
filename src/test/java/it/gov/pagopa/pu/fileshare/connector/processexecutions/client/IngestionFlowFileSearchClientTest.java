@@ -2,7 +2,9 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.config.ProcessExecutionsApisHolder;
 import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileSearchControllerApi;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.CollectionModelIngestionFlowFile;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.PagedModelIngestionFlowFileEmbedded;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -11,8 +13,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.List;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileSearchClientTest {
@@ -44,22 +46,23 @@ class IngestionFlowFileSearchClientTest {
     Long organizationId = 1L;
     String filePathName = "FILE_PATH_NAME";
     String fileName = "FILE_NAME";
-    IngestionFlowFile expectedIngestionFlowFile = new IngestionFlowFile();
+    List<IngestionFlowFile> expectedIngestionFlowFileList = List.of(new IngestionFlowFile());
+    CollectionModelIngestionFlowFile collectionModelIngestionFlowFile = new CollectionModelIngestionFlowFile(new PagedModelIngestionFlowFileEmbedded(expectedIngestionFlowFileList), null);
 
     Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileSearchControllerApi(accessToken))
       .thenReturn(ingestionFlowFileSearchControllerApiMock);
 
     Mockito.when(ingestionFlowFileSearchControllerApiMock.crudIngestionFlowFilesFindByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName))
-      .thenReturn(expectedIngestionFlowFile);
+      .thenReturn(collectionModelIngestionFlowFile);
 
-    IngestionFlowFile result = client.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
+    List<IngestionFlowFile> result = client.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
 
-    Assertions.assertSame(expectedIngestionFlowFile, result);
+    Assertions.assertSame(expectedIngestionFlowFileList, result);
   }
 
 
   @Test
-  void givenHttpClientErrorExceptionOtherStatusWhenGetIngestionFlowFileThenThrowIt() {
+  void givenNullEmbeddedWhenGetIngestionFlowFileThenReturnEmptyList() {
     Long organizationId = 1L;
     String filePathName = "FILE_PATH_NAME";
     String fileName = "FILE_NAME";
@@ -68,11 +71,11 @@ class IngestionFlowFileSearchClientTest {
       .thenReturn(ingestionFlowFileSearchControllerApiMock);
 
     Mockito.when(ingestionFlowFileSearchControllerApiMock.crudIngestionFlowFilesFindByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+      .thenReturn(new CollectionModelIngestionFlowFile(null, null));
 
-    IngestionFlowFile result = client.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
+    List<IngestionFlowFile> result = client.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
 
-    Assertions.assertNull(result);
+    Assertions.assertEquals(List.of(), result);
   }
 
 }

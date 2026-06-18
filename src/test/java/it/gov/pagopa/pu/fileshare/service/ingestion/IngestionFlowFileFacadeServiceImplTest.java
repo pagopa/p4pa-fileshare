@@ -120,7 +120,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
     when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(null, file,
-      IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, fileVersion))
+      IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, fileName, fileVersion))
       .thenReturn(ingestionFlowFileRequestDTO);
     when(ingestionFlowFileServiceMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
       .thenReturn(expectedIngestionFlowFileId);
@@ -168,7 +168,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
     when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(null, file,
-      IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, organizationId, filePath, fileVersion))
+      IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, organizationId, filePath, fileName, fileVersion))
       .thenReturn(ingestionFlowFileRequestDTO);
     when(ingestionFlowFileServiceMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
       .thenReturn(expectedIngestionFlowFileId);
@@ -207,7 +207,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     when(fileStorerServiceMock.saveToSharedFolder(organizationId, file, receiptFilePath, fileName))
       .thenReturn(saveFileResult);
     when(ingestionFlowFileDTOMapperMock.mapToIngestionFlowFileDTO(null, file,
-      IngestionFlowFileType.RECEIPT_PAGOPA, FileOrigin.PAGOPA, organizationId, filePath, null))
+      IngestionFlowFileType.RECEIPT_PAGOPA, FileOrigin.PAGOPA, organizationId, filePath, fileName, null))
       .thenReturn(ingestionFlowFileRequestDTO);
     when(ingestionFlowFileServiceMock.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken))
       .thenReturn(expectedIngestionFlowFileId);

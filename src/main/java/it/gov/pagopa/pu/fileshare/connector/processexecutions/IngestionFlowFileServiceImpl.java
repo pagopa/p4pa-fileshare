@@ -33,7 +33,7 @@ public class IngestionFlowFileServiceImpl implements IngestionFlowFileService {
   }
 
   @Override
-  public IngestionFlowFile findByOrganizationIdAndFilePathNameAndFileName(Long organizationId, String filePathName, String fileName, String accessToken) {
+  public List<IngestionFlowFile> findByOrganizationIdAndFilePathNameAndFileName(Long organizationId, String filePathName, String fileName, String accessToken) {
     return searchClient.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken);
   }
 

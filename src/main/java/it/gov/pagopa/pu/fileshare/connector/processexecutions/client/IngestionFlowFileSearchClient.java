@@ -2,9 +2,11 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.config.ProcessExecutionsApisHolder;
 import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.PagedModelIngestionFlowFileEmbedded;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
-import org.springframework.web.client.HttpClientErrorException;
+
+import java.util.List;
 
 @Slf4j
 @Service
@@ -17,14 +19,13 @@ public class IngestionFlowFileSearchClient {
     this.processExecutionsApisHolder = processExecutionsApisHolder;
   }
 
-  public IngestionFlowFile findByOrganizationIdAndFilePathNameAndFileName(Long organizationId, String filePathName, String fileName, String accessToken) {
-    try {
-      return processExecutionsApisHolder.getIngestionFlowFileSearchControllerApi(accessToken)
-        .crudIngestionFlowFilesFindByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName);
-    } catch (HttpClientErrorException.NotFound e) {
-      log.info("Cannot find IngestionFlowFile related to organizationId {} having filePathName= {}, fileName={}", organizationId, filePathName, fileName);
-      return null;
-    }
+  public List<IngestionFlowFile> findByOrganizationIdAndFilePathNameAndFileName(Long organizationId, String filePathName, String fileName, String accessToken) {
+    PagedModelIngestionFlowFileEmbedded embedded = processExecutionsApisHolder.getIngestionFlowFileSearchControllerApi(accessToken)
+      .crudIngestionFlowFilesFindByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName)
+      .getEmbedded();
+    return embedded != null
+      ? embedded.getIngestionFlowFiles()
+      : List.of();
   }
 
 }

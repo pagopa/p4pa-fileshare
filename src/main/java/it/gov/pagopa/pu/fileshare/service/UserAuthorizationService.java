@@ -20,8 +20,11 @@ public class UserAuthorizationService {
 
   public void checkUserAuthorization(Long organizationId, UserInfo user, String accessToken) {
     Organization organization = organizationService.getOrganizationById(organizationId, accessToken);
-    boolean isAuthorized = OrganizationStatus.ACTIVE.equals(organization.getStatus()) &&
-      user.getOrganizations().stream()
+    if(!OrganizationStatus.ACTIVE.equals(organization.getStatus())) {
+      log.debug("Unauthorized user. [organizationId:{}, organizationStatus:{}]", organizationId, organization.getStatus());
+      throw new AuthorizationDeniedException("[ORGANIZATION_INVALID_STATUS] Access Denied");
+    }
+    boolean isAuthorized = user.getOrganizations().stream()
       .anyMatch(o -> o.getOrganizationIpaCode().equals(organization.getIpaCode())
         && !CollectionUtils.isEmpty(o.getRoles()));
     if(!isAuthorized){

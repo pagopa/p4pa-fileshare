@@ -30,13 +30,13 @@ class IngestionFlowFileDTOMapperTest {
     );
 
     IngestionFlowFileRequestDTO result = mapper.mapToIngestionFlowFileDTO(ingestionFlowFileId, file,
-      IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, fileVersion);
+      IngestionFlowFileType.RECEIPT, FileOrigin.PAGOPA, organizationId, filePath, "fileName", fileVersion);
 
     Assertions.assertNotNull(result);
     assertEquals(ingestionFlowFileId, result.getIngestionFlowFileId());
     assertEquals(organizationId, result.getOrganizationId());
     assertEquals(filePath, result.getFilePathName());
-    assertEquals(file.getOriginalFilename(), result.getFileName());
+    assertEquals("fileName", result.getFileName());
     assertEquals(file.getSize(), result.getFileSize());
     assertEquals(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT, result.getIngestionFlowFileType());
     assertEquals(FileOrigin.PAGOPA.toString(), result.getFileOrigin());

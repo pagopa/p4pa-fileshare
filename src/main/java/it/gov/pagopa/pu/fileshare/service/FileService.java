@@ -14,12 +14,12 @@ import java.util.stream.Stream;
 @Service
 public class FileService {
 
-  public void validateFile(MultipartFile ingestionFlowFile) {
-    if (ingestionFlowFile == null) {
+  public void validateFile(MultipartFile multipartFile) {
+    if (multipartFile == null) {
       log.debug("Invalid ingestion flow file");
       throw new InvalidFileException("INVALID_FILE", "Invalid file");
     }
-    String filename = StringUtils.defaultString(ingestionFlowFile.getOriginalFilename());
+    String filename = StringUtils.defaultString(multipartFile.getOriginalFilename());
     validateFilename(filename);
   }
 
@@ -39,7 +39,7 @@ public class FileService {
     return fileVersions.stream()
       .filter(fileVersion -> {
         String version = replaceCharVersion(fileVersion, ".", "_");
-        return fileName.contains(version);
+        return fileName.matches("^.*([^0-9_]|[^0-9]_)" + version + "\\.[^.]+$");
       })
       .findFirst()
       .orElseThrow(() -> new InvalidFileException("INVALID_FILE_NAME", String.format("File name must contain a valid version: %s",
