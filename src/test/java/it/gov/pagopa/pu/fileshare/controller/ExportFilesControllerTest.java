@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.fileshare.controller.generated.ExportFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
@@ -24,6 +25,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.ByteArrayInputStream;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -38,6 +40,8 @@ class ExportFilesControllerTest {
   private ExportFileFacadeService serviceMock;
   @MockitoBean
   private UpstreamErrorMapper upstreamErrorMapperMock;
+  @MockitoBean
+  private Tracer tracerMock;
 
   private final String accessToken = "ACCESSTOKEN";
   private final UserInfo loggedUser = new UserInfo();
@@ -63,7 +67,7 @@ class ExportFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
+    when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -79,7 +83,7 @@ class ExportFilesControllerTest {
     Long organizationId = 1L;
     Long exportFileId = 123L;
 
-    Mockito.when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
+    when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenThrow(new FileNotFoundException("FILE_NOT_FOUND", "File not found"));
 

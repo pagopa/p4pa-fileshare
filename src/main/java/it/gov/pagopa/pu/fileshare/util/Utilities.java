@@ -33,6 +33,10 @@ public class Utilities {
     return MDC.get("traceId");
   }
 
+  public static String getSpanId(){
+    return MDC.get("spanId");
+  }
+
   public static MultipartFile getExclusivePresenceOrThrow(MultipartFile a, MultipartFile b) {
     if (a != null && b == null) return a;
     if (a == null && b != null) return b;

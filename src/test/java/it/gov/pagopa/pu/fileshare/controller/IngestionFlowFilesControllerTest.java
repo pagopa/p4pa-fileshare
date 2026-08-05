@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
@@ -26,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.ByteArrayInputStream;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -41,6 +43,8 @@ class IngestionFlowFilesControllerTest {
   private IngestionFlowFileFacadeService ingestionFlowFileFacadeServiceMock;
   @MockitoBean
   private UpstreamErrorMapper upstreamErrorMapperMock;
+  @MockitoBean
+  private Tracer tracerMock;
 
   private final String accessToken = "ACCESSTOKEN";
   private final UserInfo loggedUser = new UserInfo();
@@ -67,7 +71,7 @@ class IngestionFlowFilesControllerTest {
       "this is a test file".getBytes()
     );
 
-    Mockito.when(ingestionFlowFileFacadeServiceMock.uploadIngestionFlowFile(Mockito.eq(organizationId),
+    when(ingestionFlowFileFacadeServiceMock.uploadIngestionFlowFile(Mockito.eq(organizationId),
         Mockito.eq(IngestionFlowFileType.RECEIPT), Mockito.eq(FileOrigin.PAGOPA), Mockito.eq(fileName),
         Mockito.eq(file), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
@@ -201,7 +205,7 @@ class IngestionFlowFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(ingestionFlowFileFacadeServiceMock.downloadIngestionFlowFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+    when(ingestionFlowFileFacadeServiceMock.downloadIngestionFlowFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -224,7 +228,7 @@ class IngestionFlowFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(ingestionFlowFileFacadeServiceMock.downloadIngestionFlowErrorsFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+    when(ingestionFlowFileFacadeServiceMock.downloadIngestionFlowErrorsFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -247,7 +251,7 @@ class IngestionFlowFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(ingestionFlowFileFacadeServiceMock.downloadNotice(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+    when(ingestionFlowFileFacadeServiceMock.downloadNotice(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -270,7 +274,7 @@ class IngestionFlowFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(ingestionFlowFileFacadeServiceMock.downloadIuvFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
+    when(ingestionFlowFileFacadeServiceMock.downloadIuvFile(Mockito.eq(organizationId), Mockito.eq(ingestionFlowFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 

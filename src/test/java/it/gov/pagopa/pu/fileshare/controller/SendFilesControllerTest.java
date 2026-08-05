@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.fileshare.controller.generated.SendFilesApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
@@ -26,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.ByteArrayInputStream;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.multipart;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -41,6 +43,8 @@ class SendFilesControllerTest {
   private SendFileFacadeService serviceMock;
   @MockitoBean
   private UpstreamErrorMapper upstreamErrorMapperMock;
+  @MockitoBean
+  private Tracer tracerMock;
 
   private final String accessToken = "ACCESSTOKEN";
   private final UserInfo loggedUser = new UserInfo();
@@ -69,7 +73,7 @@ class SendFilesControllerTest {
 
     StartNotificationResponse expectedResponse = new StartNotificationResponse("ID", "RUNID");
 
-    Mockito.when(serviceMock.uploadSendFile(Mockito.eq(organizationId),
+    when(serviceMock.uploadSendFile(Mockito.eq(organizationId),
         Mockito.eq(sendNotificationId), Mockito.eq(digest), Mockito.eq(file),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(expectedResponse);
@@ -94,7 +98,7 @@ class SendFilesControllerTest {
       "this is a test file".getBytes()
     );
 
-    Mockito.when(serviceMock.uploadSendFile(Mockito.eq(organizationId),
+    when(serviceMock.uploadSendFile(Mockito.eq(organizationId),
         Mockito.eq(sendNotificationId), Mockito.eq(digest), Mockito.eq(file),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(null);
@@ -118,7 +122,7 @@ class SendFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(serviceMock.downloadSendFile(Mockito.eq(organizationId), Mockito.eq(sendNotificationId), Mockito.eq(filePath),
+    when(serviceMock.downloadSendFile(Mockito.eq(organizationId), Mockito.eq(sendNotificationId), Mockito.eq(filePath),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -136,7 +140,7 @@ class SendFilesControllerTest {
     String sendNotificationId = "NOTIFICATIONID";
     String filePath = "/shared/test.txt";
 
-    Mockito.when(serviceMock.downloadSendFile(Mockito.eq(organizationId), Mockito.eq(sendNotificationId), Mockito.eq(filePath),
+    when(serviceMock.downloadSendFile(Mockito.eq(organizationId), Mockito.eq(sendNotificationId), Mockito.eq(filePath),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenThrow(new FileNotFoundException("FILE_NOT_FOUND", "File not found"));
 
