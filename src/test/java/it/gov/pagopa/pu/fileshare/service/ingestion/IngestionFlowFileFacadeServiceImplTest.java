@@ -37,8 +37,7 @@ import java.nio.file.Path;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileFacadeServiceImplTest {
@@ -129,10 +128,10 @@ class IngestionFlowFileFacadeServiceImplTest {
       fileName, file, null, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
-    Mockito.verify(fileServiceMock).validateFile(file);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
+    verify(fileServiceMock).validateFile(file);
     if (alreadyUploaded) {
-      Mockito.verify(duplicateIngestionFlowFileRequestHandlerServiceMock)
+      verify(duplicateIngestionFlowFileRequestHandlerServiceMock)
         .handleDuplicateFile(organizationId, ARCHIVED_SUB_FOLDER, receiptFilePath, fileName, accessToken);
     }
   }
@@ -177,8 +176,8 @@ class IngestionFlowFileFacadeServiceImplTest {
       fileName, file, null, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
-    Mockito.verify(fileServiceMock).validateFile(file);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
+    verify(fileServiceMock).validateFile(file);
 
   }
 
@@ -216,8 +215,8 @@ class IngestionFlowFileFacadeServiceImplTest {
       fileName, file, null, TestUtils.getSampleUser(), accessToken);
 
     Assertions.assertSame(expectedIngestionFlowFileId, result);
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
-    Mockito.verify(fileServiceMock).validateFile(file);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
+    verify(fileServiceMock).validateFile(file);
 
   }
 
@@ -241,16 +240,17 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(false);
     when(ingestionFlowFileServiceMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
       .thenReturn(List.of("1.0", "1.1", "1.3", "1.4", "2.0"));
-    Mockito.doThrow(new InvalidFileException("INVALID_FILE_NAME", "Invalid file version"))
+    doThrow(new InvalidFileException("INVALID_FILE_NAME", "Invalid file version"))
       .when(fileServiceMock).validateVersionFromIngestionFlowFilename(versionList, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
     try {
       ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.DP_INSTALLMENTS, FileOrigin.PAGOPA, fileName, file, null, TestUtils.getSampleUser(), accessToken);
     } catch (InvalidFileException e) {
-      assertEquals("[INVALID_FILE_NAME] Invalid file version", e.getMessage());
+      assertEquals("INVALID_FILE_NAME", e.getCode());
+      assertEquals("Invalid file version", e.getMessage());
     }
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
-    Mockito.verify(fileServiceMock).validateFile(file);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
+    verify(fileServiceMock).validateFile(file);
   }
 
   @Test
@@ -297,7 +297,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     assertNotNull(result);
     assertEquals(fileName, result.getFileName());
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -346,7 +346,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     assertNotNull(result);
     assertEquals(discardFileName, result.getFileName());
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -365,7 +365,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Assertions.assertThrows(AuthorizationDeniedException.class, () -> ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -384,7 +384,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Assertions.assertThrows(AuthorizationDeniedException.class, () -> ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -404,7 +404,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Assertions.assertThrows(UnauthorizedFileDownloadException.class, () -> ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -424,7 +424,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Assertions.assertThrows(UnauthorizedFileDownloadException.class, () -> ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -439,7 +439,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Assertions.assertThrows(FileNotFoundException.class, () -> ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -454,7 +454,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Assertions.assertThrows(FileNotFoundException.class, () -> ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -474,7 +474,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     Assertions.assertThrows(FileNotFoundException.class, () -> ingestionFlowFileService.downloadIngestionFlowErrorsFile(organizationId, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -508,7 +508,7 @@ class IngestionFlowFileFacadeServiceImplTest {
 
     assertNotNull(result);
     assertEquals(fileName, result.getFileName());
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -569,7 +569,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     assertNotNull(result);
     assertEquals(noticeFileName, result.getFileName());
     assertArrayEquals(fileContent, result.getResourceStream().getContentAsByteArray());
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -585,7 +585,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     Assertions.assertThrows(FileNotFoundException.class, () ->
       ingestionFlowFileService.downloadNotice(organizationId, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -626,7 +626,7 @@ class IngestionFlowFileFacadeServiceImplTest {
     assertNotNull(result);
     assertEquals(iuvFileName, result.getFileName());
     assertArrayEquals(fileContent, result.getResourceStream().getContentAsByteArray());
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -652,8 +652,9 @@ class IngestionFlowFileFacadeServiceImplTest {
     InvalidFileTypeException exception = assertThrows(InvalidFileTypeException.class, () ->
       ingestionFlowFileService.downloadIuvFile(organizationId, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    assertEquals("[INVALID_FILE_TYPE] It's not possible to download IUV file for ingestionFlowFileId: 10. Expected type: DP_INSTALLMENTS, found: DEBT_POSITIONS_TYPE", exception.getMessage());
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    assertEquals("INVALID_FILE_TYPE", exception.getCode());
+    assertEquals("It's not possible to download IUV file for ingestionFlowFileId: 10. Expected type: DP_INSTALLMENTS, found: DEBT_POSITIONS_TYPE", exception.getMessage());
   }
 
   void givenIngestionFlowFileThenThrowsIngestionFlowFileNotFoundException(IngestionFlowFile ingestionFlowFile) {
@@ -675,6 +676,6 @@ class IngestionFlowFileFacadeServiceImplTest {
     Assertions.assertThrows(IngestionFlowFileNotFoundException.class, () -> ingestionFlowFileService.uploadIngestionFlowFile(organizationId, IngestionFlowFileType.ORGANIZATIONS_SIL_SERVICE, FileOrigin.SIL,
       fileName, file, ingestionFlowFileId, user, accessToken));
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, TestUtils.getSampleUser(), accessToken);
   }
 }

@@ -5,7 +5,6 @@ import it.gov.pagopa.pu.fileshare.controller.generated.IngestionFlowFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.fileshare.service.ingestion.IngestionFlowFileFacadeService;
@@ -41,8 +40,6 @@ class IngestionFlowFilesControllerTest {
 
   @MockitoBean
   private IngestionFlowFileFacadeService ingestionFlowFileFacadeServiceMock;
-  @MockitoBean
-  private UpstreamErrorMapper upstreamErrorMapperMock;
   @MockitoBean
   private Tracer tracerMock;
 

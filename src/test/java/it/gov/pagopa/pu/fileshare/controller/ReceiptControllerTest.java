@@ -3,7 +3,6 @@ package it.gov.pagopa.pu.fileshare.controller;
 import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.fileshare.controller.generated.ReceiptApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
-import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.fileshare.service.receipt.ReceiptRtRetrieverService;
@@ -37,8 +36,6 @@ class ReceiptControllerTest {
 
   @MockitoBean
   private ReceiptRtRetrieverService serviceMock;
-  @MockitoBean
-  private UpstreamErrorMapper upstreamErrorMapperMock;
   @MockitoBean
   private Tracer tracerMock;
 

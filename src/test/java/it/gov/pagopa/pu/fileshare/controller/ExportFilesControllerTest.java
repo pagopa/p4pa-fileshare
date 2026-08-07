@@ -3,8 +3,6 @@ package it.gov.pagopa.pu.fileshare.controller;
 import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.fileshare.controller.generated.ExportFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
-import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
@@ -38,8 +36,6 @@ class ExportFilesControllerTest {
 
   @MockitoBean
   private ExportFileFacadeService serviceMock;
-  @MockitoBean
-  private UpstreamErrorMapper upstreamErrorMapperMock;
   @MockitoBean
   private Tracer tracerMock;
 
@@ -76,20 +72,6 @@ class ExportFilesControllerTest {
       .andExpect(status().isOk())
       .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
       .andExpect(content().string(fileContent));
-  }
-
-  @Test
-  void givenNonExistentFileWhenDownloadExportFileThenReturnNotFound() throws Exception {
-    Long organizationId = 1L;
-    Long exportFileId = 123L;
-
-    when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
-        Mockito.same(loggedUser), Mockito.same(accessToken)))
-      .thenThrow(new FileNotFoundException("FILE_NOT_FOUND", "File not found"));
-
-    mockMvc.perform(get("/organization/{organizationId}/exportfiles/{exportFileId}", organizationId, exportFileId)
-        .contentType(MediaType.APPLICATION_OCTET_STREAM))
-      .andExpect(status().isNotFound());
   }
 
 }

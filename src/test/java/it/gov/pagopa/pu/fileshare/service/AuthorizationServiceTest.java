@@ -56,7 +56,8 @@ class AuthorizationServiceTest {
     InvalidAccessTokenException result = Assertions.assertThrows(InvalidAccessTokenException.class,
       () -> authorizationService.validateToken("INVALIDACCESSTOKEN"));
 
-    Assertions.assertEquals("[INVALID_ACCESS_TOKEN] Bad Access Token provided", result.getMessage());
+    Assertions.assertEquals("INVALID_ACCESS_TOKEN", result.getCode());
+    Assertions.assertEquals("Bad Access Token provided", result.getMessage());
   }
 
   @Test

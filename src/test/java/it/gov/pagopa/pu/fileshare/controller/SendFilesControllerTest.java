@@ -4,7 +4,6 @@ import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.fileshare.controller.generated.SendFilesApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
-import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.fileshare.service.send.SendFileFacadeService;
@@ -41,8 +40,6 @@ class SendFilesControllerTest {
   private MockMvc mockMvc;
   @MockitoBean
   private SendFileFacadeService serviceMock;
-  @MockitoBean
-  private UpstreamErrorMapper upstreamErrorMapperMock;
   @MockitoBean
   private Tracer tracerMock;
 
