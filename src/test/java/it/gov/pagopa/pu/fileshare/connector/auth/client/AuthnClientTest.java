@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.fileshare.connector.auth.client;
 
 import it.gov.pagopa.pu.fileshare.connector.auth.config.AuthApisHolder;
-import it.gov.pagopa.pu.p4paauth.controller.generated.AuthnApi;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.client.generated.AuthnApi;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;

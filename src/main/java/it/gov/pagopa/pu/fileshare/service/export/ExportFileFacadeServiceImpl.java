@@ -8,8 +8,8 @@ import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadExcep
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import java.io.InputStream;
 import java.nio.file.Path;
 

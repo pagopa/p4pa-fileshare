@@ -9,7 +9,7 @@ import it.gov.pagopa.pu.fileshare.exception.custom.ReceiptNotFoundException;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -23,6 +23,9 @@ import org.springframework.security.authorization.AuthorizationDeniedException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
+
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReceiptRtRetrieverServiceTest {
@@ -62,7 +65,7 @@ class ReceiptRtRetrieverServiceTest {
     UserInfo user = TestUtils.getSampleUser();
     String accessToken = "ACCESSTOKEN";
 
-    Mockito.when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
+    when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
       .thenThrow(new AuthorizationDeniedException("UNAUTHORIZED"));
 
     // When, Then
@@ -77,9 +80,9 @@ class ReceiptRtRetrieverServiceTest {
     UserInfo user = TestUtils.getSampleAdminUser();
     String accessToken = "ACCESSTOKEN";
 
-    Mockito.when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
+    when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
         .thenReturn("ORGFISCALCODE");
-    Mockito.when(receiptServiceMock.getReceiptById(receiptId, accessToken))
+    when(receiptServiceMock.getReceiptById(receiptId, accessToken))
       .thenReturn(null);
 
     // When, Then
@@ -94,12 +97,12 @@ class ReceiptRtRetrieverServiceTest {
     UserInfo user = TestUtils.getSampleAdminUser();
     String accessToken = "ACCESSTOKEN";
 
-    Mockito.when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
+    when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
       .thenReturn("ORGFISCALCODE");
     ReceiptNoPII receipt = new ReceiptNoPII();
     receipt.setOrgFiscalCode("OTHERORG");
 
-    Mockito.when(receiptServiceMock.getReceiptById(receiptId, accessToken))
+    when(receiptServiceMock.getReceiptById(receiptId, accessToken))
       .thenReturn(receipt);
 
     // When, Then
@@ -114,12 +117,12 @@ class ReceiptRtRetrieverServiceTest {
     UserInfo user = TestUtils.getSampleAdminUser();
     String accessToken = "ACCESSTOKEN";
 
-    Mockito.when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
+    when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
       .thenReturn("ORGFISCALCODE");
     ReceiptNoPII receipt = new ReceiptNoPII();
     receipt.setOrgFiscalCode("ORGFISCALCODE");
 
-    Mockito.when(receiptServiceMock.getReceiptById(receiptId, accessToken))
+    when(receiptServiceMock.getReceiptById(receiptId, accessToken))
       .thenReturn(receipt);
 
     // When, Then
@@ -141,15 +144,15 @@ class ReceiptRtRetrieverServiceTest {
     receipt.setRtFilePath(filePath+"/"+fileName);
 
     Path orgDir = Path.of("/orgDir");
-    InputStream fileStream = Mockito.mock(InputStream.class);
+    InputStream fileStream = mock(InputStream.class);
 
-    Mockito.when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
+    when(authorizationServiceMock.validateAdminRoleOrBrokerAdmin(organizationId, user, accessToken))
       .thenReturn("ORGFISCALCODE");
-    Mockito.when(receiptServiceMock.getReceiptById(receiptId, accessToken))
+    when(receiptServiceMock.getReceiptById(receiptId, accessToken))
       .thenReturn(receipt);
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
+    when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
         .thenReturn(orgDir);
-    Mockito.when(fileStorerServiceMock.decryptFile(orgDir.resolve(filePath), fileName))
+    when(fileStorerServiceMock.decryptFile(orgDir.resolve(filePath), fileName))
       .thenReturn(fileStream);
 
     // When

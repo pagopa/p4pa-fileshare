@@ -1,8 +1,8 @@
 package it.gov.pagopa.pu.fileshare.connector.organization.client;
 
 import it.gov.pagopa.pu.fileshare.connector.organization.config.OrganizationApisHolder;
-import it.gov.pagopa.pu.p4paorganization.controller.generated.OrganizationEntityControllerApi;
-import it.gov.pagopa.pu.p4paorganization.dto.generated.Organization;
+import it.gov.pagopa.pu.organization.client.generated.OrganizationEntityControllerApi;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -13,6 +13,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.client.HttpClientErrorException;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class OrganizationClientTest {
@@ -43,9 +45,9 @@ class OrganizationClientTest {
     String accessToken = "ACCESSTOKEN";
     Organization expectedResult = new Organization();
 
-    Mockito.when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
+    when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
       .thenReturn(organizationEntityControllerApiMock);
-    Mockito.when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
+    when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
       .thenReturn(expectedResult);
 
     // When
@@ -61,9 +63,9 @@ class OrganizationClientTest {
     long organizationId = 1L;
     String accessToken = "ACCESSTOKEN";
 
-    Mockito.when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
+    when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
       .thenReturn(organizationEntityControllerApiMock);
-    Mockito.when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
+    when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
       .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
 
     // When

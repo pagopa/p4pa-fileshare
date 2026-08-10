@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.pagopapayments.config;
 
+import it.gov.pagopa.pu.fileshare.config.json.JsonConfig;
 import it.gov.pagopa.pu.fileshare.connector.BaseApiHolderTest;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,36 +17,53 @@ import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class PagoPaPaymentsApisHolderTest extends BaseApiHolderTest {
-	@Mock
-	private RestTemplateBuilder restTemplateBuilderMock;
+  @Mock
+  private RestTemplateBuilder restTemplateBuilderMock;
 
-	private PagoPaPaymentsApisHolder pagoPaPaymentsApisHolder;
+  private PagoPaPaymentsApisHolder apisHolder;
+  private PagoPaPaymentsApiClientConfig apiClientConfig;
 
-	@BeforeEach
-	void setUp() {
-		when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
-		when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-		PagoPaPaymentsApiClientConfig clientConfig = PagoPaPaymentsApiClientConfig.builder()
-				.baseUrl("http://example.com")
-				.build();
-		pagoPaPaymentsApisHolder = new PagoPaPaymentsApisHolder(clientConfig, restTemplateBuilderMock);
-	}
+  @BeforeEach
+  void setUp() {
+    when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
+    when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
 
-	@AfterEach
-	void tearDown() {
-		Mockito.verifyNoMoreInteractions(
-			restTemplateBuilderMock,
-			restTemplateMock
-		);
-	}
+    apiClientConfig = PagoPaPaymentsApiClientConfig.builder()
+      .baseUrl("http://example.com")
+      .maxAttempts(3)
+      .build();
+    apisHolder = new PagoPaPaymentsApisHolder(apiClientConfig, restTemplateBuilderMock, new JsonConfig().objectMapperJackson3());
 
-	@Test
-	void whenGetSignedUrlApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
-		assertAuthenticationShouldBeSetInThreadSafeMode(
-				accessToken ->
-					pagoPaPaymentsApisHolder.getPrintPaymentNoticeApi(accessToken)
-            .getSignedUrl(1L, "folderId"),
-				new ParameterizedTypeReference<>() {},
-				pagoPaPaymentsApisHolder::unload);
-	}
+    verifyHttpClientErrorJsonBodyHandlerConfiguration(apisHolder.getPrintPaymentNoticeApi(null));
+  }
+
+  @AfterEach
+  void tearDown() {
+    Mockito.verifyNoMoreInteractions(
+      restTemplateBuilderMock,
+      restTemplateMock
+    );
+  }
+
+  @Test
+  void testRetryConfiguration() {
+    assertRetry(apiClientConfig,
+      accessToken ->
+        apisHolder.getPrintPaymentNoticeApi(accessToken)
+          .getSignedUrl(1L, "folderId"),
+      new ParameterizedTypeReference<>() {
+      }
+    );
+  }
+
+  @Test
+  void whenGetSignedUrlApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
+    assertAuthenticationShouldBeSetInThreadSafeMode(
+      accessToken ->
+        apisHolder.getPrintPaymentNoticeApi(accessToken)
+          .getSignedUrl(1L, "folderId"),
+      new ParameterizedTypeReference<>() {
+      },
+      apisHolder::unload);
+  }
 }

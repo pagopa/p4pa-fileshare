@@ -4,8 +4,8 @@ import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.exception.custom.FileAlreadyExistsException;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileStatus;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -22,6 +22,8 @@ import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class DuplicateIngestionFlowFileRequestHandlerServiceTest {
@@ -90,7 +92,7 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     // Given
     String fileName = "NOT_EXISTENT_FILE";
 
-    Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
+    when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
       .thenReturn(List.of());
 
     // When, Then
@@ -113,7 +115,7 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     String fileNameNoExtension = filePath.getFileName().toString().replace(fileExtension, "");
     String fileName = filePath.getFileName().toString().replace(".cipher", "");
 
-    Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
+    when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
       .thenReturn(List.of());
 
     long previousMillis = System.currentTimeMillis();
@@ -161,7 +163,7 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     lastAttempt.setIngestionFlowFileId(10L);
     lastAttempt.setStatus(IngestionFlowFileStatus.PROCESSING);
 
-    Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
+    when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
       .thenReturn(List.of(firstAttempt, lastAttempt));
 
     // When, Then
@@ -184,10 +186,10 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     lastAttempt.setStatus(IngestionFlowFileStatus.ERROR);
     lastAttempt.setFileName(fileName);
 
-    Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
+    when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
       .thenReturn(List.of(firstAttempt, lastAttempt));
 
-    Mockito.when(ingestionFlowFileServiceMock.updateFileNames(lastAttemptIngestionFlowFileId,
+    when(ingestionFlowFileServiceMock.updateFileNames(lastAttemptIngestionFlowFileId,
         buildExpectedNewName(fileName, lastAttemptIngestionFlowFileId),
         null,
         accessToken))
@@ -227,10 +229,10 @@ class DuplicateIngestionFlowFileRequestHandlerServiceTest {
     lastAttempt.setFileName(fileName);
     lastAttempt.setDiscardFileName(discardFilePath.getFileName().toString().replace(".cipher", ""));
 
-    Mockito.when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
+    when(ingestionFlowFileServiceMock.findByOrganizationIdAndFilePathNameAndFileName(organizationId, filePathName, fileName, accessToken))
       .thenReturn(List.of(firstAttempt, lastAttempt));
 
-    Mockito.when(ingestionFlowFileServiceMock.updateFileNames(lastAttemptIngestionFlowFileId,
+    when(ingestionFlowFileServiceMock.updateFileNames(lastAttemptIngestionFlowFileId,
         buildExpectedNewName(fileName, lastAttemptIngestionFlowFileId),
         buildExpectedNewName(Objects.requireNonNull(lastAttempt.getDiscardFileName()), lastAttemptIngestionFlowFileId),
         accessToken))

@@ -1,13 +1,15 @@
 package it.gov.pagopa.pu.fileshare.connector.send_notification.config;
 
-import it.gov.pagopa.pu.fileshare.config.rest.RestTemplateConfig;
-import it.gov.pagopa.pu.sendnotification.controller.ApiClient;
-import it.gov.pagopa.pu.sendnotification.controller.BaseApi;
-import it.gov.pagopa.pu.sendnotification.controller.generated.NotificationApi;
+import it.gov.pagopa.pu.fileshare.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.sendnotification.generated.ApiClient;
+import it.gov.pagopa.pu.sendnotification.generated.BaseApi;
+import it.gov.pagopa.pu.sendnotification.client.generated.NotificationApi;
+import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationErrorDTO;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
+import tools.jackson.databind.json.JsonMapper;
 
 @Service
 public class SendNotificationApisHolder {
@@ -18,7 +20,8 @@ public class SendNotificationApisHolder {
 
     public SendNotificationApisHolder(
         SendNotificationApiClientConfig clientConfig,
-        RestTemplateBuilder restTemplateBuilder
+        RestTemplateBuilder restTemplateBuilder,
+        JsonMapper jsonMapper
     ) {
         RestTemplate restTemplate = restTemplateBuilder.build();
         ApiClient apiClient = new ApiClient(restTemplate);
@@ -26,9 +29,9 @@ public class SendNotificationApisHolder {
         apiClient.setBearerToken(bearerTokenHolder::get);
         apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
         apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
-        if (clientConfig.isPrintBodyWhenError()) {
-          restTemplate.setErrorHandler(RestTemplateConfig.bodyPrinterWhenError("SEND_NOTIFICATION"));
-        }
+        restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "SEND-NOTIFICATION", clientConfig.isPrintBodyWhenError(),
+          SendNotificationErrorDTO.class, SendNotificationErrorDTO::getCode, SendNotificationErrorDTO::getMessage)
+        );
 
         this.notificationApi = new NotificationApi(apiClient);
     }

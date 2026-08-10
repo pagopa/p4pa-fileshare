@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service.send;
 
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
 import org.springframework.web.multipart.MultipartFile;
 

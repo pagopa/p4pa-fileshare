@@ -3,8 +3,8 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileEntityClient;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileEntityExtendedClient;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileSearchClient;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +15,8 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.util.List;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileServiceTest {
@@ -48,7 +50,7 @@ class IngestionFlowFileServiceTest {
     String accessToken = "ACCESSTOKEN";
     IngestionFlowFile expectedResult = new IngestionFlowFile();
 
-    Mockito.when(entityClientMock.getIngestionFlowFile(Mockito.same(organizationId), Mockito.same(accessToken)))
+    when(entityClientMock.getIngestionFlowFile(Mockito.same(organizationId), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When
@@ -65,7 +67,7 @@ class IngestionFlowFileServiceTest {
     String accessToken = "ACCESSTOKEN";
     Long expectedResult = 2L;
 
-    Mockito.when(entityClientMock.createIngestionFlowFile(Mockito.same(requestDTO), Mockito.same(accessToken)))
+    when(entityClientMock.createIngestionFlowFile(Mockito.same(requestDTO), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When
@@ -85,7 +87,7 @@ class IngestionFlowFileServiceTest {
     String accessToken = "ACCESSTOKEN";
     List<IngestionFlowFile> expectedResult = List.of(new IngestionFlowFile());
 
-    Mockito.when(searchClientMock.findByOrganizationIdAndFilePathNameAndFileName(Mockito.same(organizationId), Mockito.same(filePathName), Mockito.same(fileName), Mockito.same(accessToken)))
+    when(searchClientMock.findByOrganizationIdAndFilePathNameAndFileName(Mockito.same(organizationId), Mockito.same(filePathName), Mockito.same(fileName), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When
@@ -105,7 +107,7 @@ class IngestionFlowFileServiceTest {
     String accessToken = "ACCESSTOKEN";
     Integer expectedResult = 0;
 
-    Mockito.when(entityExtendedClientMock.updateFileNames(Mockito.same(ingestionFlowFileId), Mockito.same(fileName), Mockito.same(discardFileName), Mockito.same(accessToken)))
+    when(entityExtendedClientMock.updateFileNames(Mockito.same(ingestionFlowFileId), Mockito.same(fileName), Mockito.same(discardFileName), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When
@@ -121,7 +123,7 @@ class IngestionFlowFileServiceTest {
     String accessToken = "ACCESSTOKEN";
     List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
 
-    Mockito.when(entityClientMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
+    when(entityClientMock.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken))
       .thenReturn(versionList);
 
     // When
