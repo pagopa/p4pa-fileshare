@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.config.ProcessExecutionsApisHolder;
+import it.gov.pagopa.pu.fileshare.exception.common.RestInvokeNotFoundException;
 import it.gov.pagopa.pu.processexecutions.client.generated.ExportFileEntityControllerApi;
 import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import org.junit.jupiter.api.AfterEach;
@@ -12,7 +13,6 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
 
 import static org.mockito.Mockito.when;
 
@@ -66,7 +66,7 @@ class ExportFileEntityClientTest {
       .thenReturn(exportFileEntityControllerApiMock);
 
     when(exportFileEntityControllerApiMock.crudGetExportfile(exportFileId+""))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     ExportFile result = client.getExportFile(exportFileId, accessToken);
 

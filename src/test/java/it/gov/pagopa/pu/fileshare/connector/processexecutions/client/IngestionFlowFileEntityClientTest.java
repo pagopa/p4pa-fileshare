@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.config.ProcessExecutionsApisHolder;
+import it.gov.pagopa.pu.fileshare.exception.common.RestInvokeNotFoundException;
 import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileControllerApi;
 import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileEntityControllerApi;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
@@ -15,7 +16,6 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.net.URI;
 import java.util.List;
@@ -90,7 +90,7 @@ class IngestionFlowFileEntityClientTest {
       .thenReturn(ingestionFlowFileEntityControllerApiMock);
 
     when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
