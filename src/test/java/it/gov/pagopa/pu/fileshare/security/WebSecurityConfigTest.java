@@ -1,7 +1,6 @@
 package it.gov.pagopa.pu.fileshare.security;
 
 import io.micrometer.tracing.Tracer;
-import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
@@ -40,8 +39,6 @@ class WebSecurityConfigTest {
   private ReceiptRtRetrieverService receiptRtRetrieverServiceMock;
   @MockitoBean
   private FileService fileServiceMock;
-  @MockitoBean
-  private UpstreamErrorMapper upstreamErrorMapperMock;
   @MockitoBean
   private Tracer tracerMock;
 

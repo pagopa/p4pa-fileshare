@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.fileshare.security;
 
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;

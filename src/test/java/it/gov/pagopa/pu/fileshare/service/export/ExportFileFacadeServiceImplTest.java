@@ -6,10 +6,10 @@ import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
 import it.gov.pagopa.pu.fileshare.exception.custom.UnauthorizedFileDownloadException;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFileStatus;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFileStatus;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -25,6 +25,8 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.List;
+
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class ExportFileFacadeServiceImplTest {
@@ -78,23 +80,23 @@ class ExportFileFacadeServiceImplTest {
     exportFile.setStatus(ExportFileStatus.COMPLETED);
     exportFile.setOperatorExternalId("TEST");
 
-    InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
+    InputStream decryptedInputStream = mock(ByteArrayInputStream.class);
 
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
+    when(fileStorerServiceMock.buildOrganizationBasePath(organizationId))
       .thenReturn(organizationBasePath);
 
-    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
+    when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
 
-    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
+    when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
 
     FileResourceDTO result = exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
 
     Assertions.assertNotNull(result);
     Assertions.assertEquals(fileName, result.getFileName());
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    Mockito.verify(exportFileServiceMock).getExportFile(exportFileId, accessToken);
-    Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(exportFileServiceMock).getExportFile(exportFileId, accessToken);
+    verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
   }
 
   @Test
@@ -119,14 +121,14 @@ class ExportFileFacadeServiceImplTest {
     exportFile.setStatus(ExportFileStatus.COMPLETED);
     exportFile.setOperatorExternalId("TEST");
 
-    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
+    when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
 
     Executable exec = () -> exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
 
     Assertions.assertThrows(AuthorizationDeniedException.class, exec);
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    Mockito.verify(exportFileServiceMock).getExportFile(exportFileId, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(exportFileServiceMock).getExportFile(exportFileId, accessToken);
   }
 
   @Test
@@ -151,14 +153,14 @@ class ExportFileFacadeServiceImplTest {
     exportFile.setStatus(ExportFileStatus.COMPLETED);
     exportFile.setOperatorExternalId("TEST");
 
-    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
+    when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
 
     Executable exec = () -> exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
 
     Assertions.assertThrows(UnauthorizedFileDownloadException.class, exec);
 
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
-    Mockito.verify(exportFileServiceMock).getExportFile(exportFileId, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(exportFileServiceMock).getExportFile(exportFileId, accessToken);
   }
 
   @Test
@@ -185,18 +187,18 @@ class ExportFileFacadeServiceImplTest {
     exportFile.setStatus(ExportFileStatus.PROCESSING);
     exportFile.setOperatorExternalId("TEST");
 
-    InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
+    InputStream decryptedInputStream = mock(ByteArrayInputStream.class);
 
-    Mockito.when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationBasePath);
-    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
-    Mockito.when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
+    when(fileStorerServiceMock.buildOrganizationBasePath(organizationId)).thenReturn(organizationBasePath);
+    when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
+    when(fileStorerServiceMock.decryptFile(fullFilePath, fileName)).thenReturn(decryptedInputStream);
 
     FileResourceDTO result = exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
 
     Assertions.assertNotNull(result);
     Assertions.assertEquals(fileName, result.getFileName());
-    Mockito.verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(fileStorerServiceMock).decryptFile(fullFilePath, fileName);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -212,12 +214,12 @@ class ExportFileFacadeServiceImplTest {
     user.setOrganizations(List.of(userTestRole));
     user.setMappedExternalUserId("TEST");
 
-    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(null);
+    when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(null);
 
     Executable exec = () -> exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
 
     Assertions.assertThrows(FileNotFoundException.class, exec);
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
   @Test
@@ -238,12 +240,12 @@ class ExportFileFacadeServiceImplTest {
     exportFile.setStatus(ExportFileStatus.REQUESTED);
     exportFile.setOperatorExternalId("TEST");
 
-    Mockito.when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
+    when(exportFileServiceMock.getExportFile(exportFileId, accessToken)).thenReturn(exportFile);
 
     Executable exec = () -> exportFileService.downloadExportFile(organizationId, exportFileId, user, accessToken);
 
     Assertions.assertThrows(FileNotFoundException.class, exec);
-    Mockito.verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
   }
 
 }

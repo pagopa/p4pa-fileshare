@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.ExportFileEntityClient;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.ExportFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.ExportFile;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -10,6 +10,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ExportFileServiceTest {
@@ -35,7 +37,7 @@ class ExportFileServiceTest {
     String accessToken = "ACCESSTOKEN";
     ExportFile expectedResult = new ExportFile();
 
-    Mockito.when(clientMock.getExportFile(Mockito.eq(1L), Mockito.same(accessToken)))
+    when(clientMock.getExportFile(Mockito.eq(1L), Mockito.same(accessToken)))
       .thenReturn(expectedResult);
 
     // When

@@ -69,7 +69,8 @@ public class UtilitiesTest {
     if (shouldThrow) {
       InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
         Utilities.getExclusivePresenceOrThrow(fileA, fileB));
-      assertEquals("[INVALID_FILES] Exactly one of the two files must be non-null", ex.getMessage());
+      assertEquals("INVALID_FILES", ex.getCode());
+      assertEquals("Exactly one of the two files must be non-null", ex.getMessage());
     } else {
       MultipartFile result = Utilities.getExclusivePresenceOrThrow(fileA, fileB);
       assertEquals(expectedResult, result);

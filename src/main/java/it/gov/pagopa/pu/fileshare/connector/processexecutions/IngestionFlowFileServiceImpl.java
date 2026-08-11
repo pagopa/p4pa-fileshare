@@ -3,8 +3,8 @@ package it.gov.pagopa.pu.fileshare.connector.processexecutions;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileEntityClient;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileEntityExtendedClient;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.client.IngestionFlowFileSearchClient;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.springframework.stereotype.Service;
 
 import java.util.List;

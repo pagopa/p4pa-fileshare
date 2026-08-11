@@ -2,7 +2,7 @@ package it.gov.pagopa.pu.fileshare.security;
 
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidAccessTokenException;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;

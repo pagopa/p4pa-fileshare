@@ -3,9 +3,9 @@ package it.gov.pagopa.pu.fileshare.service;
 import it.gov.pagopa.pu.fileshare.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.fileshare.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidAccessTokenException;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.p4paorganization.dto.generated.Organization;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,8 @@ class AuthorizationServiceTest {
     InvalidAccessTokenException result = Assertions.assertThrows(InvalidAccessTokenException.class,
       () -> authorizationService.validateToken("INVALIDACCESSTOKEN"));
 
-    Assertions.assertEquals("[INVALID_ACCESS_TOKEN] Bad Access Token provided", result.getMessage());
+    Assertions.assertEquals("INVALID_ACCESS_TOKEN", result.getCode());
+    Assertions.assertEquals("Bad Access Token provided", result.getMessage());
   }
 
   @Test

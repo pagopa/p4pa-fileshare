@@ -3,7 +3,7 @@ package it.gov.pagopa.pu.fileshare.service.ingestion;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.generated.FileOrigin;
 import it.gov.pagopa.pu.fileshare.dto.generated.IngestionFlowFileType;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import org.springframework.web.multipart.MultipartFile;
 
 public interface IngestionFlowFileFacadeService {

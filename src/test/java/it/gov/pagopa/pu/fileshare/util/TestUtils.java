@@ -1,23 +1,27 @@
 package it.gov.pagopa.pu.fileshare.util;
 
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import org.junit.jupiter.api.Assertions;
 
 import java.util.*;
 
 public class TestUtils {
 
-  private TestUtils() {
-  }
+  private TestUtils() {}
 
   static {
     clearDefaultTimezone();
+    clearLocale();
   }
 
   public static void clearDefaultTimezone() {
     TimeZone.setDefault(Constants.DEFAULT_TIMEZONE);
+  }
+
+  public static void clearLocale() {
+    Locale.setDefault(Locale.ITALY);
   }
 
   /**

@@ -2,8 +2,8 @@ package it.gov.pagopa.pu.fileshare.security;
 
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidAccessTokenException;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import org.junit.jupiter.api.Assertions;
@@ -12,7 +12,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.slf4j.MDC;
 import org.springframework.http.HttpHeaders;
@@ -30,6 +29,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.List;
+
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class JwtAuthenticationFilterTest {
@@ -89,7 +90,7 @@ class JwtAuthenticationFilterTest {
         .toList();
     }
 
-    Mockito.when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
+    when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
 
     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken, authorities);
     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -99,7 +100,7 @@ class JwtAuthenticationFilterTest {
 
     // Then
     Assertions.assertEquals(userInfo.getMappedExternalUserId(), MDC.get("externalUserId"));
-    Mockito.verify(filterChainMock).doFilter(request, response);
+    verify(filterChainMock).doFilter(request, response);
     Assertions.assertEquals(
       authToken,
       SecurityContextHolder.getContext().getAuthentication()
@@ -118,7 +119,7 @@ class JwtAuthenticationFilterTest {
     UserInfo userInfo = new UserInfo().mappedExternalUserId(SecurityUtils.SYSTEM_USERID_PREFIX);
 
     SecurityUtilsTest.configureXUserIdHeader("USERID");
-    Mockito.when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
+    when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
 
     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken, List.of());
     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -128,7 +129,7 @@ class JwtAuthenticationFilterTest {
 
     // Then
     Assertions.assertEquals("WS_USER-piattaforma-unitaria_][USERID", MDC.get("externalUserId"));
-    Mockito.verify(filterChainMock).doFilter(request, response);
+    verify(filterChainMock).doFilter(request, response);
   }
 
   @Test
@@ -142,7 +143,7 @@ class JwtAuthenticationFilterTest {
 
     UserInfo userInfo = new UserInfo().mappedExternalUserId(SecurityUtils.SYSTEM_USERID_PREFIX);
 
-    Mockito.when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
+    when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
 
     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken, List.of());
     authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
@@ -152,7 +153,7 @@ class JwtAuthenticationFilterTest {
 
     // Then
     Assertions.assertEquals(userInfo.getMappedExternalUserId(), MDC.get("externalUserId"));
-    Mockito.verify(filterChainMock).doFilter(request, response);
+    verify(filterChainMock).doFilter(request, response);
   }
 
   @Test
@@ -165,7 +166,7 @@ class JwtAuthenticationFilterTest {
 
     MockHttpServletResponse response = new MockHttpServletResponse();
 
-    Mockito.doThrow(new InvalidAccessTokenException("INVALID_ACCESS_TOKEN", message)).when(authorizationServiceMock).validateToken(accessToken);
+    doThrow(new InvalidAccessTokenException("INVALID_ACCESS_TOKEN", message)).when(authorizationServiceMock).validateToken(accessToken);
 
     // When
     jwtAuthenticationFilterMock.doFilterInternal(request, response, filterChainMock);
@@ -173,8 +174,8 @@ class JwtAuthenticationFilterTest {
     // Then
     Assertions.assertNull(MDC.get("externalUserId"));
     Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
-    Assertions.assertEquals("[INVALID_ACCESS_TOKEN] %s".formatted(message), response.getContentAsString());
-    Mockito.verify(filterChainMock, Mockito.times(0)).doFilter(request, response);
+    Assertions.assertEquals(message, response.getContentAsString());
+    verify(filterChainMock, times(0)).doFilter(request, response);
   }
 
   @Test
@@ -186,7 +187,7 @@ class JwtAuthenticationFilterTest {
 
     MockHttpServletResponse response = new MockHttpServletResponse();
 
-    Mockito.doThrow(new RuntimeException("Something gone wrong while validate accessToken")).when(authorizationServiceMock).validateToken(accessToken);
+    doThrow(new RuntimeException("Something gone wrong while validate accessToken")).when(authorizationServiceMock).validateToken(accessToken);
 
     // When
     jwtAuthenticationFilterMock.doFilterInternal(request, response, filterChainMock);
@@ -194,7 +195,7 @@ class JwtAuthenticationFilterTest {
     // Then
     Assertions.assertNull(MDC.get("externalUserId"));
     Assertions.assertEquals(HttpStatus.UNAUTHORIZED.value(), response.getStatus());
-    Mockito.verify(filterChainMock, Mockito.times(0)).doFilter(request, response);
+    verify(filterChainMock, times(0)).doFilter(request, response);
   }
 
   @Test
@@ -230,7 +231,7 @@ class JwtAuthenticationFilterTest {
         .toList();
     }
 
-    Mockito.when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
+    when(authorizationServiceMock.validateToken(accessToken)).thenReturn(userInfo);
 
     UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(userInfo, accessToken,
       authorities);
@@ -241,7 +242,7 @@ class JwtAuthenticationFilterTest {
 
     // Then
     Assertions.assertEquals(userInfo.getMappedExternalUserId(), MDC.get("externalUserId"));
-    Mockito.verify(filterChainMock).doFilter(request, response);
+    verify(filterChainMock).doFilter(request, response);
     Assertions.assertEquals(
       authToken,
       SecurityContextHolder.getContext().getAuthentication());
