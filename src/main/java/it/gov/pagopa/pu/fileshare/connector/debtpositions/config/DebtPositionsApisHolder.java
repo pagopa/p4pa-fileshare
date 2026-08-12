@@ -5,6 +5,7 @@ import it.gov.pagopa.pu.debtpositions.generated.BaseApi;
 import it.gov.pagopa.pu.debtpositions.client.generated.ReceiptNoPiiEntityControllerApi;
 import it.gov.pagopa.pu.debtpositions.dto.generated.DebtPositionErrorDTO;
 import it.gov.pagopa.pu.fileshare.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.fileshare.connector.debtpositions.mapper.DebtPositionErrorDTOMapper;
 import jakarta.annotation.PreDestroy;
 import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.stereotype.Service;
@@ -30,7 +31,7 @@ public class DebtPositionsApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
     restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "DEBT-POSITIONS", clientConfig.isPrintBodyWhenError(),
-      DebtPositionErrorDTO.class, DebtPositionErrorDTO::getCode, DebtPositionErrorDTO::getMessage)
+      DebtPositionErrorDTO.class, DebtPositionErrorDTOMapper::map)
     );
 
     this.receiptNoPiiEntityControllerApi = new ReceiptNoPiiEntityControllerApi(apiClient);

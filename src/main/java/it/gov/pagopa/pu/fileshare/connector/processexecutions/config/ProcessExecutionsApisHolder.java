@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions.config;
 
 import it.gov.pagopa.pu.fileshare.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.fileshare.connector.processexecutions.mapper.ProcessExecutionsErrorDTOMapper;
 import it.gov.pagopa.pu.processexecutions.generated.ApiClient;
 import it.gov.pagopa.pu.processexecutions.generated.BaseApi;
 import it.gov.pagopa.pu.processexecutions.client.generated.*;
@@ -34,7 +35,7 @@ public class ProcessExecutionsApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
     restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "PROCESS-EXECUTIONS", clientConfig.isPrintBodyWhenError(),
-      ProcessExecutionsErrorDTO.class, ProcessExecutionsErrorDTO::getCode, ProcessExecutionsErrorDTO::getMessage)
+      ProcessExecutionsErrorDTO.class, ProcessExecutionsErrorDTOMapper::map)
     );
 
     this.ingestionFlowFileControllerApi = new IngestionFlowFileControllerApi(apiClient);

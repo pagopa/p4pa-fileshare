@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.connector.send_notification.config;
 
 import it.gov.pagopa.pu.fileshare.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.fileshare.connector.send_notification.mapper.SendNotificationErrorDTOMapper;
 import it.gov.pagopa.pu.sendnotification.generated.ApiClient;
 import it.gov.pagopa.pu.sendnotification.generated.BaseApi;
 import it.gov.pagopa.pu.sendnotification.client.generated.NotificationApi;
@@ -30,7 +31,7 @@ public class SendNotificationApisHolder {
         apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
         apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
         restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "SEND-NOTIFICATION", clientConfig.isPrintBodyWhenError(),
-          SendNotificationErrorDTO.class, SendNotificationErrorDTO::getCode, SendNotificationErrorDTO::getMessage)
+          SendNotificationErrorDTO.class, SendNotificationErrorDTOMapper::map)
         );
 
         this.notificationApi = new NotificationApi(apiClient);

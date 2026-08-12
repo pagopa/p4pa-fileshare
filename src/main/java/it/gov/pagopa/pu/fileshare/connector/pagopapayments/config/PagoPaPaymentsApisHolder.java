@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.connector.pagopapayments.config;
 
 import it.gov.pagopa.pu.fileshare.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.fileshare.connector.pagopapayments.mapper.PagoPaPaymentsErrorDTOMapper;
 import it.gov.pagopa.pu.pagopapayments.client.generated.PrintPaymentNoticeApi;
 import it.gov.pagopa.pu.pagopapayments.dto.generated.PagoPaPaymentsErrorDTO;
 import it.gov.pagopa.pu.pagopapayments.generated.ApiClient;
@@ -30,7 +31,7 @@ public class PagoPaPaymentsApisHolder {
         apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
         apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
         restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "PAGOPA-PAYMENTS", clientConfig.isPrintBodyWhenError(),
-          PagoPaPaymentsErrorDTO.class, PagoPaPaymentsErrorDTO::getCode, PagoPaPaymentsErrorDTO::getMessage)
+          PagoPaPaymentsErrorDTO.class, PagoPaPaymentsErrorDTOMapper::map)
         );
 
         this.printPaymentNoticeApi = new PrintPaymentNoticeApi(apiClient);

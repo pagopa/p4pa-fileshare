@@ -1,6 +1,7 @@
 package it.gov.pagopa.pu.fileshare.connector.organization.config;
 
 import it.gov.pagopa.pu.fileshare.config.rest.HttpClientErrorJsonBodyHandler;
+import it.gov.pagopa.pu.fileshare.connector.organization.mapper.OrganizationErrorDTOMapper;
 import it.gov.pagopa.pu.organization.generated.ApiClient;
 import it.gov.pagopa.pu.organization.generated.BaseApi;
 import it.gov.pagopa.pu.organization.client.generated.OrganizationEntityControllerApi;
@@ -30,7 +31,7 @@ public class OrganizationApisHolder {
     apiClient.setMaxAttemptsForRetry(Math.max(1, clientConfig.getMaxAttempts()));
     apiClient.setWaitTimeMillis(clientConfig.getWaitTimeMillis());
     restTemplate.setErrorHandler(new HttpClientErrorJsonBodyHandler<>(jsonMapper, "ORGANIZATION", clientConfig.isPrintBodyWhenError(),
-      OrganizationErrorDTO.class, OrganizationErrorDTO::getCode, OrganizationErrorDTO::getMessage)
+      OrganizationErrorDTO.class, OrganizationErrorDTOMapper::map)
     );
 
     this.organizationEntityControllerApi = new OrganizationEntityControllerApi(apiClient);
