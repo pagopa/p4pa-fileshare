@@ -198,7 +198,7 @@ public class AESUtils {
     try {
       return decrypt(password, new FileInputStream(cipherFilePath.toFile()));
     } catch (FileNotFoundException e) {
-      throw new IllegalStateException("[DECIPHERING_ERROR] Something went wrong when deciphering input file " + cipherFilePath, e);
+      throw new it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException("[DECIPHERING_ERROR]", "[DECIPHERING_ERROR] Something went wrong when deciphering input file " + cipherFilePath);
     }
   }
 
