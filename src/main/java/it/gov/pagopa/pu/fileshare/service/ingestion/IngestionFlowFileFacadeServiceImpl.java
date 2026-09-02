@@ -131,9 +131,9 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   public FileResourceDTO downloadIngestionFlowFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
     IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
 
-    Path filePath = getFilePath(ingestionFlowFile);
+    Path fileFolderPath = getFileFolderPath(ingestionFlowFile);
 
-    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, ingestionFlowFile.getFileName());
+    InputStream decryptedInputStream = fileStorerService.decryptFile(fileFolderPath, ingestionFlowFile.getFileName());
 
     return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
   }
@@ -174,9 +174,17 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     String newFileName = ingestionFlowFile.getFileName().replace(".zip", suffix);
 
     Path filePath = fileStorerService.getUploadedOrArchivedPath(
-      ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), newFileName).getParent();
+      ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), newFileName);
+    if(filePath == null) {
+      throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s has no file with path %s/%s"
+        .formatted(
+          ingestionFlowFile.getIngestionFlowFileId(),
+          ingestionFlowFile.getFilePathName(),
+          newFileName));
+    }
+    Path fileFolderPath = filePath.getParent();
 
-    InputStream decryptedInputStream = fileStorerService.decryptFile(filePath, newFileName);
+    InputStream decryptedInputStream = fileStorerService.decryptFile(fileFolderPath, newFileName);
 
     return new FileResourceDTO(new InputStreamResource(decryptedInputStream), newFileName);
   }
@@ -202,8 +210,16 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     return ingestionFlowFile;
   }
 
-  private Path getFilePath(IngestionFlowFile ingestionFlowFile) {
-    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName()).getParent();
+  private Path getFileFolderPath(IngestionFlowFile ingestionFlowFile) {
+    Path filePath = fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName());
+    if(filePath == null) {
+      throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s has no file with path %s/%s"
+        .formatted(
+          ingestionFlowFile.getIngestionFlowFileId(),
+          ingestionFlowFile.getFilePathName(),
+          ingestionFlowFile.getFileName()));
+    }
+    return filePath.getParent();
   }
 
   private Path getErrorsFilePath(IngestionFlowFile ingestionFlowFile) {
@@ -211,8 +227,16 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
       throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s has no errors file".formatted(ingestionFlowFile.getIngestionFlowFileId()));
     }
 
-    return fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName())
-      .getParent();
+    Path errorFilePath = fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName());
+    if(errorFilePath == null) {
+      throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s errors file does not exist %s/%s/%s"
+        .formatted(
+          ingestionFlowFile.getIngestionFlowFileId(),
+          ingestionFlowFile.getFilePathName(),
+          errorsSubFolder,
+          ingestionFlowFile.getDiscardFileName()));
+    }
+    return errorFilePath.getParent();
   }
 
   private String getFileVersion(IngestionFlowFileType ingestionFlowFileType, String fileName, String accessToken) {
