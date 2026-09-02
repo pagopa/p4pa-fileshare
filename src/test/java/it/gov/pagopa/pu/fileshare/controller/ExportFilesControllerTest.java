@@ -1,13 +1,12 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.fileshare.controller.generated.ExportFileApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
-import it.gov.pagopa.pu.fileshare.exception.custom.FileNotFoundException;
-import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -24,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.ByteArrayInputStream;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -37,7 +37,7 @@ class ExportFilesControllerTest {
   @MockitoBean
   private ExportFileFacadeService serviceMock;
   @MockitoBean
-  private UpstreamErrorMapper upstreamErrorMapperMock;
+  private Tracer tracerMock;
 
   private final String accessToken = "ACCESSTOKEN";
   private final UserInfo loggedUser = new UserInfo();
@@ -63,7 +63,7 @@ class ExportFilesControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
+    when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 
@@ -72,20 +72,6 @@ class ExportFilesControllerTest {
       .andExpect(status().isOk())
       .andExpect(header().string("Content-Disposition", "attachment; filename=\"" + fileName + "\""))
       .andExpect(content().string(fileContent));
-  }
-
-  @Test
-  void givenNonExistentFileWhenDownloadExportFileThenReturnNotFound() throws Exception {
-    Long organizationId = 1L;
-    Long exportFileId = 123L;
-
-    Mockito.when(serviceMock.downloadExportFile(Mockito.eq(organizationId), Mockito.eq(exportFileId),
-        Mockito.same(loggedUser), Mockito.same(accessToken)))
-      .thenThrow(new FileNotFoundException("FILE_NOT_FOUND", "File not found"));
-
-    mockMvc.perform(get("/organization/{organizationId}/exportfiles/{exportFileId}", organizationId, exportFileId)
-        .contentType(MediaType.APPLICATION_OCTET_STREAM))
-      .andExpect(status().isNotFound());
   }
 
 }

@@ -1,8 +1,6 @@
 package it.gov.pagopa.pu.fileshare.security;
 
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
-
-import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.export.ExportFileFacadeService;
@@ -18,6 +16,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @WebMvcTest(includeFilters = @ComponentScan.Filter(type = FilterType.ASSIGNABLE_TYPE,
   classes = JwtAuthenticationFilter.class) )
@@ -40,7 +40,7 @@ class WebSecurityConfigTest {
   @MockitoBean
   private FileService fileServiceMock;
   @MockitoBean
-  private UpstreamErrorMapper upstreamErrorMapperMock;
+  private Tracer tracerMock;
 
   @Test
   void givenURLWhenWithoutAccessTokenThenReturn403() throws Exception {

@@ -1,10 +1,11 @@
 package it.gov.pagopa.pu.fileshare.connector.processexecutions.client;
 
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.config.ProcessExecutionsApisHolder;
-import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileControllerApi;
-import it.gov.pagopa.pu.p4paprocessexecutions.controller.generated.IngestionFlowFileEntityControllerApi;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFile;
-import it.gov.pagopa.pu.p4paprocessexecutions.dto.generated.IngestionFlowFileRequestDTO;
+import it.gov.pagopa.pu.fileshare.exception.common.RestInvokeNotFoundException;
+import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileControllerApi;
+import it.gov.pagopa.pu.processexecutions.client.generated.IngestionFlowFileEntityControllerApi;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
+import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,10 +16,11 @@ import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.client.HttpClientErrorException;
 
 import java.net.URI;
 import java.util.List;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class IngestionFlowFileEntityClientTest {
@@ -53,9 +55,9 @@ class IngestionFlowFileEntityClientTest {
     IngestionFlowFileRequestDTO ingestionFlowFileRequestDTO = new IngestionFlowFileRequestDTO();
     Long expectedIngestionFlowFileId = 1L;
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
+    when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
       .thenReturn(ingestionFlowFileControllerApiMock);
-    Mockito.when(ingestionFlowFileControllerApiMock.createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO))
+    when(ingestionFlowFileControllerApiMock.createIngestionFlowFileWithHttpInfo(ingestionFlowFileRequestDTO))
       .thenReturn(ResponseEntity.created(URI.create(String.valueOf(expectedIngestionFlowFileId))).build());
 
     Long result = client.createIngestionFlowFile(ingestionFlowFileRequestDTO, accessToken);
@@ -68,10 +70,10 @@ class IngestionFlowFileEntityClientTest {
     Long ingestionFlowFileId = 123L;
     IngestionFlowFile expectedIngestionFlowFile = new IngestionFlowFile();
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
+    when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
       .thenReturn(ingestionFlowFileEntityControllerApiMock);
 
-    Mockito.when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
+    when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
       .thenReturn(expectedIngestionFlowFile);
 
     IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
@@ -84,11 +86,11 @@ class IngestionFlowFileEntityClientTest {
   void givenHttpClientErrorExceptionOtherStatusWhenGetIngestionFlowFileThenThrowIt() {
     Long ingestionFlowFileId = 123L;
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
+    when(processExecutionsApisHolderMock.getIngestionFlowFileEntityControllerApi(accessToken))
       .thenReturn(ingestionFlowFileEntityControllerApiMock);
 
-    Mockito.when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+    when(ingestionFlowFileEntityControllerApiMock.crudGetIngestionflowfile(ingestionFlowFileId+""))
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     IngestionFlowFile result = client.getIngestionFlowFile(ingestionFlowFileId, accessToken);
 
@@ -99,9 +101,9 @@ class IngestionFlowFileEntityClientTest {
   void whenGetIngestionFlowFileVersionThenOK() {
     List<String> versionList = List.of("1.0", "1.1", "1.3", "1.4", "2.0");
 
-    Mockito.when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
+    when(processExecutionsApisHolderMock.getIngestionFlowFileControllerApi(accessToken))
       .thenReturn(ingestionFlowFileControllerApiMock);
-    Mockito.when(ingestionFlowFileControllerApiMock.getIngestionFlowFileVersion(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.getValue()))
+    when(ingestionFlowFileControllerApiMock.getIngestionFlowFileVersion(IngestionFlowFile.IngestionFlowFileTypeEnum.DP_INSTALLMENTS.getValue()))
       .thenReturn(versionList);
 
     List<String> result = client.getIngestionFlowFileVersion(IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS, accessToken);

@@ -1,7 +1,7 @@
 package it.gov.pagopa.pu.fileshare.connector.send_notification.client;
 
 import it.gov.pagopa.pu.fileshare.connector.send_notification.config.SendNotificationApisHolder;
-import it.gov.pagopa.pu.sendnotification.controller.generated.NotificationApi;
+import it.gov.pagopa.pu.sendnotification.client.generated.NotificationApi;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LoadFileRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;

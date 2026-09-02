@@ -1,8 +1,9 @@
 package it.gov.pagopa.pu.fileshare.connector.debtpositions.client;
 
-import it.gov.pagopa.pu.debtpositions.controller.generated.ReceiptNoPiiEntityControllerApi;
+import it.gov.pagopa.pu.debtpositions.client.generated.ReceiptNoPiiEntityControllerApi;
 import it.gov.pagopa.pu.debtpositions.dto.generated.ReceiptNoPII;
 import it.gov.pagopa.pu.fileshare.connector.debtpositions.config.DebtPositionsApisHolder;
+import it.gov.pagopa.pu.fileshare.exception.common.RestInvokeNotFoundException;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,7 +13,8 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.client.HttpClientErrorException;
+
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
 class ReceiptClientTest {
@@ -43,9 +45,9 @@ class ReceiptClientTest {
     String accessToken = "ACCESSTOKEN";
     ReceiptNoPII expectedResult = new ReceiptNoPII();
 
-    Mockito.when(debtPositionsApisHolderMock.getReceiptNoPiiEntityControllerApi(accessToken))
+    when(debtPositionsApisHolderMock.getReceiptNoPiiEntityControllerApi(accessToken))
       .thenReturn(receiptNoPiiEntityControllerApiMock);
-    Mockito.when(receiptNoPiiEntityControllerApiMock.crudGetReceiptnopii(String.valueOf(receiptId)))
+    when(receiptNoPiiEntityControllerApiMock.crudGetReceiptnopii(String.valueOf(receiptId)))
       .thenReturn(expectedResult);
 
     // When
@@ -61,10 +63,10 @@ class ReceiptClientTest {
     long receiptId = 1L;
     String accessToken = "ACCESSTOKEN";
 
-    Mockito.when(debtPositionsApisHolderMock.getReceiptNoPiiEntityControllerApi(accessToken))
+    when(debtPositionsApisHolderMock.getReceiptNoPiiEntityControllerApi(accessToken))
       .thenReturn(receiptNoPiiEntityControllerApiMock);
-    Mockito.when(receiptNoPiiEntityControllerApiMock.crudGetReceiptnopii(String.valueOf(receiptId)))
-      .thenThrow(HttpClientErrorException.create(HttpStatus.NOT_FOUND, "NotFound", null, null, null));
+    when(receiptNoPiiEntityControllerApiMock.crudGetReceiptnopii(String.valueOf(receiptId)))
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
 
     // When
     ReceiptNoPII result = client.getReceiptById(receiptId, accessToken);

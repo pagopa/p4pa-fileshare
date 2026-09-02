@@ -1,23 +1,33 @@
 package it.gov.pagopa.pu.fileshare.util;
 
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import org.junit.jupiter.api.Assertions;
+import uk.co.jemos.podam.api.AttributeMetadata;
+import uk.co.jemos.podam.api.DataProviderStrategy;
+import uk.co.jemos.podam.api.PodamFactory;
+import uk.co.jemos.podam.api.PodamFactoryImpl;
+import uk.co.jemos.podam.common.ManufacturingContext;
+import uk.co.jemos.podam.typeManufacturers.AbstractTypeManufacturer;
 
 import java.util.*;
 
 public class TestUtils {
 
-  private TestUtils() {
-  }
+  private TestUtils() {}
 
   static {
     clearDefaultTimezone();
+    clearLocale();
   }
 
   public static void clearDefaultTimezone() {
     TimeZone.setDefault(Constants.DEFAULT_TIMEZONE);
+  }
+
+  public static void clearLocale() {
+    Locale.setDefault(Locale.ITALY);
   }
 
   /**
@@ -65,6 +75,17 @@ public class TestUtils {
       .issuer("ISSUER")
       .organizationAccess(organizationAccess ? "ORG" : null)
       .organizations(organizations);
+  }
+
+  public static PodamFactory getPodamFactory() {
+    PodamFactoryImpl podamFactory = new PodamFactoryImpl();
+    podamFactory.getStrategy().addOrReplaceTypeManufacturer(SortedSet.class, new AbstractTypeManufacturer<>() {
+      @Override
+      public SortedSet<?> getType(DataProviderStrategy strategy, AttributeMetadata attributeMetadata, ManufacturingContext manufacturingCtx) {
+        return new TreeSet<>();
+      }
+    });
+    return podamFactory;
   }
 
 }

@@ -1,12 +1,12 @@
 package it.gov.pagopa.pu.fileshare.controller;
 
+import io.micrometer.tracing.Tracer;
 import it.gov.pagopa.pu.fileshare.controller.generated.ReceiptApi;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
-import it.gov.pagopa.pu.fileshare.mapper.UpstreamErrorMapper;
 import it.gov.pagopa.pu.fileshare.security.JwtAuthenticationFilter;
 import it.gov.pagopa.pu.fileshare.security.SecurityUtilsTest;
 import it.gov.pagopa.pu.fileshare.service.receipt.ReceiptRtRetrieverService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,6 +23,7 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.io.ByteArrayInputStream;
 
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -36,7 +37,7 @@ class ReceiptControllerTest {
   @MockitoBean
   private ReceiptRtRetrieverService serviceMock;
   @MockitoBean
-  private UpstreamErrorMapper upstreamErrorMapperMock;
+  private Tracer tracerMock;
 
   private final String accessToken = "ACCESSTOKEN";
   private final UserInfo loggedUser = new UserInfo();
@@ -62,7 +63,7 @@ class ReceiptControllerTest {
     fileResourceDTO.setFileName(fileName);
     fileResourceDTO.setResourceStream(new InputStreamResource(new ByteArrayInputStream(fileContent.getBytes())));
 
-    Mockito.when(serviceMock.downloadRt(Mockito.eq(organizationId), Mockito.eq(receiptId),
+    when(serviceMock.downloadRt(Mockito.eq(organizationId), Mockito.eq(receiptId),
         Mockito.same(loggedUser), Mockito.same(accessToken)))
       .thenReturn(fileResourceDTO);
 

@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.connector.send_notification.config;
 
+import it.gov.pagopa.pu.fileshare.config.json.JsonConfig;
 import it.gov.pagopa.pu.fileshare.connector.BaseApiHolderTest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LoadFileRequest;
 import org.junit.jupiter.api.AfterEach;
@@ -13,21 +14,28 @@ import org.springframework.boot.restclient.RestTemplateBuilder;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.web.util.DefaultUriBuilderFactory;
 
+import static org.mockito.Mockito.when;
+
 @ExtendWith(MockitoExtension.class)
 class SendNotificationApisHolderTest  extends BaseApiHolderTest {
   @Mock
   private RestTemplateBuilder restTemplateBuilderMock;
 
-  private SendNotificationApisHolder sendNotificationApisHolder;
+  private SendNotificationApisHolder apisHolder;
+  private SendNotificationApiClientConfig apiClientConfig;
 
   @BeforeEach
   void setUp() {
-    Mockito.when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
-    Mockito.when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
-    SendNotificationApiClientConfig clientConfig = SendNotificationApiClientConfig.builder()
+    when(restTemplateBuilderMock.build()).thenReturn(restTemplateMock);
+    when(restTemplateMock.getUriTemplateHandler()).thenReturn(new DefaultUriBuilderFactory());
+
+    apiClientConfig = SendNotificationApiClientConfig.builder()
       .baseUrl("http://example.com")
+      .maxAttempts(3)
       .build();
-    sendNotificationApisHolder = new SendNotificationApisHolder(clientConfig, restTemplateBuilderMock);
+    apisHolder = new SendNotificationApisHolder(apiClientConfig, restTemplateBuilderMock, new JsonConfig().objectMapperJackson3());
+
+    verifyHttpClientErrorJsonBodyHandlerConfiguration(apisHolder.getNotificationApi(null));
   }
 
   @AfterEach
@@ -39,12 +47,21 @@ class SendNotificationApisHolderTest  extends BaseApiHolderTest {
   }
 
   @Test
+  void testRetryConfiguration() {
+    assertRetry(apiClientConfig,
+      accessToken -> apisHolder.getNotificationApi(accessToken)
+        .startNotification("sendNotificationId",new LoadFileRequest()),
+      new ParameterizedTypeReference<>() {}
+    );
+  }
+
+  @Test
   void whenGetNotificationApiThenAuthenticationShouldBeSetInThreadSafeMode() throws InterruptedException {
     assertAuthenticationShouldBeSetInThreadSafeMode(
-      accessToken -> sendNotificationApisHolder.getNotificationApi(accessToken)
+      accessToken -> apisHolder.getNotificationApi(accessToken)
         .startNotification("sendNotificationId",new LoadFileRequest()),
       new ParameterizedTypeReference<>() {},
-      sendNotificationApisHolder::unload
+      apisHolder::unload
     );
   }
 

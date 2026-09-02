@@ -8,7 +8,7 @@ import it.gov.pagopa.pu.fileshare.exception.custom.OrganizationMissMatchExceptio
 import it.gov.pagopa.pu.fileshare.exception.custom.ReceiptNotFoundException;
 import it.gov.pagopa.pu.fileshare.service.AuthorizationService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import org.springframework.core.io.InputStreamResource;
 import org.springframework.stereotype.Service;
 

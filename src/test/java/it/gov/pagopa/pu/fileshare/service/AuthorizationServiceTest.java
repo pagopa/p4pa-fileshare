@@ -3,9 +3,9 @@ package it.gov.pagopa.pu.fileshare.service;
 import it.gov.pagopa.pu.fileshare.connector.auth.client.AuthnClient;
 import it.gov.pagopa.pu.fileshare.connector.organization.OrganizationService;
 import it.gov.pagopa.pu.fileshare.exception.custom.InvalidAccessTokenException;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
-import it.gov.pagopa.pu.p4paorganization.dto.generated.Organization;
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
+import it.gov.pagopa.pu.organization.dto.generated.Organization;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
@@ -56,7 +56,8 @@ class AuthorizationServiceTest {
     InvalidAccessTokenException result = Assertions.assertThrows(InvalidAccessTokenException.class,
       () -> authorizationService.validateToken("INVALIDACCESSTOKEN"));
 
-    Assertions.assertEquals("[INVALID_ACCESS_TOKEN] Bad Access Token provided", result.getMessage());
+    Assertions.assertEquals("INVALID_ACCESS_TOKEN", result.getCode());
+    Assertions.assertEquals("Bad Access Token provided", result.getMessage());
   }
 
   @Test
@@ -99,7 +100,7 @@ class AuthorizationServiceTest {
     userInfo.setOrganizations(List.of(userAdminRole,userTestRole));
     userInfo.setMappedExternalUserId("externalUserId");
 
-    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+    when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
       .thenReturn(null);
 
     // When
@@ -129,7 +130,7 @@ class AuthorizationServiceTest {
 
     Organization organization = new Organization();
 
-    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+    when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
       .thenReturn(organization);
 
     // When
@@ -162,7 +163,7 @@ class AuthorizationServiceTest {
     Organization org = new Organization();
     org.setBrokerId(brokerId);
 
-    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+    when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
       .thenReturn(org);
 
     // When
@@ -197,7 +198,7 @@ class AuthorizationServiceTest {
     Organization org = new Organization();
     org.setBrokerId(brokerId);
 
-    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+    when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
       .thenReturn(org);
 
     // When
@@ -235,7 +236,7 @@ class AuthorizationServiceTest {
     org.setBrokerId(brokerId);
     org.setOrgFiscalCode(expectedOrgFiscalCode);
 
-    Mockito.when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
+    when(organizationServiceMock.getOrganizationById(organizationId, accessToken))
       .thenReturn(org);
 
     // When
@@ -291,8 +292,8 @@ class AuthorizationServiceTest {
     userInfo.setMappedExternalUserId("userId");
     userInfo.setBrokerFiscalCode(brokerFiscalCode);
     userInfo.setOrganizations(List.of(
-      new UserOrganizationRoles("OID1", 1L, "IPA_1", adminOrgFiscalCode, "email", List.of("TEST", "ROLE_ADMIN")),
-      new UserOrganizationRoles("OID2", 2L, "IPA_2", brokerFiscalCode, "email", List.of("TEST"))
+      new UserOrganizationRoles("OID1", 1L, "IPA_1", adminOrgFiscalCode, "email", List.of("TEST", "ROLE_ADMIN"), List.of()),
+      new UserOrganizationRoles("OID2", 2L, "IPA_2", brokerFiscalCode, "email", List.of("TEST"), List.of())
     ));
 
     // When/Then
@@ -398,8 +399,8 @@ class AuthorizationServiceTest {
       expectedUserInfo = new UserInfo();
       expectedUserInfo.setMappedExternalUserId("USERID");
       expectedUserInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of(AuthorizationService.ROLE_ADMIN))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of(""), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of(AuthorizationService.ROLE_ADMIN), List.of())
       ));
     }
 
@@ -426,8 +427,8 @@ class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -453,8 +454,8 @@ class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -480,8 +481,8 @@ class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -507,8 +508,8 @@ class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 
@@ -534,8 +535,8 @@ class AuthorizationServiceTest {
       userInfo = new UserInfo();
       userInfo.setMappedExternalUserId(userId);
       userInfo.setOrganizations(List.of(
-        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER")),
-        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"))
+        new UserOrganizationRoles("OID1", 1L, "IPA_1", "CF_1", "email", List.of("ROLE_USER"), List.of()),
+        new UserOrganizationRoles("OID2", 2L, "IPA_2", "CF_2", "email", List.of("ROLE_ADMIN"), List.of())
       ));
     }
 

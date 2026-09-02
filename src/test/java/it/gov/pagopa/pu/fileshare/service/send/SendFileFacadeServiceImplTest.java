@@ -1,5 +1,7 @@
 package it.gov.pagopa.pu.fileshare.service.send;
 
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
+import it.gov.pagopa.pu.auth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.fileshare.connector.send_notification.NotificationService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
 import it.gov.pagopa.pu.fileshare.dto.SaveFileResultDTO;
@@ -9,8 +11,6 @@ import it.gov.pagopa.pu.fileshare.exception.custom.OrganizationMissMatchExceptio
 import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserInfo;
-import it.gov.pagopa.pu.p4paauth.dto.generated.UserOrganizationRoles;
 import it.gov.pagopa.pu.sendnotification.dto.generated.LoadFileRequest;
 import it.gov.pagopa.pu.sendnotification.dto.generated.SendNotificationDTO;
 import it.gov.pagopa.pu.sendnotification.dto.generated.StartNotificationResponse;
@@ -20,7 +20,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
@@ -244,12 +243,12 @@ class SendFileFacadeServiceImplTest {
     when(notificationService.getSendNotification(SEND_NOTIFICATION_ID, ACCESS_TOKEN))
       .thenReturn(sendNotificationDTO);
 
-    InputStream decryptedInputStream = Mockito.mock(ByteArrayInputStream.class);
+    InputStream decryptedInputStream = mock(ByteArrayInputStream.class);
 
     when(fileStorerService.buildOrganizationBasePath(organizationId))
       .thenReturn(mockBasePath);
 
-    Mockito.when(fileStorerService.decryptFile(Path.of(mockBasePath.toString() ,SEND_NOTIFICATION_ID_FOLDER), FILE_NAME)).thenReturn(decryptedInputStream);
+    when(fileStorerService.decryptFile(Path.of(mockBasePath.toString() ,SEND_NOTIFICATION_ID_FOLDER), FILE_NAME)).thenReturn(decryptedInputStream);
 
     FileResourceDTO result = sendFileFacadeService.downloadSendFile(organizationId, SEND_NOTIFICATION_ID, "test.txt", user, ACCESS_TOKEN);
 
