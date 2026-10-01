@@ -173,20 +173,39 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   private FileResourceDTO downloadFileWithSuffix(IngestionFlowFile ingestionFlowFile, String suffix) {
     String newFileName = ingestionFlowFile.getFileName().replace(".zip", suffix);
 
-    Path filePath = fileStorerService.getUploadedOrArchivedPath(
-      ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), newFileName);
-    if(filePath == null) {
-      throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s has no file with path %s/%s"
-        .formatted(
-          ingestionFlowFile.getIngestionFlowFileId(),
-          ingestionFlowFile.getFilePathName(),
-          newFileName));
+    int attempts = 0;
+    Path filePath = null;
+    while (attempts < 3) {
+      try {
+        filePath = fileStorerService.getUploadedOrArchivedPath(
+          ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), newFileName);
+        if (filePath == null) {
+          throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s has no file with path %s/%s"
+            .formatted(
+              ingestionFlowFile.getIngestionFlowFileId(),
+              ingestionFlowFile.getFilePathName(),
+              newFileName));
+        }
+        Path fileFolderPath = filePath.getParent();
+
+        InputStream decryptedInputStream = fileStorerService.decryptFile(fileFolderPath, newFileName);
+
+        return new FileResourceDTO(new InputStreamResource(decryptedInputStream), newFileName);
+      } catch (FileNotFoundException e) {
+        if (filePath != null && !filePath.getParent().getFileName().toString().equals(archivedSubFolder)) {
+          log.info("Failed to download file from original position, attempting to determine new position: {} (attempt: {})", filePath, attempts);
+          attempts++;
+        } else {
+          throw e;
+        }
+      }
     }
-    Path fileFolderPath = filePath.getParent();
 
-    InputStream decryptedInputStream = fileStorerService.decryptFile(fileFolderPath, newFileName);
-
-    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), newFileName);
+    throw new FileNotFoundException("FILE_NOT_FOUND", "Cannot read ingestion flow file with id %s using path %s after %d attempts"
+      .formatted(
+        ingestionFlowFile.getIngestionFlowFileId(),
+        filePath,
+        attempts));
   }
 
   private IngestionFlowFile authorizeDownload(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
