@@ -96,7 +96,9 @@ class FileServiceTest {
     "fileName.txt",
     "fileName-2.txt",
     "fileName-2-0.txt",
-    "fileName-2_0-.txt"
+    "fileName-2_0-.txt",
+    "filename-1_3.txt.zip",
+    "filename-2_0.filename-1_0.csv"
   })
   void givenUnknownVersionWhenValidateVersionFromIngestionFlowFilenameThenInvalidFileException(String fileName){
     InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
@@ -117,8 +119,6 @@ class FileServiceTest {
   static Stream<Arguments> validFilenamesSource() {
     return Stream.of(
       Arguments.of("fileName1234--2_0.txt", VERSION_LIST, "2.0"),
-      Arguments.of("filename-1_3.txt.zip", VERSION_LIST, "1.3"),
-      Arguments.of("filename-2_0.filename-1_0.csv", VERSION_LIST, "1.0"),
       Arguments.of("fileName-22_11.txt", List.of("22.11"), "22.11"),
       Arguments.of("fileName-12_0.txt", List.of("2.0","12.0"), "12.0")
     );

@@ -40,9 +40,9 @@ public class FileService {
     return fileVersions.stream()
       .filter(fileVersion -> {
         String version = replaceCharVersion(fileVersion, ".", "_");
-        String regex = ".+-"
+        String regex = "[^.]+-"
           + Pattern.quote(version)
-          + "(?:\\.[A-Za-z0-9]+)*";
+          + "\\.[A-Za-z0-9]+";
         return fileName.matches(regex);
       })
       .findFirst()
