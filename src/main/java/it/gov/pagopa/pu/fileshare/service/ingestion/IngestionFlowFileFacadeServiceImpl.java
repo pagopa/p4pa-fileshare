@@ -133,18 +133,20 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     int attempts = 0;
     Path fileFolderPath = null;
-    try {
-      fileFolderPath = getFileFolderPath(ingestionFlowFile);
+    while (attempts < 3) {
+      try {
+        fileFolderPath = getFileFolderPath(ingestionFlowFile);
 
-      InputStream decryptedInputStream = fileStorerService.decryptFile(fileFolderPath, ingestionFlowFile.getFileName());
+        InputStream decryptedInputStream = fileStorerService.decryptFile(fileFolderPath, ingestionFlowFile.getFileName());
 
-      return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
-    } catch (FileNotFoundException e) {
-      if (fileFolderPath != null && !fileFolderPath.getFileName().toString().equals(archivedSubFolder)) {
-        log.info("Failed to download file from original position, attempting to determine new position: {} (attempt: {})", fileFolderPath, attempts);
-        attempts++;
-      } else {
-        throw e;
+        return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
+      } catch (FileNotFoundException e) {
+        if (fileFolderPath != null && !fileFolderPath.getFileName().toString().equals(archivedSubFolder)) {
+          log.info("Failed to download file from original position, attempting to determine new position: {} (attempt: {})", fileFolderPath, attempts);
+          attempts++;
+        } else {
+          throw e;
+        }
       }
     }
 
