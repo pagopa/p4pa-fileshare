@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
+import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 @Slf4j
@@ -39,7 +40,10 @@ public class FileService {
     return fileVersions.stream()
       .filter(fileVersion -> {
         String version = replaceCharVersion(fileVersion, ".", "_");
-        return fileName.matches("^.*([^0-9_]|[^0-9]_)" + version + "\\.[^.]+$");
+        String regex = ".+-"
+          + Pattern.quote(version)
+          + "(?:\\.[A-Za-z0-9]+)*";
+        return fileName.matches(regex);
       })
       .findFirst()
       .orElseThrow(() -> new InvalidFileException("INVALID_FILE_NAME", String.format("File name must contain a valid version: %s",

@@ -6,12 +6,15 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.Arguments;
+import org.junit.jupiter.params.provider.MethodSource;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 
 import java.util.List;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -57,19 +60,10 @@ class FileServiceTest {
   }
 
   @Test
-  void whenValidateVersionFromIngestionFlowFilenameThenOk(){
-    String fileName = "fileName1234__2_0.txt";
-
-    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
-
-    assertEquals("2.0", version);
-  }
-
-  @Test
   void whenValidateVersionRECEIPTFromIngestionFlowFilenameThenOk(){
-    String fileName = "fileName1_3.txt";
+    String fileName = "fileName-1_3.txt";
 
-    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT);
+    String version = fileService.validateVersionFromIngestionFlowFilename(VERSION_RECEIPT_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.RECEIPT);
 
     assertEquals("1.3", version);
   }
@@ -94,10 +88,17 @@ class FileServiceTest {
     assertEquals("File name must contain a valid version: [1_0, 1_1, 1_2, 1_3]", ex.getMessage());
   }
 
-  @Test
-  void givenInvalidFilenameWhenValidateVersionFromIngestionFlowFilenameThenInvalidFileException(){
-    String fileName = "fileName.txt";
-
+  @ParameterizedTest
+  @ValueSource(strings = {
+    "2_0fileName.txt",
+    "fileName_2026_2_0.txt",
+    "fileName_22_0.txt",
+    "fileName.txt",
+    "fileName-2.txt",
+    "fileName-2-0.txt",
+    "fileName-2_0-.txt"
+  })
+  void givenUnknownVersionWhenValidateVersionFromIngestionFlowFilenameThenInvalidFileException(String fileName){
     InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
       fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS));
 
@@ -106,17 +107,21 @@ class FileServiceTest {
   }
 
   @ParameterizedTest
-  @ValueSource(strings = {
-    "2_0fileName.txt",
-    "fileName_2026_2_0.txt",
-    "fileName_22_0.txt",
-  })
-  void givenUnknownVersionWhenValidateVersionFromIngestionFlowFilenameThenInvalidFileException(String fileName){
-    InvalidFileException ex = assertThrows(InvalidFileException.class, () ->
-      fileService.validateVersionFromIngestionFlowFilename(VERSION_LIST, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS));
+  @MethodSource("valueSource")
+  void givenMultipleDigitExtractedVersionInSupportedListWhenValidateVersionFromIngestionFlowFilenameThenOk(String fileName, List<String> validVersions, String expectedVersion){
+    String version = fileService.validateVersionFromIngestionFlowFilename(validVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
-    assertEquals("INVALID_FILE_NAME", ex.getCode());
-    assertEquals("File name must contain a valid version: [1_0, 1_1, 1_3, 1_4, 2_0]", ex.getMessage());
+    assertEquals(expectedVersion, version);
+  }
+
+  static Stream<Arguments> valueSource() {
+    return Stream.of(
+      Arguments.of("fileName1234--2_0.txt", VERSION_LIST, "2.0"),
+      Arguments.of("filename-1_3.txt.zip", VERSION_LIST, "1.3"),
+      Arguments.of("filename-2_0.filename-1_0.csv", VERSION_LIST, "1.0"),
+      Arguments.of("fileName-22_11.txt", List.of("22.11"), "22.11"),
+      Arguments.of("fileName-12_0.txt", List.of("2.0","12.0"), "12.0")
+    );
   }
 
   @Test
