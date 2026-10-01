@@ -107,14 +107,14 @@ class FileServiceTest {
   }
 
   @ParameterizedTest
-  @MethodSource("valueSource")
-  void givenMultipleDigitExtractedVersionInSupportedListWhenValidateVersionFromIngestionFlowFilenameThenOk(String fileName, List<String> validVersions, String expectedVersion){
+  @MethodSource("validFilenamesSource")
+  void givenValidFilenamesWhenValidateVersionFromIngestionFlowFilenameThenOk(String fileName, List<String> validVersions, String expectedVersion){
     String version = fileService.validateVersionFromIngestionFlowFilename(validVersions, fileName, IngestionFlowFileRequestDTO.IngestionFlowFileTypeEnum.DP_INSTALLMENTS);
 
     assertEquals(expectedVersion, version);
   }
 
-  static Stream<Arguments> valueSource() {
+  static Stream<Arguments> validFilenamesSource() {
     return Stream.of(
       Arguments.of("fileName1234--2_0.txt", VERSION_LIST, "2.0"),
       Arguments.of("filename-1_3.txt.zip", VERSION_LIST, "1.3"),
