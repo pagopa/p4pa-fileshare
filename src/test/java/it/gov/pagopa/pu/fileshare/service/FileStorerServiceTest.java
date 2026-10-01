@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.junit.jupiter.api.io.TempDir;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.Mockito;
@@ -23,6 +22,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 import static it.gov.pagopa.pu.fileshare.service.FileStorerService.concatenatePaths;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class FileStorerServiceTest {
@@ -32,15 +32,12 @@ class FileStorerServiceTest {
   @Mock
   private FoldersPathsConfig foldersPathsConfig;
 
-  @TempDir
-  Path tempDir;
-
   private static final String FILE_ENCRYPT_PASSWORD = "testPassword";
   private final String sharedFolder = "build/tmp";
 
   @BeforeEach
   void setUp() {
-    Mockito.when(foldersPathsConfig.getShared()).thenReturn(sharedFolder);
+    when(foldersPathsConfig.getShared()).thenReturn(sharedFolder);
     fileStorerService = new FileStorerService(foldersPathsConfig, FILE_ENCRYPT_PASSWORD);
   }
 
@@ -75,7 +72,7 @@ class FileStorerServiceTest {
 
   @Test
   void givenErrorWhenSaveToSharedFolderThenFileUploadException() throws IOException {
-    MockMultipartFile fileSpy = Mockito.spy(new MockMultipartFile(
+    MockMultipartFile fileSpy = spy(new MockMultipartFile(
       "ingestionFlowFile",
       "test.txt",
       MediaType.TEXT_PLAIN_VALUE,
@@ -85,8 +82,8 @@ class FileStorerServiceTest {
     String relativePath = "relative";
     String fileName = fileSpy.getOriginalFilename();
 
-    InputStream inpustStreamMock = Mockito.mock(InputStream.class);
-    Mockito.doReturn(inpustStreamMock)
+    InputStream inpustStreamMock = mock(InputStream.class);
+    doReturn(inpustStreamMock)
       .when(fileSpy)
       .getInputStream();
 
@@ -104,7 +101,7 @@ class FileStorerServiceTest {
 
   @Test
   void givenValidFileWhenSaveToSharedFolderThenOK() throws IOException {
-    MockMultipartFile fileSpy = Mockito.spy(new MockMultipartFile(
+    MockMultipartFile fileSpy = spy(new MockMultipartFile(
       "ingestionFlowFile",
       "test.txt",
       MediaType.TEXT_PLAIN_VALUE,
@@ -114,8 +111,8 @@ class FileStorerServiceTest {
     String relativeFilePath = "relative";
     String fileName = fileSpy.getOriginalFilename();
 
-    InputStream inpustStreamMock = Mockito.mock(InputStream.class);
-    Mockito.doReturn(inpustStreamMock)
+    InputStream inpustStreamMock = mock(InputStream.class);
+    doReturn(inpustStreamMock)
       .when(fileSpy)
       .getInputStream();
 
@@ -146,11 +143,12 @@ class FileStorerServiceTest {
 
   @Test
   void givenExistingFileWhenDecryptFileThenReturnInputStreamResource() throws IOException {
-    InputStream cipherInputStream = Mockito.mock(ByteArrayInputStream.class);
+    InputStream cipherInputStream = mock(ByteArrayInputStream.class);
     Path filePath = Path.of("build");
     String fileName = "fileName";
 
     try (MockedStatic<AESUtils> aesUtilsMockedStatic = Mockito.mockStatic(AESUtils.class)) {
+      //noinspection resource
       aesUtilsMockedStatic.when(() -> AESUtils.decrypt(Mockito.eq(FILE_ENCRYPT_PASSWORD), Mockito.eq(filePath), Mockito.eq(fileName)))
         .thenReturn(cipherInputStream);
 
@@ -183,23 +181,62 @@ class FileStorerServiceTest {
     throws IOException {
     //Given
     String archivedSubFolder = "archive";
+    String fileDirectory = "tempDir";
     String fileName = "existsFile";
     Long organizationId = 1L;
-    String chiperFileName = fileName + AESUtils.CIPHER_EXTENSION;
+    String cipherFileName = fileName + AESUtils.CIPHER_EXTENSION;
 
-    Path mainFolderPath = tempDir.resolve(archivedSubFolder);
+    Path mainFolderPath = Path.of(sharedFolder)
+      .resolve(String.valueOf(organizationId))
+      .resolve(fileDirectory);
     Files.createDirectories(mainFolderPath);
-    Files.createFile(mainFolderPath.resolve(chiperFileName));
+    Path tempFile = Files.createFile(mainFolderPath.resolve(cipherFileName));
 
-    boolean result = fileStorerService.checkIfAlreadyUploadedOrArchived(
-      organizationId,
-      String.valueOf(mainFolderPath),
-      sharedFolder,
-      fileName
-    );
+    try {
+      boolean result = fileStorerService.checkIfAlreadyUploadedOrArchived(
+        organizationId,
+        archivedSubFolder,
+        fileDirectory,
+        fileName
+      );
 
-    // Then
-    Assertions.assertTrue(result);
+      // Then
+      Assertions.assertTrue(result);
+    } finally {
+      Files.deleteIfExists(tempFile);
+    }
+  }
+
+  @Test
+  void givenFileExistsInArchiveFolderWhenCheckIfAlreadyUploadedOrArchivedThenReturnTrue()
+    throws IOException {
+    //Given
+    String archivedSubFolder = "archive";
+    String fileDirectory = "tempDir";
+    String fileName = "existsFile";
+    Long organizationId = 1L;
+    String cipherFileName = fileName + AESUtils.CIPHER_EXTENSION;
+
+    Path mainFolderPath = Path.of(sharedFolder)
+      .resolve(String.valueOf(organizationId))
+      .resolve(fileDirectory)
+      .resolve(archivedSubFolder);
+    Files.createDirectories(mainFolderPath);
+    Path tempFile = Files.createFile(mainFolderPath.resolve(cipherFileName));
+
+    try {
+      boolean result = fileStorerService.checkIfAlreadyUploadedOrArchived(
+        organizationId,
+        archivedSubFolder,
+        fileDirectory,
+        fileName
+      );
+
+      // Then
+      Assertions.assertTrue(result);
+    } finally {
+      Files.deleteIfExists(tempFile);
+    }
   }
 
 }

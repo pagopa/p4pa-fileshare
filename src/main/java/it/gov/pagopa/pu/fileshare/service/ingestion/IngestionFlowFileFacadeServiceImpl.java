@@ -105,7 +105,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
         !ingestionFlowFile.getFileOrigin().equals(String.valueOf(fileOrigin))) {
         throw new IngestionFlowFileNotFoundException(
           "FILE_NOT_FOUND", "IngestionFlowFile in WAITING_FILE status and matching origin not found with id %d%s"
-            .formatted(ingestionFlowFileId, ingestionFlowFile == null ? "" : " - actual status: " + ingestionFlowFile.getStatus() + ", origin: " + ingestionFlowFile.getFileOrigin()));
+          .formatted(ingestionFlowFileId, ingestionFlowFile == null ? "" : " - actual status: " + ingestionFlowFile.getStatus() + ", origin: " + ingestionFlowFile.getFileOrigin()));
       }
     }
 
@@ -131,11 +131,30 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
   public FileResourceDTO downloadIngestionFlowFile(Long organizationId, Long ingestionFlowFileId, UserInfo user, String accessToken) {
     IngestionFlowFile ingestionFlowFile = authorizeDownload(organizationId, ingestionFlowFileId, user, accessToken);
 
-    Path fileFolderPath = getFileFolderPath(ingestionFlowFile);
+    int attempts = 0;
+    Path fileFolderPath = null;
+    while (attempts < 3) {
+      try {
+        fileFolderPath = getFileFolderPath(ingestionFlowFile);
 
-    InputStream decryptedInputStream = fileStorerService.decryptFile(fileFolderPath, ingestionFlowFile.getFileName());
+        InputStream decryptedInputStream = fileStorerService.decryptFile(fileFolderPath, ingestionFlowFile.getFileName());
 
-    return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
+        return new FileResourceDTO(new InputStreamResource(decryptedInputStream), ingestionFlowFile.getFileName());
+      } catch (FileNotFoundException e) {
+        if (fileFolderPath != null && !fileFolderPath.getFileName().toString().equals(archivedSubFolder)) {
+          log.info("Failed to download file from original position, attempting to determine new position: {} (attempt: {})", fileFolderPath, attempts);
+          attempts++;
+        } else {
+          throw e;
+        }
+      }
+    }
+
+    throw new FileNotFoundException("FILE_NOT_FOUND", "Cannot read ingestion flow file with id %s using path %s after %d attempts"
+      .formatted(
+        ingestionFlowFile.getIngestionFlowFileId(),
+        fileFolderPath,
+        attempts));
   }
 
   @Override
@@ -175,7 +194,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
     Path filePath = fileStorerService.getUploadedOrArchivedPath(
       ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), newFileName);
-    if(filePath == null) {
+    if (filePath == null) {
       throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s has no file with path %s/%s"
         .formatted(
           ingestionFlowFile.getIngestionFlowFileId(),
@@ -212,7 +231,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
 
   private Path getFileFolderPath(IngestionFlowFile ingestionFlowFile) {
     Path filePath = fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), archivedSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getFileName());
-    if(filePath == null) {
+    if (filePath == null) {
       throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s has no file with path %s/%s"
         .formatted(
           ingestionFlowFile.getIngestionFlowFileId(),
@@ -228,7 +247,7 @@ public class IngestionFlowFileFacadeServiceImpl implements IngestionFlowFileFaca
     }
 
     Path errorFilePath = fileStorerService.getUploadedOrArchivedPath(ingestionFlowFile.getOrganizationId(), errorsSubFolder, ingestionFlowFile.getFilePathName(), ingestionFlowFile.getDiscardFileName());
-    if(errorFilePath == null) {
+    if (errorFilePath == null) {
       throw new FileNotFoundException("FILE_NOT_FOUND", "Ingestion flow file with id %s errors file does not exist %s/%s/%s"
         .formatted(
           ingestionFlowFile.getIngestionFlowFileId(),

@@ -1,5 +1,6 @@
 package it.gov.pagopa.pu.fileshare.service.ingestion;
 
+import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.fileshare.config.FoldersPathsConfig;
 import it.gov.pagopa.pu.fileshare.connector.processexecutions.IngestionFlowFileService;
 import it.gov.pagopa.pu.fileshare.dto.FileResourceDTO;
@@ -12,7 +13,6 @@ import it.gov.pagopa.pu.fileshare.service.FileService;
 import it.gov.pagopa.pu.fileshare.service.FileStorerService;
 import it.gov.pagopa.pu.fileshare.service.UserAuthorizationService;
 import it.gov.pagopa.pu.fileshare.util.TestUtils;
-import it.gov.pagopa.pu.auth.dto.generated.UserInfo;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFile;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileRequestDTO;
 import it.gov.pagopa.pu.processexecutions.dto.generated.IngestionFlowFileStatus;
@@ -26,6 +26,7 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.stubbing.OngoingStubbing;
 import org.springframework.http.MediaType;
 import org.springframework.mock.web.MockMultipartFile;
 import org.springframework.security.authorization.AuthorizationDeniedException;
@@ -255,22 +256,44 @@ class IngestionFlowFileFacadeServiceImplTest {
 
   @Test
   void givenAuthorizedUserWhenDownloadIngestionFlowFileThenReturnFileResource() {
-    givenAuthorizedUserWhenDownloadIngestionFlowFileThenReturnFileResource(false);
+    testDownloadIngestionFlowFile(false, 0, false);
   }
 
   @Test
   void givenAuthorizedAdminUserWhenDownloadIngestionFlowFileThenReturnFileResource() {
-    givenAuthorizedUserWhenDownloadIngestionFlowFileThenReturnFileResource(true);
+    testDownloadIngestionFlowFile(true, 0, false);
   }
 
-  void givenAuthorizedUserWhenDownloadIngestionFlowFileThenReturnFileResource(boolean isAdmin) {
+  @Test
+  void givenDecipheringErrorOnOriginalFolderResolvedDuringAttemptsWhenDownloadIngestionFlowFileThenReturnFileResource() {
+    testDownloadIngestionFlowFile(true, 2, false);
+  }
+
+  @Test
+  void givenDecipheringErrorOnOriginalFolderNotResolvedDuringAttemptsWhenDownloadIngestionFlowFileThenThrowNotFoundException() {
+    FileNotFoundException result = assertThrows(FileNotFoundException.class, () -> testDownloadIngestionFlowFile(true, 3, false));
+    Assertions.assertEquals("FILE_NOT_FOUND", result.getCode());
+    Assertions.assertEquals("Cannot read ingestion flow file with id null using path /organizationFolder/examplePath after 3 attempts", result.getMessage());
+  }
+
+  @Test
+  void givenDecipheringErrorAndArchiveFolderWhenDownloadIngestionFlowFileThenThrowNotFoundException() {
+    FileNotFoundException result = assertThrows(FileNotFoundException.class, () -> testDownloadIngestionFlowFile(true, 1, true));
+    Assertions.assertEquals("DECIPHERING_ERROR", result.getCode());
+    Assertions.assertEquals("Deciphering dummy error", result.getMessage());
+  }
+
+  void testDownloadIngestionFlowFile(boolean isAdmin, int decipheringNotFoundExceptionOccurrences, boolean resolveIntoArchiveFolder) {
     String accessToken = "TOKEN";
     Long organizationId = 1L;
     Long ingestionFlowFileId = 10L;
     Path organizationBasePath = Path.of("/organizationFolder");
     String filePathName = "examplePath";
     String fileName = "testFile.zip";
-    Path fullFilePath = organizationBasePath.resolve(filePathName).resolve(ARCHIVED_SUB_FOLDER);
+    Path fullFilePath = organizationBasePath.resolve(filePathName);
+    if(resolveIntoArchiveFolder) {
+      fullFilePath = fullFilePath.resolve(ARCHIVED_SUB_FOLDER);
+    }
 
     UserInfo user = isAdmin ? TestUtils.getSampleAdminUser() : TestUtils.getSampleUser();
 
@@ -289,15 +312,21 @@ class IngestionFlowFileFacadeServiceImplTest {
       .thenReturn(ingestionFlowFile);
     when(fileStorerServiceMock.getUploadedOrArchivedPath(organizationId, ARCHIVED_SUB_FOLDER, filePathName, fileName))
       .thenReturn(fullFilePath.resolve(fileName));
-    when(fileStorerServiceMock.decryptFile(fullFilePath, fileName))
-      .thenReturn(decryptedInputStream);
 
-    FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken);
+    OngoingStubbing<InputStream> decryptFileStub = when(fileStorerServiceMock.decryptFile(fullFilePath, fileName));
+    for (int i = 0; i < decipheringNotFoundExceptionOccurrences; i++) {
+      decryptFileStub = decryptFileStub.thenThrow(new FileNotFoundException("DECIPHERING_ERROR", "Deciphering dummy error"));
+    }
+    decryptFileStub.thenReturn(decryptedInputStream);
 
-    assertNotNull(result);
-    assertEquals(fileName, result.getFileName());
+    try {
+      FileResourceDTO result = ingestionFlowFileService.downloadIngestionFlowFile(organizationId, ingestionFlowFileId, user, accessToken);
 
-    verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+      assertNotNull(result);
+      assertEquals(fileName, result.getFileName());
+    } finally {
+      verify(userAuthorizationServiceMock).checkUserAuthorization(organizationId, user, accessToken);
+    }
   }
 
   @Test

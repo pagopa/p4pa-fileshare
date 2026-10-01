@@ -87,13 +87,13 @@ public class FileStorerService {
     Path filePath = buildOrganizationBasePath(organizationId)
       .resolve(ingestionFlowFilePath);
     String fileNameCiphered = fileName + AESUtils.CIPHER_EXTENSION;
-    Path originalPath = FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered);
-    if (Files.exists(originalPath)) {
-      return originalPath;
+    Path archivedPath = FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered);
+    if (Files.exists(archivedPath)) {
+      return archivedPath;
     } else {
-      Path archivedPath = FileStorerService.concatenatePaths(filePath.resolve(archivedSubFolder).toString(), fileNameCiphered);
-      if (Files.exists(archivedPath)) {
-        return archivedPath;
+      Path originalPath = FileStorerService.concatenatePaths(filePath.toString(), fileNameCiphered);
+      if (Files.exists(originalPath)) {
+        return originalPath;
       } else {
         return null;
       }
