@@ -11,7 +11,6 @@ plugins {
   id("io.spring.dependency-management") version "1.1.7"
   jacoco
   id("org.sonarqube") version "7.4.0.8496"
-  id("com.github.ben-manes.versions") version "0.54.0"
   id("org.openapi.generator") version "7.25.0"
   id("org.ajoberstar.grgit") version "5.3.2"
   id("com.gorylenko.gradle-git-properties") version "4.0.1"
@@ -91,8 +90,8 @@ dependencies {
 
   // CVE Security dependencies
   implementation("org.apache.tomcat.embed:tomcat-embed-core:$tomcatEmbedCoreVersion")
-    implementation("com.fasterxml.jackson.core:jackson-databind:$jackson2DatabindVersion")
-    implementation("tools.jackson.core:jackson-databind:$jackson3DatabindVersion")
+  implementation("com.fasterxml.jackson.core:jackson-databind:$jackson2DatabindVersion")
+  implementation("tools.jackson.core:jackson-databind:$jackson3DatabindVersion")
 
   compileOnly("org.projectlombok:lombok")
   annotationProcessor("org.projectlombok:lombok")
@@ -118,10 +117,10 @@ dependencies {
 }
 tasks {
   jar {
-      from("${rootProject.projectDir}") {
-          include("LICENSE.md")
-          into("META-INF")
-      }
+    from("${rootProject.projectDir}") {
+      include("LICENSE.md")
+      into("META-INF")
+    }
   }
   test {
     jvmArgs("-javaagent:${mockitoAgent.asPath}")
@@ -141,6 +140,25 @@ val projectInfo = mapOf(
   "artifactId" to project.name,
   "version" to project.version
 )
+
+configure<SourceSetContainer> {
+  named("main") {
+    java.srcDir("$projectDir/build/generated/src/main/java")
+  }
+}
+
+springBoot {
+  buildInfo()
+  mainClass.value("it.gov.pagopa.pu.fileshare.FileShareApplication")
+}
+
+tasks.named<com.github.benmanes.gradle.versions.updates.DependencyUpdatesTask>("dependencyUpdates") {
+  revision = "release"
+  outputFormatter = "json"
+  checkForGradleUpdate = false
+  checkEmbeddedKotlin = false
+  rejectPreReleases = true
+}
 
 tasks {
   val processResources by getting(ProcessResources::class) {
@@ -168,17 +186,6 @@ tasks.register("dependenciesBuild") {
     "openApiGeneratePAGOPAPAYMENTS",
     "openApiGenerateDEBTPOSITIONS"
   )
-}
-
-configure<SourceSetContainer> {
-  named("main") {
-    java.srcDir("$projectDir/build/generated/src/main/java")
-  }
-}
-
-springBoot {
-  buildInfo()
-  mainClass.value("it.gov.pagopa.pu.fileshare.FileShareApplication")
 }
 
 tasks.register<org.openapitools.generator.gradle.plugin.tasks.GenerateTask>("openApiGenerateFILESHARE") {
