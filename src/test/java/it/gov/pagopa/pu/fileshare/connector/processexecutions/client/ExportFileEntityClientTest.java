@@ -66,7 +66,7 @@ class ExportFileEntityClientTest {
       .thenReturn(exportFileEntityControllerApiMock);
 
     when(exportFileEntityControllerApiMock.crudGetExportfile(exportFileId+""))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     ExportFile result = client.getExportFile(exportFileId, accessToken);
 

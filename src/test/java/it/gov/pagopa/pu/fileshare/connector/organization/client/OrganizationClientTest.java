@@ -66,7 +66,7 @@ class OrganizationClientTest {
     when(organizationApisHolderMock.getOrganizationEntityControllerApi(accessToken))
       .thenReturn(organizationEntityControllerApiMock);
     when(organizationEntityControllerApiMock.crudGetOrganization(String.valueOf(organizationId)))
-      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE"));
+      .thenThrow(new RestInvokeNotFoundException("APPNAME", HttpStatus.NOT_FOUND, "ERROR", "ERRORCODE", "ERRORMESSAGE", "BODY"));
 
     // When
     Organization result = organizationClient.getOrganizationById(organizationId, accessToken);
